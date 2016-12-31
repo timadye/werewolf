@@ -11,7 +11,8 @@ function generateAccessCode() {
 
 function generateNewGame() {
   var game = {
-    accessCode: generateAccessCode()
+    accessCode: generateAccessCode(),
+    roles: []
   };
 
   var gameID = Games.insert(game);
@@ -185,6 +186,16 @@ Template.lobby.helpers({
 Template.lobby.events({
   'click .btn-leave': leaveGame,
   'click .btn-start': function() {
-    console.log('start game');
+    Session.set('currentView', 'rolesMenu');
+  }
+})
+
+Template.rolesMenu.helpers({
+  roles: roles
+})
+
+Template.rolesMenu.events({
+  'submit #choose-roles': function(event) {
+    console.log('started game');
   }
 })

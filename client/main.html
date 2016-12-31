@@ -65,5 +65,19 @@
   <button class="btn btn-secondary btn-lg btn-leave">Leave Game</button>
 </template>
 
+<template name="rolesMenu">
+  <h3>Choose which roles</h3>
+  <form id="choose-roles">
+    {{#each roles}}
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" name="{{ name }}" value="{{ name }}" />{{ name }}<br>
+        </label>
+      </div>
+    {{/each}}
+    <!-- <input type="submit" class="btn btn-primary" value='Start Game' /> -->
+  </form>
+</template>
+
 <template name="gameView">
 </template>
