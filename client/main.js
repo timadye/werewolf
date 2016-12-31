@@ -90,8 +90,24 @@ Template.startMenu.events({
 Session.set('currentView', 'startMenu');
 
 Template.createGame.events({
-  'click #btn-create-game': function() {
+  'submit #create-game': function(event) {
     console.log('new game created');
+
+    var playerName = event.target.playerName.value;
+    if (!playerName) {
+      return false;
+    }
+
+    var game = generateNewGame();
+    var player = generateNewPlayer(game, playerName);
+
+    Meteor.subscribe('games', game.accessCode);
+    Meteor.subscribe('players', game._id, function onReady() {
+      Session.set('gameID', game._id);
+      Session.set('playerID', player._id);
+      Session.set('currentView', 'lobby');
+    });
+
     return false;
   },
   'click .btn-back': function() {
@@ -101,12 +117,42 @@ Template.createGame.events({
 })
 
 Template.joinGame.events({
-  'click #btn-join-game': function() {
+  'submit': function(event) {
     console.log('game was joined');
     return false;
   },
   'click .btn-back': function() {
     Session.set('currentView', 'startMenu');
     return false;
+  }
+})
+
+Template.lobby.helpers({
+  game: function() {
+    return getCurrentGame();
+  },
+  accessLink: function() {
+    return getAccessLink();
+  },
+  player: function() {
+    return getCurrentPlayer();
+  },
+  players: function() {
+    var game = getCurrentGame();
+    var currentPlayer = getCurrentPlayer();
+
+    if (!game) {
+      return null;
+    }
+
+    var players = Players.find({'gameID': game._id}, {'sort': {'createdAt': 1}}).fetch();
+
+    // players.forEach(function(player) {
+    //   if (player._id === currentPlayer._id) {
+    //     player.isCurrent = true;
+    //   }
+    // });
+
+    return players;
   }
 })
