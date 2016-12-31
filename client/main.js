@@ -1,22 +1,112 @@
-import { Template } from 'meteor/templating';
-import { ReactiveVar } from 'meteor/reactive-var';
+function generateAccessCode() {
+  var code = '';
+  var possible = 'abcdefghijklmnopqrstuvwxyz';
 
-import './main.html';
+  for (var i = 0; i < 6; i++) {
+    code += possible.charAt(Math.floor(Math.random() * possible.length));
+  }
 
-Template.hello.onCreated(function helloOnCreated() {
-  // counter starts at 0
-  this.counter = new ReactiveVar(0);
-});
+  return code;
+}
 
-Template.hello.helpers({
-  counter() {
-    return Template.instance().counter.get();
+function generateNewGame() {
+  var game = {
+    accessCode: generateAccessCode()
+  };
+
+  var gameID = Games.insert(game);
+  return Games.findOne(gameID);
+}
+
+function generateNewPlayer(game, name) {
+  var player = {
+    gameID: game._id,
+    name: name,
+    role: null
+  }
+
+  var playerID = Players.insert(player);
+  return Players.findOne(playerID);
+}
+
+function getCurrentGame() {
+  var gameID = Session.get('gameID');
+  if (gameID) {
+    return Games.findOne(gameID);
+  }
+}
+
+function getAccessLink(){
+  var game = getCurrentGame();
+
+  if (!game){
+    return;
+  }
+  return Meteor.settings.public.url + game.accessCode + '/';
+}
+
+function getCurrentPlayer() {
+  var playerID = Session.get('playerID');
+  if (playerID) {
+    return Players.findOne(playerID);
+  }
+}
+
+function resetUserState() {
+  var player = getCurrentPlayer();
+
+  if (player) {
+    Players.remove(player._id);
+  }
+
+  Session.set('gameID', null);
+  Session.set('playerID', null);
+}
+
+/* sets the state of the game (which template to render) */
+function trackGameState() {
+
+}
+
+function leaveGame() {
+
+}
+
+Template.main.helpers({
+  whichView: function() {
+    return Session.get('currentView');
+  }
+})
+
+Template.startMenu.events({
+  'click #btn-create-game-view': function() {
+    Session.set('currentView', 'createGame');
   },
+  'click #btn-join-game-view': function() {
+    Session.set('currentView', 'joinGame');
+  }
 });
 
-Template.hello.events({
-  'click button'(event, instance) {
-    // increment the counter when button is clicked
-    instance.counter.set(instance.counter.get() + 1);
+Session.set('currentView', 'startMenu');
+
+Template.createGame.events({
+  'click #btn-create-game': function() {
+    console.log('new game created');
+    return false;
   },
-});
+  'click .btn-back': function() {
+    Session.set('currentView', 'startMenu');
+    return false;
+  }
+})
+
+Template.joinGame.events({
+  'click #btn-join-game': function() {
+    console.log('game was joined');
+    return false;
+  },
+  'click .btn-back': function() {
+    Session.set('currentView', 'startMenu');
+    return false;
+  }
+})

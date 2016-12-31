@@ -1,25 +1,53 @@
 <head>
-  <title>werewolf</title>
+  <meta charset="utf-8" />
+  <title>Werewolf</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <link rel="stylesheet" href="bootstrap.min.css" type="text/css" />
+  <script href="bootstrap.min.js" type="text/javascript"></script>
 </head>
 
 <body>
-  <h1>Welcome to Meteor!</h1>
-
-  {{> hello}}
-  {{> info}}
+  <div class="container-fluid">
+    {{> main}}
+  </div>
 </body>
 
-<template name="hello">
-  <button>Click Me</button>
-  <p>You've pressed the button {{counter}} times.</p>
+<template name="main">
+  {{> Template.dynamic template=whichView}}
 </template>
 
-<template name="info">
-  <h2>Learn Meteor!</h2>
-  <ul>
-    <li><a href="https://www.meteor.com/try" target="_blank">Do the Tutorial</a></li>
-    <li><a href="http://guide.meteor.com" target="_blank">Follow the Guide</a></li>
-    <li><a href="https://docs.meteor.com" target="_blank">Read the Docs</a></li>
-    <li><a href="https://forums.meteor.com" target="_blank">Discussions</a></li>
-  </ul>
+<template name="startMenu">
+  <h3>One Night Ultimate Werewolf</h3>
+
+  <button type="button" id="btn-create-game-view" class="btn btn-secondary btn-lg">New Game</button>
+  <button type="button" id="btn-join-game-view" class="btn btn-secondary btn-lg">Join Game</button>
+</template>
+
+<template name="createGame">
+  <h3>Create Game</h3>
+
+  <button type="button" id="btn-create-game" class="btn btn-secondary btn-lg">Create</button>
+  <button type="button" class="btn btn-secondary btn-lg btn-back">Back</button>
+</template>
+
+<template name="joinGame">
+  <h3>Join Game</h3>
+
+  <button type="button" id="btn-join-game" class="btn btn-secondary btn-lg">Join</button>
+  <button type="button" class="btn btn-secondary btn-lg btn-back">Back</button>
+</template>
+
+<template name="lobby">
+  <h3>Waiting for players</h3>
+  <h4>Access Code: </h4>
+  <ol>
+    <!-- for each player -->
+    <li>
+      Name
+    </li>
+  </ol>
+</template>
+
+<template name="gameView">
 </template>
