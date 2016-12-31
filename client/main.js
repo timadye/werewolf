@@ -69,7 +69,10 @@ function trackGameState() {
 }
 
 function leaveGame() {
-
+  var player = getCurrentPlayer();
+  Session.set('currentView', 'startMenu');
+  Players.remove(player._id);
+  Session.set('playerID', null);
 }
 
 Template.main.helpers({
@@ -91,7 +94,6 @@ Session.set('currentView', 'startMenu');
 
 Template.createGame.events({
   'submit #create-game': function(event) {
-    console.log('new game created');
 
     var playerName = event.target.playerName.value;
     if (!playerName) {
@@ -117,8 +119,34 @@ Template.createGame.events({
 })
 
 Template.joinGame.events({
-  'submit': function(event) {
-    console.log('game was joined');
+  'submit #join-game': function(event) {
+    var playerName = event.target.playerName.value;
+    var accessCode = event.target.accessCode.value;
+
+    if (!playerName) {
+      return false;
+    }
+
+    Meteor.subscribe('games', accessCode, function onReady() {
+      var game = Games.findOne({
+        accessCode: accessCode
+      });
+
+      if (game) {
+        Meteor.subscribe('players', game._id);
+        player = generateNewPlayer(game, playerName);
+
+        // TODO if the game is in progress
+
+        Session.set('urlAccessCode', null);
+        Session.set('gameID', game._id);
+        Session.set('playerID', player._id);
+        Session.set('currentView', 'lobby');
+      } else {
+        console.log('invalid access code');
+      }
+    });
+
     return false;
   },
   'click .btn-back': function() {
@@ -131,12 +159,9 @@ Template.lobby.helpers({
   game: function() {
     return getCurrentGame();
   },
-  accessLink: function() {
-    return getAccessLink();
-  },
-  player: function() {
-    return getCurrentPlayer();
-  },
+  // player: function() {
+  //   return getCurrentPlayer();
+  // },
   players: function() {
     var game = getCurrentGame();
     var currentPlayer = getCurrentPlayer();
@@ -147,12 +172,19 @@ Template.lobby.helpers({
 
     var players = Players.find({'gameID': game._id}, {'sort': {'createdAt': 1}}).fetch();
 
-    // players.forEach(function(player) {
-    //   if (player._id === currentPlayer._id) {
-    //     player.isCurrent = true;
-    //   }
-    // });
+    players.forEach(function(player) {
+      if (player._id === currentPlayer._id) {
+        player.isCurrent = true;
+      }
+    });
 
     return players;
+  }
+})
+
+Template.lobby.events({
+  'click .btn-leave': leaveGame,
+  'click .btn-start': function() {
+    console.log('start game');
   }
 })
