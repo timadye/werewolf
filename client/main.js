@@ -12,7 +12,8 @@ function generateAccessCode() {
 function generateNewGame() {
   var game = {
     accessCode: generateAccessCode(),
-    roles: []
+    roles: [],
+    state: 'waitingForPlayers'
   };
 
   var gameID = Games.insert(game);
@@ -113,7 +114,7 @@ Template.createGame.events({
 
     return false;
   },
-  'click .btn-back': function() {
+  'click .btn-back-start-menu': function() {
     Session.set('currentView', 'startMenu');
     return false;
   }
@@ -150,7 +151,7 @@ Template.joinGame.events({
 
     return false;
   },
-  'click .btn-back': function() {
+  'click .btn-back-start-menu': function() {
     Session.set('currentView', 'startMenu');
     return false;
   }
@@ -191,11 +192,47 @@ Template.lobby.events({
 })
 
 Template.rolesMenu.helpers({
-  roles: roles
+  roleKeys: function() {
+    var roleKeys = [];
+    for (key in allRoles) {
+      roleKeys.push({ key : key, name : allRoles[key].name });
+    }
+    return roleKeys;
+  },
+  roles: allRoles
 })
 
 Template.rolesMenu.events({
   'submit #choose-roles': function(event) {
-    console.log('started game');
+    var gameID = getCurrentGame()._id;
+    var players = Players.find({'gameID': gameID});
+
+    if ($('#choose-roles').find(':checkbox:checked').length >= players.count() + 3) {
+      Session.set('currentView', 'gameView');
+      var selectedRoles = $('#choose-roles').find(':checkbox:checked').map(function() {
+        return allRoles[this.value];
+      }).get();
+      console.log(selectedRoles);
+
+      Games.update(gameID, {$set: {state: 'settingUp', roles: selectedRoles}});
+    }
+
+    return false;
   }
+})
+
+Template.gameView.helpers({
+  game: getCurrentGame,
+  player: getCurrentPlayer,
+  players: function () {
+    var game = getCurrentGame();
+    if (!game) {
+      return null;
+    }
+    return Players.find({'gameID': game._id});
+  }
+})
+
+Template.gameView.events({
+
 })

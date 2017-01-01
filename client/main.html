@@ -32,7 +32,7 @@
       <input type="text" class="form-control" id="player-name" name="playerName" placeholder='Enter your name'>
     </div>
     <input type="submit" class="btn btn-primary" value='Create'>
-    <button class="btn btn-secondary btn-back">Back</button>
+    <button class="btn btn-secondary btn-back-start-menu">Back</button>
   </form>
 </template>
 
@@ -46,7 +46,7 @@
       <input type="text" class="form-control" id="access-code" name="accessCode" placeholder='Enter an access code' autocorrect="off" autocapitalize="off">
     </div>
     <input type="submit" class="btn btn-primary" value='Join'>
-    <button class="btn btn-secondary btn-back">Back</button>
+    <button class="btn btn-secondary btn-back-start-menu">Back</button>
   </form>
 </template>
 
@@ -68,16 +68,26 @@
 <template name="rolesMenu">
   <h3>Choose which roles</h3>
   <form id="choose-roles">
-    {{#each roles}}
+    {{#each roleKeys}}
       <div class="checkbox">
         <label>
-          <input type="checkbox" name="{{ name }}" value="{{ name }}" />{{ name }}<br>
+          <input type="checkbox" name="{{ key }}" value="{{ key }}" />{{ name }}<br>
         </label>
       </div>
     {{/each}}
-    <!-- <input type="submit" class="btn btn-primary" value='Start Game' /> -->
+    <input type="submit" class="btn btn-primary" value='Start' />
   </form>
 </template>
 
 <template name="gameView">
+  <h3>Game View</h3>
+
+  <h5>Players</h5>
+  <ol>
+    {{#each players}}
+    <li>
+      {{ name }}
+    </li>
+    {{/each}}
+  </ol>
 </template>
