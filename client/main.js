@@ -66,22 +66,57 @@ function resetUserState() {
 }
 
 /* sets the state of the game (which template to render) */
+/* types of game state:
+    waitingForPlayers (lobby)
+    settingUp (roles)
+    inProgress (gameView)
+ */
 function trackGameState() {
+  var gameID = Session.get('gameID');
+  var playerID = Session.get('playerID');
 
+  if (!gameID || !playerID) {
+    return;
+  }
+
+  var game = Games.findOne(gameID);
+  var player = Players.findOne(playerID);
+
+  if (!game || !player) {
+    Session.get('gameID', null);
+    Session.set('playerID', null);
+    Session.set('currentView', 'startMenu');
+  }
+
+  var views = {
+    'waitingForPlayers' : 'lobby',
+    'settingUp' : 'rolesMenu',
+    'inProgress' : 'gameView'
+  }
+
+  if (game.state) {
+    Session.set('currentView', views[game.state]);
+  }
 }
+
+Meteor.setInterval(function () {
+  Session.set('time', new Date());
+}, 1000);
+
+Tracker.autorun(trackGameState);
 
 function leaveGame() {
   var player = getCurrentPlayer();
   Session.set('currentView', 'startMenu');
   Players.remove(player._id);
   Session.set('playerID', null);
-}
+};
 
 Template.main.helpers({
   whichView: function() {
     return Session.get('currentView');
   }
-})
+});
 
 Template.startMenu.events({
   'click #btn-create-game-view': function() {
@@ -91,6 +126,10 @@ Template.startMenu.events({
     Session.set('currentView', 'joinGame');
   }
 });
+
+Template.startMenu.rendered = function() {
+  resetUserState();
+};
 
 Session.set('currentView', 'startMenu');
 
@@ -188,6 +227,9 @@ Template.lobby.events({
   'click .btn-leave': leaveGame,
   'click .btn-start': function() {
     Session.set('currentView', 'rolesMenu');
+
+    var game = getCurrentGame();
+    Games.update(game._id, {$set: {state: 'settingUp'}});
   }
 })
 
@@ -212,7 +254,6 @@ Template.rolesMenu.events({
       var selectedRoles = $('#choose-roles').find(':checkbox:checked').map(function() {
         return allRoles[this.value];
       }).get();
-      console.log(selectedRoles);
 
       Games.update(gameID, {$set: {state: 'settingUp', roles: selectedRoles}});
     }
