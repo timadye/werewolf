@@ -82,12 +82,36 @@
 <template name="gameView">
   <h3>Game View</h3>
 
+  <p>
+    You are the {{ player.role.name }}.
+  </p>
+
   <h5>Players</h5>
   <ol>
     {{#each players}}
-    <li>
+    <li id="{{ _id }}">
       {{ name }}
     </li>
     {{/each}}
   </ol>
+
+  <h5>Center Cards</h5>
+  <ol>
+    {{#each game.centerCards}}
+      <li id="card-{{@index}}">
+        Card {{@index}}
+      </li>
+    {{/each}}
+  </ol>
+
+  <h5>Order of Night</h5>
+  <ol>
+    {{#each game.playerRoles}}
+      <li>
+        Order: {{ order }} <br />
+        Name: {{ name }}
+      </li>
+    {{/each}}
+  </ol>
+
 </template>

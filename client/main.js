@@ -13,6 +13,8 @@ function generateNewGame() {
   var game = {
     accessCode: generateAccessCode(),
     roles: [],
+    center: [],
+    playerRoles: [],
     state: 'waitingForPlayers'
   };
 
@@ -24,7 +26,9 @@ function generateNewPlayer(game, name) {
   var player = {
     gameID: game._id,
     name: name,
-    role: null
+    role: null,
+    // active = whether or not it is the player's turn at night
+    active: false
   }
 
   var playerID = Players.insert(player);
@@ -68,8 +72,9 @@ function resetUserState() {
 /* sets the state of the game (which template to render) */
 /* types of game state:
     waitingForPlayers (lobby)
-    settingUp (roles)
-    inProgress (gameView)
+    selectingRoles (roles)
+    settingUp (loading)
+    playing
  */
 function trackGameState() {
   var gameID = Session.get('gameID');
@@ -88,14 +93,12 @@ function trackGameState() {
     Session.set('currentView', 'startMenu');
   }
 
-  var views = {
-    'waitingForPlayers' : 'lobby',
-    'settingUp' : 'rolesMenu',
-    'inProgress' : 'gameView'
-  }
-
-  if (game.state) {
-    Session.set('currentView', views[game.state]);
+  if (game.state === 'waitingForPlayers') {
+    Session.set('currentView', 'lobby');
+  } else if (game.state === 'selectingRoles') {
+    Session.set('currentView', 'rolesMenu');
+  } else if (game.state === 'playing') {
+    Session.set('currentView', 'gameView');
   }
 }
 
@@ -103,6 +106,28 @@ Meteor.setInterval(function () {
   Session.set('time', new Date());
 }, 1000);
 
+// function hasHistoryApi () {
+//   return !!(window.history && window.history.pushState);
+// }
+//
+// if (hasHistoryApi()){
+//   function trackUrlState () {
+//     var accessCode = null;
+//     var game = getCurrentGame();
+//     if (game) {
+//       accessCode = game.accessCode;
+//     } else {
+//       accessCode = Session.get('urlAccessCode');
+//     }
+//
+//     var currentURL = '/';
+//     if (accessCode){
+//       currentURL += accessCode+'/';
+//     }
+//     window.history.pushState(null, null, currentURL);
+//   }
+//   Tracker.autorun(trackUrlState);
+// }
 Tracker.autorun(trackGameState);
 
 function leaveGame() {
@@ -229,7 +254,7 @@ Template.lobby.events({
     Session.set('currentView', 'rolesMenu');
 
     var game = getCurrentGame();
-    Games.update(game._id, {$set: {state: 'settingUp'}});
+    Games.update(game._id, {$set: {state: 'selectingRoles'}});
   }
 })
 
@@ -250,7 +275,6 @@ Template.rolesMenu.events({
     var players = Players.find({'gameID': gameID});
 
     if ($('#choose-roles').find(':checkbox:checked').length >= players.count() + 3) {
-      Session.set('currentView', 'gameView');
       var selectedRoles = $('#choose-roles').find(':checkbox:checked').map(function() {
         return allRoles[this.value];
       }).get();
