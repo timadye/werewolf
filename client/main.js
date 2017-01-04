@@ -15,7 +15,8 @@ function generateNewGame() {
     roles: [],
     center: [],
     playerRoles: [],
-    state: 'waitingForPlayers'
+    state: 'waitingForPlayers',
+    activeRole: null
   };
 
   var gameID = Games.insert(game);
@@ -284,6 +285,10 @@ Template.rolesMenu.events({
 
     return false;
   }
+})
+
+Handlebars.registerHelper('equals', function(str1, str2) {
+  return str1 === str2;
 })
 
 Template.gameView.helpers({

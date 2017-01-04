@@ -86,24 +86,31 @@
     You are the {{ player.role.name }}.
   </p>
 
+  {{#if equals game.activeRole.name player.role.name }}
+  <p>
+    Here are instructions for {{player.role.name}}.
+  </p>
+  {{/if}}
+
   <h5>Players</h5>
   <ol>
     {{#each players}}
-    <li id="{{ _id }}">
-      {{ name }}
-    </li>
+    <button class="btn btn-secondary" id="{{ _id }}">
+      {{ name }} <br />
+    </button>
     {{/each}}
   </ol>
 
   <h5>Center Cards</h5>
   <ol>
     {{#each game.centerCards}}
-      <li id="card-{{@index}}">
+      <button class="btn btn-secondary" id="card-{{@index}}">
         Card {{@index}}
-      </li>
+      </button>
     {{/each}}
   </ol>
 
+  <!-- This is just for debugging and development. -->
   <h5>Order of Night</h5>
   <ol>
     {{#each game.playerRoles}}
@@ -113,5 +120,7 @@
       </li>
     {{/each}}
   </ol>
+
+  <button class="btn btn-primary" id="btn-end-turn">End Turn</button>
 
 </template>
