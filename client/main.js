@@ -13,8 +13,9 @@ function generateNewGame() {
   var game = {
     accessCode: generateAccessCode(),
     roles: [],
-    center: [],
+    centerCards: [],
     playerRoles: [],
+    werewolves: [],
     state: 'waitingForPlayers',
     activeRole: null
   };
@@ -289,6 +290,10 @@ Template.rolesMenu.events({
 
 Handlebars.registerHelper('equals', function(str1, str2) {
   return str1 === str2;
+})
+
+Handlebars.registerHelper('instructions', function(game, player) {
+  return player.role.instructions(game);
 })
 
 Template.gameView.helpers({
