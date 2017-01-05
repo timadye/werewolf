@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor';
+import '../imports/roles.js';
 
 Meteor.startup(() => {
   Games.remove({});
@@ -17,11 +18,10 @@ Games.find({'state': 'settingUp'}).observeChanges({
   added: function(id, game) {
     var players = Players.find({gameID: id});
     assignRoles(id, players, game.roles);
-
-    var activeRole = Games.findOne(id).playerRoles.shift();
-    if (activeRole.order < 15) {
-      Games.update(id, {$set: {activeRole: activeRole}});
-    }
+    // var activeRole = Games.findOne(id).playerRoles[0];
+    // if (activeRole.order < 15) {
+    //   Games.update(id, {$set: {activeRole: activeRole}});
+    // }
     Games.update(id, {$set: {state: 'playing'}});
   }
 })

@@ -86,10 +86,13 @@
     You are the {{ player.role.name }}.
   </p>
 
-  {{#if equals game.activeRole.name player.role.name }}
-  <p>
-    Here are instructions for {{player.role.name}}.
-  </p>
+  {{#if activeRole}}
+    {{#if equals activeRole.name player.role.name }}
+    <p>
+      Here are instructions for {{player.role.name}}.
+      {{instructions game players player}}
+    </p>
+    {{/if}}
   {{/if}}
 
   <h5>Players</h5>

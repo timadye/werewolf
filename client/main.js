@@ -1,3 +1,5 @@
+import '../imports/roles.js';
+
 function generateAccessCode() {
   var code = '';
   var possible = 'abcdefghijklmnopqrstuvwxyz';
@@ -12,12 +14,11 @@ function generateAccessCode() {
 function generateNewGame() {
   var game = {
     accessCode: generateAccessCode(),
-    roles: [],
+    players: [],
     centerCards: [],
     playerRoles: [],
-    werewolves: [],
     state: 'waitingForPlayers',
-    activeRole: null
+    activeRoleIndex: 0
   };
 
   var gameID = Games.insert(game);
@@ -62,6 +63,7 @@ function getCurrentPlayer() {
 
 function resetUserState() {
   var player = getCurrentPlayer();
+  var game = getCurrentGame();
 
   if (player) {
     Players.remove(player._id);
@@ -278,6 +280,8 @@ Template.rolesMenu.events({
 
     if ($('#choose-roles').find(':checkbox:checked').length >= players.count() + 3) {
       var selectedRoles = $('#choose-roles').find(':checkbox:checked').map(function() {
+        // console.log(allRoles[this.value].instructions('hello'));
+        console.log(allRoles[this.value]);
         return allRoles[this.value];
       }).get();
 
@@ -292,8 +296,27 @@ Handlebars.registerHelper('equals', function(str1, str2) {
   return str1 === str2;
 })
 
-Handlebars.registerHelper('instructions', function(game, player) {
-  return player.role.instructions(game);
+
+Handlebars.registerHelper('instructions', function(game, players, player) {
+  var roleName = player.role.name;
+  var playerArray = players.map(function(doc) {return doc});
+  var werewolves = playerArray.filter(function(p) {
+    return p.role.name === 'Werewolf'}
+  ).map(function(p) {
+    return p.name;
+  });
+  console.log(werewolves);
+  if (roleName === 'Doppelganger') {
+    return 'doppelganger instructions';
+  } else if (roleName === 'Werewolf') {
+    if (werewolves.length == 1) {
+      return "Werewolf, wake up. Since you are a lone wolf, you may look at one of the center cards.";
+    } else {
+      return "Werewolves, wake up. There are " + werewolves.length + " of you: " + werewolves.join(', ');
+    }
+  } else {
+
+  }
 })
 
 Template.gameView.helpers({
@@ -305,9 +328,13 @@ Template.gameView.helpers({
       return null;
     }
     return Players.find({'gameID': game._id});
+  },
+  activeRole: function () {
+    var game = getCurrentGame();
+    return game.playerRoles[game.activeRoleIndex];
   }
 })
 
 Template.gameView.events({
 
-})
+});
