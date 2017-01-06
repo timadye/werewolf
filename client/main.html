@@ -89,20 +89,10 @@
   {{#if activeRole}}
     {{#if equals activeRole.name player.role.name }}
     <p>
-      Here are instructions for {{player.role.name}}.
       {{instructions game players player}}
     </p>
     {{/if}}
   {{/if}}
-
-  <h5>Players</h5>
-  <ol>
-    {{#each players}}
-    <button class="btn btn-secondary" id="{{ _id }}">
-      {{ name }} <br />
-    </button>
-    {{/each}}
-  </ol>
 
   <h5>Center Cards</h5>
   <ol>
@@ -110,6 +100,15 @@
       <button class="btn btn-secondary" id="card-{{@index}}">
         Card {{@index}}
       </button>
+    {{/each}}
+  </ol>
+
+  <h5>Players</h5>
+  <ol>
+    {{#each players}}
+    <button class="btn btn-secondary" id="{{ _id }}">
+      {{ name }} <br />
+    </button>
     {{/each}}
   </ol>
 

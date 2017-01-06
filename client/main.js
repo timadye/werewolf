@@ -280,7 +280,6 @@ Template.rolesMenu.events({
 
     if ($('#choose-roles').find(':checkbox:checked').length >= players.count() + 3) {
       var selectedRoles = $('#choose-roles').find(':checkbox:checked').map(function() {
-        // console.log(allRoles[this.value].instructions('hello'));
         console.log(allRoles[this.value]);
         return allRoles[this.value];
       }).get();
@@ -305,17 +304,50 @@ Handlebars.registerHelper('instructions', function(game, players, player) {
   ).map(function(p) {
     return p.name;
   });
-  console.log(werewolves);
+  var masons = playerArray.filter(function(p) {
+    return p.role.name === 'Mason'}
+  ).map(function(p) {
+    return p.name;
+  });
+
   if (roleName === 'Doppelganger') {
     return 'doppelganger instructions';
-  } else if (roleName === 'Werewolf') {
+  }
+  else if (roleName === 'Werewolf') {
     if (werewolves.length == 1) {
       return "Werewolf, wake up. Since you are a lone wolf, you may look at one of the center cards.";
     } else {
-      return "Werewolves, wake up. There are " + werewolves.length + " of you: " + werewolves.join(', ');
+      return "Werewolves, wake up. There are " + werewolves.length + " of you: " + werewolves.join(', ') + ".";
     }
-  } else {
-
+  }
+  else if (roleName === 'Minion') {
+    if (werewolves.length == 0) {
+      return "Minion, wake up. There are no werewolves.";
+    } else {
+      return "Minion, wake up. There are " + werewolves.length + " werewolves that you must protect: " + werewolves.join(', ') + ".";
+    }
+  }
+  else if (roleName === 'Mason') {
+    if (masons.length == 1) {
+      return "Mason, wake up. You are the only mason.";
+    } else {
+      return "Masons, wake up. There are " + masons.length + " of you: " + masons.join(', ') + ".";
+    }
+  }
+  else if (roleName === 'Seer') {
+    return "Seer, wake up. You may look at another player's card or two of the center cards."
+  }
+  else if (roleName === 'Robber') {
+    return "Robber, wake up. You may exchange your card with another player's card, and then view your new card."
+  }
+  else if (roleName === 'Troublemaker') {
+    return "Troublemaker, wake up. You may exchange cards between two players."
+  }
+  else if (roleName === 'Drunk') {
+    return "Drunk, wake up and exchange your card with a card from the center."
+  }
+  else if (roleName === 'Insomniac') {
+    return "Insomniac, wake up and look at your card."
   }
 })
 
