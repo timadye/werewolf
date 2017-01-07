@@ -132,11 +132,13 @@
 
   {{#if equals game.state 'finishedVoting'}}
     <h4>{{ winningTeam }}</h4>
+    <h4>You ended up as the {{ player.role.name }}.</h4>
     <h5>Voting results</h5>
     <ol>
       {{#each game.killed}}
         <li>
           {{ name }} (Role: {{ role.name }})
+          <br />
         </li>
       {{/each}}
     </ol>
@@ -156,9 +158,12 @@
   <h5>Players</h5>
   <ol>
     {{#each players}}
-    <button class="btn btn-secondary vote-player" id = {{ _id }}>
-      {{ name }} <br />
-    </button>
+      <button class="btn btn-secondary vote-player" id = {{ _id }}>
+        {{ name }} <br />
+      </button>
+      {{#if equals game.state 'finishedVoting'}}
+      (Role: {{ role.name }})
+      {{/if}}
     {{/each}}
   </ol>
 
