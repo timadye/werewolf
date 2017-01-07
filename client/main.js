@@ -4,9 +4,11 @@ function generateAccessCode() {
   var code = '';
   var possible = 'abcdefghijklmnopqrstuvwxyz';
 
-  for (var i = 0; i < 6; i++) {
-    code += possible.charAt(Math.floor(Math.random() * possible.length));
-  }
+  do {
+    for (var i = 0; i < 6; i++) {
+      code += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+  } while (Games.find({accessCode: code}).count() != 0)
 
   return code;
 }
@@ -430,7 +432,7 @@ Template.nightView.helpers({
     if (!game) {
       return null;
     }
-    
+
     return Players.find({'gameID': game._id}, {'sort': {'createdAt': 1}}).fetch();
   },
   turnIndex: function () {
