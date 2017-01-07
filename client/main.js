@@ -27,7 +27,14 @@ function generateNewGame() {
     // list of swaps in the form of { player_id : ___, new_role : ___ }
     swaps: [],
     swapping: false,
-    insomniacRole: allRoles.insomniac
+    insomniacRole: allRoles.insomniac,
+    // time
+    discussionTime: 5,
+    endTime: null,
+    paused: false,
+    pausedTime: null,
+    // playerIDs, sorted afterwards
+    killed: []
   };
 
   var gameID = Games.insert(game);
@@ -38,7 +45,8 @@ function generateNewPlayer(game, name) {
   var player = {
     gameID: game._id,
     name: name,
-    role: null
+    role: null,
+    vote: null // id that this player votes to kill
   }
 
   var playerID = Players.insert(player);
@@ -239,9 +247,6 @@ Template.lobby.helpers({
   game: function() {
     return getCurrentGame();
   },
-  // player: function() {
-  //   return getCurrentPlayer();
-  // },
   players: function() {
     var game = getCurrentGame();
     var currentPlayer = getCurrentPlayer();
@@ -329,6 +334,12 @@ Handlebars.registerHelper('instructions', function(game, players, player) {
     }
   }
   else if (roleName === 'Minion') {
+    var playerArray = players.map(function(doc) {return doc});
+    var werewolves = playerArray.filter(function(p) {
+      return p.role.name === 'Werewolf'}
+    ).map(function(p) {
+      return p.name;
+    });
     Games.update(game._id, {$set: {moveLimit: 0}});
     if (werewolves.length == 0) {
       return "Minion, wake up. There are no werewolves.";
@@ -491,9 +502,7 @@ Template.nightView.events({
 
       if (canEndNight()) {
         var game = getCurrentGame();
-        if (game.swaps.length > 0) {
-          Games.update(game._id, {$set: {swapping: true}});
-        }
+        Games.update(game._id, {$set: {swapping: true}});
         Games.update(game._id, {$set: {state: 'dayTime'}});
       }
     }
@@ -547,6 +556,104 @@ Template.nightView.events({
         Games.update(game._id, {$push: {selectedPlayerIds: clickedPlayer._id}});
       }
     }
+    return false;
+  }
+});
+
+function getTimeRemaining() {
+  var game = getCurrentGame();
+  var localEndTime = game.endTime - TimeSync.serverOffset();
+
+  if (game.paused) {
+    var localPausedTime = game.pausedTime - TimeSync.serverOffset();
+    var timeRemaining = localEndTime - localPausedTime;
+  } else {
+    var timeRemaining = localEndTime - Session.get('time');
+  }
+
+  if (timeRemaining < 0 && timeRemaining > -5000) {
+    if (game.state !== 'voting') {
+      Games.update(game._id, {$set: {'state': 'voting'}});
+    }
+  }
+
+  if (timeRemaining < 0) {
+    timeRemaining = 0;
+  }
+
+  return timeRemaining;
+}
+
+function getVotingTimeRemaining() {
+  var game = getCurrentGame();
+
+  var localEndTime = game.endTime - TimeSync.serverOffset();
+  var timeRemaining = localEndTime - Session.get('time');
+
+  if (timeRemaining < 1000 && timeRemaining > 0) {
+    var player = getCurrentPlayer();
+    Games.update(game._id, {$set: {'state': 'finishedVoting'}});
+  }
+
+  if (timeRemaining < 0) {
+    timeRemaining = 0;
+  }
+
+  return timeRemaining;
+}
+
+Template.dayView.helpers({
+  game: getCurrentGame,
+  player: getCurrentPlayer,
+  players: function () {
+    var game = getCurrentGame();
+    if (!game) {
+      return null;
+    }
+    return Players.find({'gameID': game._id});
+  },
+  timeRemaining: function () {
+    var game = getCurrentGame();
+    if (game.state === 'voting' || game.state === 'finishedVoting') {
+      var timeRemaining = getVotingTimeRemaining();
+    } else {
+      var timeRemaining = getTimeRemaining();
+    }
+
+    return moment(timeRemaining).format('m[<span>:</span>]ss');
+  },
+  winningTeam: function() {
+    var game = getCurrentGame();
+    for (index in game.killed) {
+      var roleName = game.killed[index].role.name;
+      if (roleName === 'Tanner') {
+        return 'The Tanner wins!';
+      }
+      if (roleName === 'Werewolf') {
+        return 'The Villagers win!'
+      }
+    }
+    return 'The Werewolves win!';
+  }
+})
+
+Template.dayView.events({
+  'click #countdown': function () {
+    var game = getCurrentGame();
+    var currentServerTime = TimeSync.serverTime(moment());
+
+    if(game.paused) {
+      var newEndTime = game.endTime - game.pausedTime + currentServerTime;
+      Games.update(game._id, {$set: {paused: false, pausedTime: null, endTime: newEndTime}});
+    } else {
+      Games.update(game._id, {$set: {paused: true, pausedTime: currentServerTime}});
+    }
+  },
+  'click .vote-player': function(event) {
+    var game = getCurrentGame();
+    var player = getCurrentPlayer();
+
+    Players.update(player._id, {$set: {vote: event.currentTarget.id}});
     return false;
   }
 });
