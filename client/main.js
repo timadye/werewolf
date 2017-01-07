@@ -44,6 +44,11 @@ function generateNewGame() {
 }
 
 function generateNewPlayer(game, name) {
+  
+  if (!Meteor.call('nameUsed', game, name)) {
+    return false;
+  }
+
   var player = {
     gameID: game._id,
     name: name,
@@ -253,6 +258,11 @@ Template.joinGame.events({
       if (game) {
         Meteor.subscribe('players', game._id);
         player = generateNewPlayer(game, playerName);
+
+        if (!player) {
+          console.log('player cannot have same name');
+          return false;
+        }
 
         // TODO if the game is in progress
         if (game.state !== 'waitingForPlayers') {

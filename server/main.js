@@ -25,6 +25,12 @@ Meteor.publish('players', function(gameID) {
   return Players.find({"gameID": gameID});
 });
 
+Meteor.methods({
+  nameUsed: function(game, name) {
+    return Players.find( {'gameID': game._id, 'name': name} ).count() > 0;
+  }
+})
+
 Games.find({'state': 'settingUp'}).observeChanges({
   added: function(id, game) {
     var players = Players.find({gameID: id});
