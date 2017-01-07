@@ -75,8 +75,12 @@
         </label>
       </div>
     {{/each}}
-    <input type="submit" class="btn btn-primary" value='Start' />
+    <input type="submit" class="btn btn-primary btn-lg" value='Start' />
   </form>
+
+  <br />
+  <button class="btn btn-secondary btn-md btn-end">End Game</button>
+  <button class="btn btn-secondary btn-md btn-leave">Leave Game</button>
 </template>
 
 <template name="nightView">
@@ -117,7 +121,12 @@
     {{/each}}
   </ol>
 
-  <button class="btn btn-primary" id="btn-end-turn">End Turn</button>
+  <button class="btn btn-primary btn-lg" id="btn-end-turn">End Turn</button>
+  <br />
+  <br />
+
+  <button class="btn btn-secondary btn-md btn-end">End Game</button>
+  <button class="btn btn-secondary btn-md btn-leave">Leave Game</button>
 
 </template>
 
@@ -166,5 +175,8 @@
       {{/if}}
     {{/each}}
   </ol>
+
+  <button class="btn btn-secondary btn-md btn-end">End Game</button>
+  <button class="btn btn-secondary btn-md btn-leave">Leave Game</button>
 
 </template>
