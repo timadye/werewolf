@@ -4,9 +4,11 @@ function generateAccessCode() {
   var code = '';
   var possible = 'abcdefghijklmnopqrstuvwxyz';
 
-  for (var i = 0; i < 6; i++) {
-    code += possible.charAt(Math.floor(Math.random() * possible.length));
-  }
+  do {
+    for (var i = 0; i < 6; i++) {
+      code += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+  } while (Games.find({accessCode: code}).count() != 0)
 
   return code;
 }
@@ -42,6 +44,11 @@ function generateNewGame() {
 }
 
 function generateNewPlayer(game, name) {
+  
+  if (!Meteor.call('nameUsed', game, name)) {
+    return false;
+  }
+
   var player = {
     gameID: game._id,
     name: name,
@@ -160,6 +167,11 @@ function leaveGame() {
   Players.remove(player._id);
   Session.set('playerID', null);
   Session.set('turnMessage', null);
+
+  var game = getCurrentGame();
+  if (Players.find({gameID: game._id}).count() == 0) {
+    Games.remove(game._id);
+  }
 };
 
 function endGame() {
@@ -246,6 +258,11 @@ Template.joinGame.events({
       if (game) {
         Meteor.subscribe('players', game._id);
         player = generateNewPlayer(game, playerName);
+
+        if (!player) {
+          console.log('player cannot have same name');
+          return false;
+        }
 
         // TODO if the game is in progress
         if (game.state !== 'waitingForPlayers') {
@@ -425,7 +442,8 @@ Template.nightView.helpers({
     if (!game) {
       return null;
     }
-    return Players.find({'gameID': game._id});
+
+    return Players.find({'gameID': game._id}, {'sort': {'createdAt': 1}}).fetch();
   },
   turnIndex: function () {
     return getCurrentGame().turnIndex;
@@ -641,7 +659,8 @@ Template.dayView.helpers({
     if (!game) {
       return null;
     }
-    return Players.find({'gameID': game._id});
+
+    return Players.find({'gameID': game._id}, {'sort': {'createdAt': 1}}).fetch();
   },
   timeRemaining: function () {
     var game = getCurrentGame();

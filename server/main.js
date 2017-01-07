@@ -6,6 +6,17 @@ Meteor.startup(() => {
   Players.remove({});
 });
 
+function cleanUp(){
+  var cutOff = moment().subtract(2, 'hours').toDate().getTime();
+
+  Games.remove({ createdAt: {$lt: cutOff} });
+  Players.remove({ createdAt: {$lt: cutOff} });
+}
+
+var cron = new Cron(60000);
+
+cron.addJob(5, cleanUp);
+
 Meteor.publish('games', function(accessCode) {
   return Games.find({"accessCode": accessCode});
 });
@@ -13,6 +24,12 @@ Meteor.publish('games', function(accessCode) {
 Meteor.publish('players', function(gameID) {
   return Players.find({"gameID": gameID});
 });
+
+Meteor.methods({
+  nameUsed: function(game, name) {
+    return Players.find( {'gameID': game._id, 'name': name} ).count() > 0;
+  }
+})
 
 Games.find({'state': 'settingUp'}).observeChanges({
   added: function(id, game) {
