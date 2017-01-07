@@ -80,7 +80,7 @@
 </template>
 
 <template name="nightView">
-  <h3>Game View for {{ player.name }}</h3>
+  <h3>Night View for {{ player.name }}</h3>
 
   <p>
     You are the {{ player.role.name }}.
@@ -117,23 +117,31 @@
     {{/each}}
   </ol>
 
-  <!-- This is just for debugging and development. -->
-  <h5>Order of Night</h5>
-  <ol>
-    {{#each game.playerRoles}}
-      <li>
-        Order: {{ order }} <br />
-        Name: {{ name }}
-      </li>
-    {{/each}}
-  </ol>
-
   <button class="btn btn-primary" id="btn-end-turn">End Turn</button>
 
 </template>
 
 <template name="dayView">
-  <h3>
-    Reached the day view!
-  </h3>
+  <h3>Day View for {{ player.name }}</h3>
+
+  <h4><a id="countdown">{{{ timeRemaining }}}</a></h4>
+
+  <h5>Center Cards</h5>
+  <ol>
+    {{#each game.centerCards}}
+      <button class="btn btn-secondary">
+        Card {{@index}}
+      </button>
+    {{/each}}
+  </ol>
+
+  <h5>Players</h5>
+  <ol>
+    {{#each players}}
+    <button class="btn btn-secondary">
+      {{ name }} <br />
+    </button>
+    {{/each}}
+  </ol>
+
 </template>
