@@ -160,6 +160,11 @@ function leaveGame() {
   Players.remove(player._id);
   Session.set('playerID', null);
   Session.set('turnMessage', null);
+
+  var game = getCurrentGame();
+  if (Players.find({gameID: game._id}).count() == 0) {
+    Games.remove(game._id);
+  }
 };
 
 function endGame() {
@@ -425,7 +430,8 @@ Template.nightView.helpers({
     if (!game) {
       return null;
     }
-    return Players.find({'gameID': game._id});
+    
+    return Players.find({'gameID': game._id}, {'sort': {'createdAt': 1}}).fetch();
   },
   turnIndex: function () {
     return getCurrentGame().turnIndex;
@@ -641,7 +647,8 @@ Template.dayView.helpers({
     if (!game) {
       return null;
     }
-    return Players.find({'gameID': game._id});
+
+    return Players.find({'gameID': game._id}, {'sort': {'createdAt': 1}}).fetch();
   },
   timeRemaining: function () {
     var game = getCurrentGame();
