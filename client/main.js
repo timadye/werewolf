@@ -592,7 +592,7 @@ function getVotingTimeRemaining() {
   var localEndTime = game.endTime - TimeSync.serverOffset();
   var timeRemaining = localEndTime - Session.get('time');
 
-  if (timeRemaining < 0 && timeRemaining > -5000) {
+  if (timeRemaining < 1000 && timeRemaining > 0) {
     Games.update(game._id, {$set: {'state': 'finishedVoting'}});
   }
 

@@ -84,7 +84,6 @@ Games.find({'state': 'voting'}).observeChanges({
       paused: false,
       pausedTime: null
     }});
-    console.log('reached this point');
   }
 })
 
