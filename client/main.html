@@ -7,14 +7,12 @@
   <script href="bootstrap.min.js" type="text/javascript"></script>
 </head>
 
-<body>
-  <div class="container-fluid">
-    {{> main}}
-  </div>
-</body>
+<body></body>
 
 <template name="main">
-  {{> Template.dynamic template=whichView}}
+  <div class="container-fluid">
+    {{> Template.dynamic template=whichView}}
+  </div>
 </template>
 
 <template name="startMenu">
