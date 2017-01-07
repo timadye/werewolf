@@ -102,6 +102,7 @@ function trackGameState() {
     Session.set('gameID', null);
     Session.set('playerID', null);
     Session.set('currentView', 'startMenu');
+    return;
   }
 
   if (game.state === 'waitingForPlayers') {
