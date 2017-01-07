@@ -34,7 +34,6 @@ function generateNewGame() {
     paused: false,
     pausedTime: null,
     // playerIDs, sorted afterwards
-    votes: [],
     killed: []
   };
 
@@ -46,7 +45,8 @@ function generateNewPlayer(game, name) {
   var player = {
     gameID: game._id,
     name: name,
-    role: null
+    role: null,
+    vote: null // id that this player votes to kill
   }
 
   var playerID = Players.insert(player);
@@ -589,10 +589,12 @@ function getTimeRemaining() {
 
 function getVotingTimeRemaining() {
   var game = getCurrentGame();
+
   var localEndTime = game.endTime - TimeSync.serverOffset();
   var timeRemaining = localEndTime - Session.get('time');
 
   if (timeRemaining < 1000 && timeRemaining > 0) {
+    var player = getCurrentPlayer();
     Games.update(game._id, {$set: {'state': 'finishedVoting'}});
   }
 
@@ -638,5 +640,12 @@ Template.dayView.events({
     } else {
       Games.update(game._id, {$set: {paused: true, pausedTime: currentServerTime}});
     }
+  },
+  'click .vote-player': function(event) {
+    var game = getCurrentGame();
+    var player = getCurrentPlayer();
+    
+    Players.update(player._id, {$set: {vote: event.currentTarget.id}});
+    return false;
   }
 });
