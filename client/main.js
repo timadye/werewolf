@@ -122,6 +122,7 @@ function trackGameState() {
   } else if (game.state === 'dayTime') {
     Session.set('currentView', 'dayView');
   }
+  // game.state can also be finishedVoting and voting
 }
 
 Meteor.setInterval(function () {
@@ -247,6 +248,9 @@ Template.joinGame.events({
         player = generateNewPlayer(game, playerName);
 
         // TODO if the game is in progress
+        if (game.state !== 'waitingForPlayers') {
+          return false;
+        }
 
         Session.set('urlAccessCode', null);
         Session.set('gameID', game._id);
