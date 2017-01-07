@@ -6,6 +6,17 @@ Meteor.startup(() => {
   Players.remove({});
 });
 
+function cleanUp(){
+  var cutOff = moment().subtract(2, 'hours').toDate().getTime();
+
+  Games.remove({ createdAt: {$lt: cutOff} });
+  Players.remove({ createdAt: {$lt: cutOff} });
+}
+
+var cron = new Cron(60000);
+
+cron.addJob(5, cleanUp);
+
 Meteor.publish('games', function(accessCode) {
   return Games.find({"accessCode": accessCode});
 });
