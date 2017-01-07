@@ -61,9 +61,7 @@ Games.find({'swapping': true}).observeChanges({
       Players.update(swap.id, {$set: {role : swap.role}});
     }
 
-    // var gameEndTime = moment().add(game.discussionTime, 'minutes').valueOf();
-    // for debugging
-    var gameEndTime = moment().add(2, 'seconds').valueOf();
+    var gameEndTime = moment().add(game.discussionTime, 'minutes').valueOf();
     Games.update(id, {$set: {
       swaps: [],
       swapping: false,
