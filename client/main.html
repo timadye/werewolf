@@ -80,21 +80,22 @@
 </template>
 
 <template name="gameView">
-  <h3>Game View</h3>
+  <h3>Game View for {{ player.name }}</h3>
 
   <p>
     You are the {{ player.role.name }}.
   </p>
 
-  <p>
-    Turn Index: {{turnIndex}}
-  </p>
-
   {{#if stillNight game turnIndex}}
     {{#if equals activeRole.name player.role.name }}
-    <p>
-      {{instructions game players player}}
-    </p>
+      <p>
+        {{instructions game players player}}
+      </p>
+      {{#if turnMessage}}
+        <p>
+          {{turnMessage}}
+        </p>
+      {{/if}}
     {{/if}}
   {{/if}}
 

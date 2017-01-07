@@ -361,7 +361,7 @@ Handlebars.registerHelper('instructions', function(game, players, player) {
   }
   else if (roleName === 'Insomniac') {
     Games.update(game._id, {$set: {moveLimit: 1}});
-    return "Insomniac, wake up and look at your card."
+    return "Insomniac, wake up and look at your card. Your role is " + player.role.name + ".";
   }
 })
 
@@ -386,6 +386,9 @@ Template.gameView.helpers({
   activeRole: function () {
     var game = getCurrentGame();
     return game.playerRoles[game.turnIndex];
+  },
+  turnMessage: function () {
+    return Session.get('turnMessage');
   }
 })
 
@@ -435,6 +438,7 @@ Template.gameView.events({
       Games.update(game._id, {$set: {numMoves: 0}});
       Games.update(game._id, {$set: {selectedPlayerIds: []}});
       Games.update(game._id, {$set: {selectedCenterCards: []}});
+      Session.set('turnMessage', null);
     }
     return false;
   },
@@ -445,8 +449,16 @@ Template.gameView.events({
       var clickedCardID = event.currentTarget.id.replace('card-', '');
       if (canClickCenter(game, player, clickedCardID)) {
         var roleName = player.role.name;
-
-        if (roleName === 'Seer') {
+        if (roleName === 'Werewolf') {
+          Session.set('turnMessage', "Card " + clickedCardID + " is a " + game.centerCards[clickedCardID].name + ".");
+        }
+        else if (roleName === 'Seer') {
+          var message = "";
+          for (index in cc) {
+            var id = game.selectedCenterCards[index];
+            message += "Card " + id + " is a " + game.centerCards[id].name + ".";
+          }
+          Session.set('turnMessage', message);
         }
         Games.update(game._id, {$set: {numMoves: game.numMoves + 1}});
         Games.update(game._id, {$push: {selectedCenterCards: clickedCardID}});
@@ -461,9 +473,14 @@ Template.gameView.events({
       var clickedPlayer = Players.findOne(event.currentTarget.id);
       if (canClickPlayer(game, player, clickedPlayer)) {
         var roleName = player.role.name;
-
-        if (roleName === 'Seer') {
-
+        if (roleName === 'Doppelganger') {
+          Session.set('turnMessage', "Your new role is " + clickedPlayer.role.name + ".");
+        }
+        else if (roleName === 'Seer') {
+          Session.set('turnMessage', clickedPlayer.name + "'s role is " + clickedPlayer.role.name + ".");
+        }
+        else if (roleName === 'Robber') {
+          Session.set('turnMessage', "You stole " + clickedPlayer.name + "'s card. Your new role is " + clickedPlayer.role.name + ".");
         }
 
         Games.update(game._id, {$set: {numMoves: game.numMoves + 1}});
