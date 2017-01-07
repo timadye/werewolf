@@ -18,11 +18,7 @@ Games.find({'state': 'settingUp'}).observeChanges({
   added: function(id, game) {
     var players = Players.find({gameID: id});
     assignRoles(id, players, game.roles);
-    // var activeRole = Games.findOne(id).playerRoles[0];
-    // if (activeRole.order < 15) {
-    //   Games.update(id, {$set: {activeRole: activeRole}});
-    // }
-    Games.update(id, {$set: {state: 'playing'}});
+    Games.update(id, {$set: {state: 'nightTime'}});
   }
 })
 
@@ -57,3 +53,14 @@ function assignRoles(gameID, players, roles) {
   Games.update(gameID, {$set: {playerRoles: playerRoles}});
   Games.update(gameID, {$set: {centerCards: shuffledRoles}});
 }
+
+Games.find({'swapping': true}).observeChanges({
+  added: function(id, game) {
+    for (index in game.swaps) {
+      var swap = game.swaps[index];
+      Players.update(swap.id, {$set: {role : swap.role}});
+    }
+    Games.update(id, {$set: {swaps: []}});
+    Games.update(id, {$set: {swapping: false}});
+  }
+})

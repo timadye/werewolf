@@ -1,8 +1,9 @@
 allRoles = {
-  doppelganger : {
-    name: 'Doppelganger',
-    order: 0
-  },
+  // taking out doppelganger bc it complicates game too much
+  // doppelganger : {
+  //   name: 'Doppelganger',
+  //   order: 0
+  // },
   werewolf1 : {
     name: 'Werewolf',
     order: 3
