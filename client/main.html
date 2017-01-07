@@ -86,7 +86,11 @@
     You are the {{ player.role.name }}.
   </p>
 
-  {{#if activeRole}}
+  <p>
+    Turn Index: {{turnIndex}}
+  </p>
+
+  {{#if stillNight game turnIndex}}
     {{#if equals activeRole.name player.role.name }}
     <p>
       {{instructions game players player}}

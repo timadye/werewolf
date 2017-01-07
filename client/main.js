@@ -18,7 +18,8 @@ function generateNewGame() {
     centerCards: [],
     playerRoles: [],
     state: 'waitingForPlayers',
-    activeRoleIndex: 0
+    players: [],
+    turnIndex: 0
   };
 
   var gameID = Games.insert(game);
@@ -29,9 +30,7 @@ function generateNewPlayer(game, name) {
   var player = {
     gameID: game._id,
     name: name,
-    role: null,
-    // active = whether or not it is the player's turn at night
-    active: false
+    role: null
   }
 
   var playerID = Players.insert(player);
@@ -92,7 +91,7 @@ function trackGameState() {
   var player = Players.findOne(playerID);
 
   if (!game || !player) {
-    Session.get('gameID', null);
+    Session.set('gameID', null);
     Session.set('playerID', null);
     Session.set('currentView', 'startMenu');
   }
@@ -280,7 +279,6 @@ Template.rolesMenu.events({
 
     if ($('#choose-roles').find(':checkbox:checked').length >= players.count() + 3) {
       var selectedRoles = $('#choose-roles').find(':checkbox:checked').map(function() {
-        console.log(allRoles[this.value]);
         return allRoles[this.value];
       }).get();
 
@@ -351,6 +349,11 @@ Handlebars.registerHelper('instructions', function(game, players, player) {
   }
 })
 
+Handlebars.registerHelper('stillNight', function(game) {
+  var role = game.playerRoles[game.turnIndex];
+  return role && role.order < 15;
+});
+
 Template.gameView.helpers({
   game: getCurrentGame,
   player: getCurrentPlayer,
@@ -361,12 +364,19 @@ Template.gameView.helpers({
     }
     return Players.find({'gameID': game._id});
   },
+  turnIndex: function () {
+    return getCurrentGame().turnIndex;
+  },
   activeRole: function () {
     var game = getCurrentGame();
-    return game.playerRoles[game.activeRoleIndex];
+    return game.playerRoles[game.turnIndex];
   }
 })
 
 Template.gameView.events({
-
+  'click #btn-end-turn': function() {
+    var game = getCurrentGame();
+    Games.update(game._id, {$set: {turnIndex: game.turnIndex + 1}});
+    return false;
+  }
 });
