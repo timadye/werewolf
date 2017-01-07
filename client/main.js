@@ -26,7 +26,8 @@ function generateNewGame() {
     werewolfCenter: false,
     // list of swaps in the form of { player_id : ___, new_role : ___ }
     swaps: [],
-    swapping: false
+    swapping: false,
+    insomniacRole: allRoles.insomniac
   };
 
   var gameID = Games.insert(game);
@@ -365,12 +366,8 @@ Handlebars.registerHelper('instructions', function(game, players, player) {
     return "Drunk, wake up and exchange your card with a card from the center."
   }
   else if (roleName === 'Insomniac') {
-    if (game.swaps.length > 0) {
-      Games.update(game._id, {$set: {swapping: true}});
-    }
     Games.update(game._id, {$set: {moveLimit: 0}});
-    var player = getCurrentPlayer();
-    return "Insomniac, wake up and look at your card. Your role is " + player.role.name + ".";
+    return "Insomniac, wake up and look at your card. Your role is " + game.insomniacRole.name + ".";
   }
 })
 
@@ -457,6 +454,9 @@ Template.nightView.events({
         var clickedPlayer = Players.findOne(game.selectedPlayerIds[0]);
         swaps.push({ id : player._id, role : clickedPlayer.role });
         swaps.push({ id : clickedPlayer._id, role : allRoles.robber });
+        if (clickedPlayer.role.name === 'Insomniac') {
+          Games.update(game._id, {$set: {insomniacRole: allRoles.robber}});
+        }
         Games.update(game._id, {$set: {swaps: swaps}});
       }
       else if (roleName === 'Troublemaker') {
@@ -464,6 +464,12 @@ Template.nightView.events({
         var player1 = Players.findOne(game.selectedPlayerIds[1]);
         swaps.push({ id : player0._id, role : player1.role });
         swaps.push({ id : player1._id, role : player0.role });
+        if (player0.role.name === 'Insomniac') {
+          Games.update(game._id, {$set: {insomniacRole: player1.role}});
+        }
+        if (player1.role.name === 'Insomniac') {
+          Games.update(game._id, {$set: {insomniacRole: player0.role}});
+        }
         Games.update(game._id, {$set: {swaps: swaps}});
       }
       else if (roleName === 'Drunk') {
