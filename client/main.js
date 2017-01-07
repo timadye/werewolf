@@ -128,28 +128,29 @@ Meteor.setInterval(function () {
   Session.set('time', new Date());
 }, 1000);
 
-// function hasHistoryApi () {
-//   return !!(window.history && window.history.pushState);
-// }
-//
-// if (hasHistoryApi()){
-//   function trackUrlState () {
-//     var accessCode = null;
-//     var game = getCurrentGame();
-//     if (game) {
-//       accessCode = game.accessCode;
-//     } else {
-//       accessCode = Session.get('urlAccessCode');
-//     }
-//
-//     var currentURL = '/';
-//     if (accessCode){
-//       currentURL += accessCode+'/';
-//     }
-//     window.history.pushState(null, null, currentURL);
-//   }
-//   Tracker.autorun(trackUrlState);
-// }
+function hasHistoryApi () {
+  return !!(window.history && window.history.pushState);
+}
+
+if (hasHistoryApi()){
+  function trackUrlState () {
+    var accessCode = null;
+    var game = getCurrentGame();
+    if (game) {
+      accessCode = game.accessCode;
+    } else {
+      accessCode = Session.get('urlAccessCode');
+    }
+
+    var currentURL = '/';
+    if (accessCode) {
+      currentURL += accessCode+'/';
+    }
+    window.history.pushState(null, null, currentURL);
+  }
+  Tracker.autorun(trackUrlState);
+}
+
 Tracker.autorun(trackGameState);
 
 function leaveGame() {
@@ -213,6 +214,20 @@ Template.createGame.events({
   }
 })
 
+Template.joinGame.rendered = function (event) {
+  resetUserState();
+
+  var urlAccessCode = Session.get('urlAccessCode');
+
+  if (urlAccessCode){
+    $("#access-code").val(urlAccessCode);
+    $("#access-code").hide();
+    $("#player-name").focus();
+  } else {
+    $("#access-code").focus();
+  }
+};
+
 Template.joinGame.events({
   'submit #join-game': function(event) {
     var playerName = event.target.playerName.value;
@@ -245,6 +260,7 @@ Template.joinGame.events({
     return false;
   },
   'click .btn-back-start-menu': function() {
+    Session.set('urlAccessCode', null);
     Session.set('currentView', 'startMenu');
     return false;
   }
