@@ -20,7 +20,11 @@ function generateNewGame() {
     state: 'waitingForPlayers',
     turnIndex: 0,
     numMoves: 0,
-    moveLimit: 0
+    moveLimit: 0,
+    // whether or not these roles can click center or player cards
+    seerCenter: true,
+    seerPlayer: true,
+    werewolfCenter: false
   };
 
   var gameID = Games.insert(game);
@@ -316,6 +320,7 @@ Handlebars.registerHelper('instructions', function(game, players, player) {
   else if (roleName === 'Werewolf') {
     if (werewolves.length == 1) {
       Games.update(game._id, {$set: {moveLimit: 1}});
+      Games.update(game._id, {$set: {werewolfCenter: true}});
       return "Werewolf, wake up. Since you are a lone wolf, you may look at one of the center cards.";
     } else {
       Games.update(game._id, {$set: {moveLimit: 0}});
@@ -339,7 +344,12 @@ Handlebars.registerHelper('instructions', function(game, players, player) {
     }
   }
   else if (roleName === 'Seer') {
-    Games.update(game._id, {$set: {moveLimit: 2}});
+    if (game.seerPlayer) {
+      Games.update(game._id, {$set: {moveLimit: 1}});
+    }
+    if (game.seerCenter) {
+      Games.update(game._id, {$set: {moveLimit: 2}});
+    }
     return "Seer, wake up. You may look at another player's card or two of the center cards."
   }
   else if (roleName === 'Robber') {
@@ -384,33 +394,66 @@ Template.gameView.helpers({
   }
 })
 
-function canClick() {
+function isTurn() {
   var game = getCurrentGame();
+  if (!game.playerRoles[game.turnIndex]) {
+    return false;
+  }
   var activeRole = game.playerRoles[game.turnIndex].name;
   var playerRole = getCurrentPlayer().role.name;
   return activeRole === playerRole;
 }
 
+function canClickCenter() {
+  var game = getCurrentGame();
+  var roleName = getCurrentPlayer().role.name;
+  if (roleName === 'Werewolf') {
+    return game.werewolfCenter;
+  }
+  else if (roleName === 'Seer') {
+    return game.seerCenter;
+  }
+  else {
+    return roleName === 'Drunk';
+  }
+}
+
+function canClickPlayer() {
+  var game = getCurrentGame();
+  var roleName = getCurrentPlayer().role.name;
+  if (roleName === 'Seer') {
+    return game.seerPlayer;
+  }
+  else {
+    return roleName === 'Doppelganger' || roleName === 'Troublemaker' || roleName === 'Robber';
+  }
+}
+
 Template.gameView.events({
   'click #btn-end-turn': function() {
     var game = getCurrentGame();
-    if (canClick() && game.moveLimit == game.numMoves) {
+    if (isTurn() && game.moveLimit == game.numMoves) {
       Games.update(game._id, {$set: {turnIndex: game.turnIndex + 1}});
     }
     return false;
   },
   'click .center-cards': function(event) {
     var game = getCurrentGame();
-    if (canClick() && game.numMoves < game.moveLimit) {
+    if (isTurn() && canClickCenter() && game.numMoves < game.moveLimit) {
       Games.update(game._id, {$set: {numMoves: game.numMoves + 1}});
+      if (getCurrentPlayer().role.name === 'Seer') {
+        Games.update(game._id, {$set: {seerPlayer: false}});
+      }
     }
     return false;
   },
   'click .player-cards': function(event) {
     var game = getCurrentGame();
-    if (canClick() && game.numMoves < game.moveLimit) {
+    if (isTurn() && canClickPlayer() && game.numMoves < game.moveLimit) {
       Games.update(game._id, {$set: {numMoves: game.numMoves + 1}});
-      console.log('updated');
+      if (getCurrentPlayer().role.name === 'Seer') {
+        Games.update(game._id, {$set: {seerCenter: false}});
+      }
     }
     return false;
   }
