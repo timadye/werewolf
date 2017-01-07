@@ -131,8 +131,8 @@
   {{/if}}
 
   {{#if equals game.state 'finishedVoting'}}
-  <p>
-    Voting results:
+    <h4>{{ winningTeam }}</h4>
+    <h5>Voting results</h5>
     <ol>
       {{#each game.killed}}
         <li>
@@ -140,7 +140,6 @@
         </li>
       {{/each}}
     </ol>
-  </p>
   {{/if}}
 
   <h4><a id="countdown">{{{ timeRemaining }}}</a></h4>

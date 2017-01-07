@@ -247,9 +247,6 @@ Template.lobby.helpers({
   game: function() {
     return getCurrentGame();
   },
-  // player: function() {
-  //   return getCurrentPlayer();
-  // },
   players: function() {
     var game = getCurrentGame();
     var currentPlayer = getCurrentPlayer();
@@ -625,7 +622,18 @@ Template.dayView.helpers({
 
     return moment(timeRemaining).format('m[<span>:</span>]ss');
   },
-  voteMessage: function () {
+  winningTeam: function() {
+    var game = getCurrentGame();
+    for (index in game.killed) {
+      var roleName = game.killed[index].role.name;
+      if (roleName === 'Tanner') {
+        return 'The Tanner wins!';
+      }
+      if (roleName === 'Werewolf') {
+        return 'The Villagers win!'
+      }
+    }
+    return 'The Werewolves win!';
   }
 })
 
@@ -644,7 +652,7 @@ Template.dayView.events({
   'click .vote-player': function(event) {
     var game = getCurrentGame();
     var player = getCurrentPlayer();
-    
+
     Players.update(player._id, {$set: {vote: event.currentTarget.id}});
     return false;
   }
