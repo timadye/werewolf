@@ -32,7 +32,10 @@ function generateNewGame() {
     discussionTime: 5,
     endTime: null,
     paused: false,
-    pausedTime: null
+    pausedTime: null,
+    // playerIDs, sorted afterwards
+    votes: [],
+    killed: []
   };
 
   var gameID = Games.insert(game);
@@ -560,7 +563,7 @@ Template.nightView.events({
   }
 });
 
-function getTimeRemaining(){
+function getTimeRemaining() {
   var game = getCurrentGame();
   var localEndTime = game.endTime - TimeSync.serverOffset();
 
@@ -569,6 +572,28 @@ function getTimeRemaining(){
     var timeRemaining = localEndTime - localPausedTime;
   } else {
     var timeRemaining = localEndTime - Session.get('time');
+  }
+
+  if (timeRemaining < 0 && timeRemaining > -5000) {
+    if (game.state !== 'voting') {
+      Games.update(game._id, {$set: {'state': 'voting'}});
+    }
+  }
+
+  if (timeRemaining < 0) {
+    timeRemaining = 0;
+  }
+
+  return timeRemaining;
+}
+
+function getVotingTimeRemaining() {
+  var game = getCurrentGame();
+  var localEndTime = game.endTime - TimeSync.serverOffset();
+  var timeRemaining = localEndTime - Session.get('time');
+
+  if (timeRemaining < 0 && timeRemaining > -5000) {
+    Games.update(game._id, {$set: {'state': 'finishedVoting'}});
   }
 
   if (timeRemaining < 0) {
@@ -588,13 +613,17 @@ Template.dayView.helpers({
     }
     return Players.find({'gameID': game._id});
   },
-  gameFinished: function () {
-    var timeRemaining = getTimeRemaining();
-    return timeRemaining === 0;
-  },
   timeRemaining: function () {
-    var timeRemaining = getTimeRemaining();
+    var game = getCurrentGame();
+    if (game.state === 'voting' || game.state === 'finishedVoting') {
+      var timeRemaining = getVotingTimeRemaining();
+    } else {
+      var timeRemaining = getTimeRemaining();
+    }
+
     return moment(timeRemaining).format('m[<span>:</span>]ss');
+  },
+  voteMessage: function () {
   }
 })
 
