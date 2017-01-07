@@ -157,7 +157,14 @@ function leaveGame() {
   Session.set('currentView', 'startMenu');
   Players.remove(player._id);
   Session.set('playerID', null);
+  Session.set('turnMessage', null);
 };
+
+function endGame() {
+  var game = getCurrentGame();
+  Session.set('turnMessage', null);
+  Games.update(game._id, {$set: {state: 'waitingForPlayers'}});
+}
 
 Template.main.helpers({
   whichView: function() {
@@ -302,7 +309,9 @@ Template.rolesMenu.events({
     }
 
     return false;
-  }
+  },
+  'click .btn-leave': leaveGame,
+  'click .btn-end': endGame
 })
 
 Handlebars.registerHelper('equals', function(str1, str2) {
@@ -557,7 +566,9 @@ Template.nightView.events({
       }
     }
     return false;
-  }
+  },
+  'click .btn-leave': leaveGame,
+  'click .btn-end': endGame
 });
 
 function getTimeRemaining() {
@@ -655,5 +666,7 @@ Template.dayView.events({
 
     Players.update(player._id, {$set: {vote: event.currentTarget.id}});
     return false;
-  }
+  },
+  'click .btn-leave': leaveGame,
+  'click .btn-end': endGame
 });
