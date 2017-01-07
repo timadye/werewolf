@@ -101,7 +101,7 @@
   <h5>Center Cards</h5>
   <ol>
     {{#each game.centerCards}}
-      <button class="btn btn-secondary" id="card-{{@index}}">
+      <button class="btn btn-secondary center-cards" id="card-{{@index}}">
         Card {{@index}}
       </button>
     {{/each}}
@@ -110,7 +110,7 @@
   <h5>Players</h5>
   <ol>
     {{#each players}}
-    <button class="btn btn-secondary" id="{{ _id }}">
+    <button class="btn btn-secondary player-cards" id="{{ _id }}">
       {{ name }} <br />
     </button>
     {{/each}}

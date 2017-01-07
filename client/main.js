@@ -14,12 +14,13 @@ function generateAccessCode() {
 function generateNewGame() {
   var game = {
     accessCode: generateAccessCode(),
-    players: [],
+    players: [], // TODO check if removable
     centerCards: [],
     playerRoles: [],
     state: 'waitingForPlayers',
-    players: [],
-    turnIndex: 0
+    turnIndex: 0,
+    numMoves: 0,
+    moveLimit: 0
   };
 
   var gameID = Games.insert(game);
@@ -293,7 +294,7 @@ Handlebars.registerHelper('equals', function(str1, str2) {
   return str1 === str2;
 })
 
-
+// also updates moveLimit
 Handlebars.registerHelper('instructions', function(game, players, player) {
   var roleName = player.role.name;
   var playerArray = players.map(function(doc) {return doc});
@@ -309,16 +310,20 @@ Handlebars.registerHelper('instructions', function(game, players, player) {
   });
 
   if (roleName === 'Doppelganger') {
+    Games.update(game._id, {$set: {moveLimit: 1}});
     return 'doppelganger instructions';
   }
   else if (roleName === 'Werewolf') {
     if (werewolves.length == 1) {
+      Games.update(game._id, {$set: {moveLimit: 1}});
       return "Werewolf, wake up. Since you are a lone wolf, you may look at one of the center cards.";
     } else {
+      Games.update(game._id, {$set: {moveLimit: 0}});
       return "Werewolves, wake up. There are " + werewolves.length + " of you: " + werewolves.join(', ') + ".";
     }
   }
   else if (roleName === 'Minion') {
+    Games.update(game._id, {$set: {moveLimit: 0}});
     if (werewolves.length == 0) {
       return "Minion, wake up. There are no werewolves.";
     } else {
@@ -326,6 +331,7 @@ Handlebars.registerHelper('instructions', function(game, players, player) {
     }
   }
   else if (roleName === 'Mason') {
+    Games.update(game._id, {$set: {moveLimit: 0}});
     if (masons.length == 1) {
       return "Mason, wake up. You are the only mason.";
     } else {
@@ -333,18 +339,23 @@ Handlebars.registerHelper('instructions', function(game, players, player) {
     }
   }
   else if (roleName === 'Seer') {
+    Games.update(game._id, {$set: {moveLimit: 2}});
     return "Seer, wake up. You may look at another player's card or two of the center cards."
   }
   else if (roleName === 'Robber') {
+    Games.update(game._id, {$set: {moveLimit: 1}});
     return "Robber, wake up. You may exchange your card with another player's card, and then view your new card."
   }
   else if (roleName === 'Troublemaker') {
+    Games.update(game._id, {$set: {moveLimit: 2}});
     return "Troublemaker, wake up. You may exchange cards between two players."
   }
   else if (roleName === 'Drunk') {
+    Games.update(game._id, {$set: {moveLimit: 1}});
     return "Drunk, wake up and exchange your card with a card from the center."
   }
   else if (roleName === 'Insomniac') {
+    Games.update(game._id, {$set: {moveLimit: 1}});
     return "Insomniac, wake up and look at your card."
   }
 })
@@ -373,10 +384,34 @@ Template.gameView.helpers({
   }
 })
 
+function canClick() {
+  var game = getCurrentGame();
+  var activeRole = game.playerRoles[game.turnIndex].name;
+  var playerRole = getCurrentPlayer().role.name;
+  return activeRole === playerRole;
+}
+
 Template.gameView.events({
   'click #btn-end-turn': function() {
     var game = getCurrentGame();
-    Games.update(game._id, {$set: {turnIndex: game.turnIndex + 1}});
+    if (canClick() && game.moveLimit == game.numMoves) {
+      Games.update(game._id, {$set: {turnIndex: game.turnIndex + 1}});
+    }
+    return false;
+  },
+  'click .center-cards': function(event) {
+    var game = getCurrentGame();
+    if (canClick() && game.numMoves < game.moveLimit) {
+      Games.update(game._id, {$set: {numMoves: game.numMoves + 1}});
+    }
+    return false;
+  },
+  'click .player-cards': function(event) {
+    var game = getCurrentGame();
+    if (canClick() && game.numMoves < game.moveLimit) {
+      Games.update(game._id, {$set: {numMoves: game.numMoves + 1}});
+      console.log('updated');
+    }
     return false;
   }
 });
