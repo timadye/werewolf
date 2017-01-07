@@ -536,11 +536,12 @@ Template.nightView.events({
         }
         else if (roleName === 'Seer') {
           Session.set('turnMessage', clickedPlayer.name + "'s role is " + clickedPlayer.role.name + ".");
+          Games.update(game._id, {$set: {numMoves: game.numMoves + 1}});
         }
         else if (roleName === 'Robber') {
           Session.set('turnMessage', "You stole " + clickedPlayer.name + "'s card. Your new role is " + clickedPlayer.role.name + ".");
         }
-
+        var game = getCurrentGame();
         Games.update(game._id, {$set: {numMoves: game.numMoves + 1}});
         Games.update(game._id, {$push: {selectedPlayerIds: clickedPlayer._id}});
       }
