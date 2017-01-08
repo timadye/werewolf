@@ -44,8 +44,8 @@ function generateNewGame() {
 }
 
 function generateNewPlayer(game, name) {
-  
-  if (!Meteor.call('nameUsed', game, name)) {
+
+  if (Meteor.call('nameUsed', game, name)) {
     return false;
   }
 
