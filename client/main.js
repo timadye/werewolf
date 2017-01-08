@@ -707,5 +707,11 @@ Template.dayView.events({
     return false;
   },
   'click .btn-leave': leaveGame,
-  'click .btn-end': endGame
+  'click .btn-end': endGame,
+  'click .btn-vote-now': function () {
+    var game = getCurrentGame();
+    if (game.state !== 'voting') {
+      Games.update(game._id, {$set: {'state': 'voting'}});
+    }
+  }
 });
