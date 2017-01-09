@@ -25,11 +25,42 @@ Meteor.publish('players', function(gameID) {
   return Players.find({"gameID": gameID});
 });
 
-Meteor.methods({
-  nameUsed: function(game, name) {
-    return Players.find( {'gameID': game._id, 'name': name} ).count() > 0;
-  }
-})
+Meteor.publish('voteNow', function(gameID) {
+  var self = this;
+  var proceed = Players.find({'gameID': gameID}).count() !== 0 &&
+                Players.find({'gameID': gameID, 'voteNow': true}).count() === Players.find({'gameID': gameID}).count();
+  console.log(proceed);
+  var initializing = true;
+
+  var handle = Players.find({'gameID': gameID}).observeChanges({
+    added: function (id) {
+      if (!initializing) {
+        proceed = Players.find({'gameID': gameID, 'voteNow': true}).count() == Players.find({'gameID': gameID}).count();
+        self.changed('voteNow', gameID, {'proceed': proceed});
+      }
+    },
+    removed: function (id) {
+      if (!initializing) {
+        proceed = Players.find({'gameID': gameID, 'voteNow': true}).count() == Players.find({'gameID': gameID}).count();
+        self.changed('voteNow', gameID, {'proceed': proceed});
+      }
+    },
+    changed: function (id) {
+      if (!initializing) {
+        proceed = Players.find({'gameID': gameID, 'voteNow': true}).count() == Players.find({'gameID': gameID}).count();
+        self.changed('voteNow', gameID, {'proceed': proceed});
+      }
+    }
+  });
+  initializing = false;
+  self.added('voteNow', gameID, {'proceed': proceed});
+  console.log(VoteNow.findOne(gameID).proceed);
+  self.ready();
+
+  self.onStop(function () {
+    handle.stop();
+  });
+});
 
 Games.find({'state': 'settingUp'}).observeChanges({
   added: function(id, game) {
