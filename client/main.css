@@ -1,1 +1,19 @@
-/* CSS declarations go here */
+@font-face {
+  font-family: HKGroteskRegular;
+  src: url('fonts/hk-grotesk/HKGrotesk-Regular.otf');
+}
+
+@font-face {
+  font-family: HKGroteskBold;
+  src: url('fonts/hk-grotesk/HKGrotesk-Bold.otf');
+}
+
+* {
+  font-family: 'HKGroteskRegular', inherit;
+}
+
+body {
+  text-align: center;
+  margin: 25% auto 0 auto;
+  max-width: 500px;
+}
