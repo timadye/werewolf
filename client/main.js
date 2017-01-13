@@ -45,10 +45,6 @@ function generateNewGame() {
 
 function generateNewPlayer(game, name) {
 
-  if (Meteor.call('nameUsed', game, name)) {
-    return false;
-  }
-
   var player = {
     gameID: game._id,
     name: name,
@@ -174,10 +170,32 @@ function leaveGame() {
   }
 };
 
-function endGame() {
+function resetGame() {
   var game = getCurrentGame();
+  Games.update(game._id, {$set: {
+    centerCards: [],
+    playerRoles: [],
+    state: 'waitingForPlayers',
+    turnIndex: 0,
+    numMoves: 0,
+    moveLimit: 0,
+    selectedPlayerIds: [],
+    selectedCenterCards: [],
+    werewolfCenter: false,
+    swaps: [],
+    swapping: false,
+    insomniacRole: allRoles.insomniac,
+    endTime: null,
+    paused: false,
+    pausedTime: null,
+    // playerIDs, sorted afterwards
+    killed: []
+  }});
+}
+
+function endGame() {
+  resetGame();
   Session.set('turnMessage', null);
-  Games.update(game._id, {$set: {state: 'waitingForPlayers'}});
 }
 
 Template.main.helpers({
@@ -258,11 +276,6 @@ Template.joinGame.events({
       if (game) {
         Meteor.subscribe('players', game._id);
         player = generateNewPlayer(game, playerName);
-
-        if (!player) {
-          console.log('player cannot have same name');
-          return false;
-        }
 
         // TODO if the game is in progress
         if (game.state !== 'waitingForPlayers') {
