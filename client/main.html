@@ -51,7 +51,7 @@
 <template name="lobby">
   <h3>Waiting for players</h3>
   <h4>Access Code: {{game.accessCode}}</h4>
-  <ol>
+  <ol id="lobby-player-list">
     {{#each players}}
     <li>
       {{ name }}
@@ -66,13 +66,15 @@
 <template name="rolesMenu">
   <h3>Choose which roles</h3>
   <form id="choose-roles">
-    {{#each roleKeys}}
-      <div class="checkbox">
-        <label>
-          <input type="checkbox" name="{{ key }}" value="{{ key }}" />{{ name }}<br>
-        </label>
-      </div>
-    {{/each}}
+    <div id="choose-roles-list">
+      {{#each roleKeys}}
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" name="{{ key }}" value="{{ key }}" />{{ name }}<br>
+          </label>
+        </div>
+      {{/each}}
+    </div>
     <input type="submit" class="btn btn-primary btn-lg" value='Start' />
   </form>
 
@@ -102,22 +104,22 @@
   {{/if}}
 
   <h5>Center Cards</h5>
-  <ol>
+  <div class="center-cards">
     {{#each game.centerCards}}
       <button class="btn btn-secondary center-cards" id="card-{{@index}}">
         Card {{@index}}
       </button>
     {{/each}}
-  </ol>
+  </div>
 
   <h5>Players</h5>
-  <ol>
+  <div class="ingame-player-list">
     {{#each players}}
     <button class="btn btn-secondary player-cards" id="{{ _id }}">
       {{ name }} <br />
     </button>
     {{/each}}
-  </ol>
+  </div>
 
   <button class="btn btn-primary btn-lg" id="btn-end-turn">End Turn</button>
   <br />
@@ -154,16 +156,16 @@
   <h4><a id="countdown">{{{ timeRemaining }}}</a></h4>
 
   <h5>Center Cards</h5>
-  <ol>
+  <div class="center-cards">
     {{#each game.centerCards}}
       <button class="btn btn-secondary">
         Card {{@index}}
       </button>
     {{/each}}
-  </ol>
+  </div>
 
   <h5>Players</h5>
-  <ol>
+  <div class="ingame-player-list">
     {{#each players}}
       <button class="btn btn-secondary vote-player" id = {{ _id }}>
         {{ name }} <br />
@@ -172,7 +174,7 @@
       (Role: {{ role.name }})
       {{/if}}
     {{/each}}
-  </ol>
+  </div>
 
   <button class="btn btn-secondary btn-md btn-vote-now">Vote Now</button>
   <button class="btn btn-secondary btn-md btn-end">End Game</button>

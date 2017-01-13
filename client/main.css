@@ -1,11 +1,11 @@
 @font-face {
   font-family: HKGroteskRegular;
-  src: url('fonts/hk-grotesk/HKGrotesk-Regular.otf');
+  src: url('/fonts/hk-grotesk/HKGrotesk-Regular.otf');
 }
 
 @font-face {
   font-family: HKGroteskBold;
-  src: url('fonts/hk-grotesk/HKGrotesk-Bold.otf');
+  src: url('/fonts/hk-grotesk/HKGrotesk-Bold.otf');
 }
 
 * {
@@ -14,6 +14,48 @@
 
 body {
   text-align: center;
-  margin: 25% auto 0 auto;
+  margin: 15% auto 0 auto;
   max-width: 500px;
+}
+
+input[type="text"] {
+  margin-left: 10%;
+  margin-right: 10%;
+  max-width: 80%;
+}
+
+li {
+  text-align: left;
+}
+
+#lobby-player-list {
+  margin-left: 10%;
+  margin-right: 10%;
+  max-width: 80%;
+}
+
+#choose-roles {
+  margin-left: 10%;
+  margin-right: 10%;
+}
+
+#choose-roles-list {
+  column-count: 2;
+  column-gap: 4px;
+  text-align: left;
+  margin-bottom: 15px;
+}
+
+.center-cards {
+  /*column-count: 3;*/
+}
+
+.center-cards > button {
+}
+
+.ingame-player-list {
+  margin-left: 10%;
+  margin-right: 10%;
+  max-width: 80%;
+  margin-bottom: 20px;
 }
