@@ -110,14 +110,11 @@ Games.find({'state': 'finishedVoting'}).observeChanges({
       }
     });
 
-    console.log('votes', votes);
-    console.log('votes.length', votes.length);
     if (votes.length > 0) {
 
       var voteFrequency = {};
       for (index in votes) {
         var vote = votes[index].toString();
-        console.log('vote', vote);
         if (voteFrequency[vote]) {
           voteFrequency[vote] += 1;
         } else {
@@ -131,8 +128,6 @@ Games.find({'state': 'finishedVoting'}).observeChanges({
       sortedVotes.sort(function(vote1, vote2) {
         return vote1.numVotes - vote2.numVotes;
       }).reverse();
-
-      console.log('sortedVotes', sortedVotes);
 
       var killed = [];
       killed.push(Players.findOne(sortedVotes[0].playerID));
