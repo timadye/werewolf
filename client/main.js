@@ -274,13 +274,14 @@ Template.joinGame.events({
       });
 
       if (game) {
-        Meteor.subscribe('players', game._id);
-        player = generateNewPlayer(game, playerName);
 
         // TODO if the game is in progress
         if (game.state !== 'waitingForPlayers') {
           return false;
         }
+
+        Meteor.subscribe('players', game._id);
+        player = generateNewPlayer(game, playerName);
 
         Session.set('urlAccessCode', null);
         Session.set('gameID', game._id);
