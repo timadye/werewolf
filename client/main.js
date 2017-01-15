@@ -346,12 +346,12 @@ Template.rolesMenu.helpers({
 })
 
 Template.rolesMenu.events({
-  'submit #choose-roles': function(event) {
+  'submit #choose-roles-form': function(event) {
     var gameID = getCurrentGame()._id;
     var players = Players.find({'gameID': gameID});
 
-    if ($('#choose-roles').find(':checkbox:checked').length >= players.count() + 3) {
-      var selectedRoles = $('#choose-roles').find(':checkbox:checked').map(function() {
+    if ($('#choose-roles-form').find(':checkbox:checked').length >= players.count() + 3) {
+      var selectedRoles = $('#choose-roles-form').find(':checkbox:checked').map(function() {
         return allRoles[this.value];
       }).get();
 
@@ -554,10 +554,23 @@ Template.nightView.events({
         Games.update(game._id, {$set: {swaps: swaps}});
       }
 
+      var game = getCurrentGame();
+      // css
+      for (index in game.selectedCenterCards) {
+        var cssId = '#card-' + game.selectedCenterCards[index];
+        $(cssId).removeClass('selected-card');
+      }
+      for (index in game.selectedPlayerIds) {
+        var cssId = '#' + game.selectedPlayerIds[index];
+        $(cssId).removeClass('selected-card');
+      }
+
+
       Games.update(game._id, {$set: {turnIndex: game.turnIndex + 1}});
       Games.update(game._id, {$set: {numMoves: 0}});
       Games.update(game._id, {$set: {selectedPlayerIds: []}});
       Games.update(game._id, {$set: {selectedCenterCards: []}});
+
       Session.set('turnMessage', null);
 
       if (canEndNight()) {
@@ -575,6 +588,8 @@ Template.nightView.events({
     if (game.numMoves < game.moveLimit && isTurn(game, player)) {
       var clickedCardID = event.currentTarget.id.replace('card-', '');
       if (canClickCenter(game, player, clickedCardID)) {
+        var cssId = '#' + event.currentTarget.id;
+        $(cssId).addClass('selected-card');
         var roleName = player.role.name;
         if (roleName === 'Werewolf') {
           Session.set('turnMessage', "Card " + clickedCardID + " is the " + game.centerCards[clickedCardID].name + ".");
@@ -600,6 +615,8 @@ Template.nightView.events({
     if (game.numMoves < game.moveLimit && isTurn(game, player)) {
       var clickedPlayer = Players.findOne(event.currentTarget.id);
       if (canClickPlayer(game, player, clickedPlayer)) {
+        var cssId = '#' + event.currentTarget.id;
+        $(cssId).addClass('selected-card');
         var roleName = player.role.name;
         if (roleName === 'Doppelganger') {
           Session.set('turnMessage', "Your new role is " + clickedPlayer.role.name + ".");
