@@ -43,6 +43,11 @@
 
 <template name="joinGame">
   <h3>Join Game</h3>
+
+  {{#if joinError}}
+    <h5>{{ joinError }}</h5>
+  {{/if}}
+
   <form id="join-game">
     <div class="form-group">
       <input type="text" class="form-control" id="player-name" name="playerName" placeholder='Enter your name'>

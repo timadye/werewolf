@@ -259,6 +259,12 @@ Template.joinGame.rendered = function (event) {
   }
 };
 
+Template.joinGame.helpers({
+  joinError: function() {
+    return Session.get('joinError');
+  }
+});
+
 Template.joinGame.events({
   'submit #join-game': function(event) {
     var playerName = event.target.playerName.value;
@@ -277,6 +283,7 @@ Template.joinGame.events({
 
         // TODO if the game is in progress
         if (game.state !== 'waitingForPlayers') {
+          Session.set('joinError', 'Please wait. Cannot join a game in progress.');
           return false;
         }
 
@@ -287,8 +294,10 @@ Template.joinGame.events({
         Session.set('gameID', game._id);
         Session.set('playerID', player._id);
         Session.set('currentView', 'lobby');
+        Session.set('joinError', null);
       } else {
         console.log('invalid access code');
+        Session.set('joinError', 'Invalid access code.')
       }
     });
 
@@ -297,6 +306,7 @@ Template.joinGame.events({
   'click .btn-back-start-menu': function() {
     Session.set('urlAccessCode', null);
     Session.set('currentView', 'startMenu');
+    Session.set('joinError', null);
     return false;
   }
 })
