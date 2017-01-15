@@ -163,6 +163,7 @@ function leaveGame() {
   Players.remove(player._id);
   Session.set('playerID', null);
   Session.set('turnMessage', null);
+  Session.set('errorMessage', null);
 
   var game = getCurrentGame();
   if (Players.find({gameID: game._id}).count() == 0) {
@@ -195,6 +196,7 @@ function resetGame() {
 
 function endGame() {
   resetGame();
+  Session.set('errorMessage', null);
   Session.set('turnMessage', null);
 }
 
@@ -260,8 +262,8 @@ Template.joinGame.rendered = function (event) {
 };
 
 Template.joinGame.helpers({
-  joinError: function() {
-    return Session.get('joinError');
+  errorMessage: function() {
+    return Session.get('errorMessage');
   }
 });
 
@@ -283,7 +285,7 @@ Template.joinGame.events({
 
         // TODO if the game is in progress
         if (game.state !== 'waitingForPlayers') {
-          Session.set('joinError', 'Please wait. Cannot join a game in progress.');
+          Session.set('errorMessage', 'Please wait. Cannot join a game in progress.');
           return false;
         }
 
@@ -294,10 +296,10 @@ Template.joinGame.events({
         Session.set('gameID', game._id);
         Session.set('playerID', player._id);
         Session.set('currentView', 'lobby');
-        Session.set('joinError', null);
+        Session.set('errorMessage', null);
       } else {
         console.log('invalid access code');
-        Session.set('joinError', 'Invalid access code.')
+        Session.set('errorMessage', 'Invalid access code.')
       }
     });
 
@@ -306,7 +308,7 @@ Template.joinGame.events({
   'click .btn-back-start-menu': function() {
     Session.set('urlAccessCode', null);
     Session.set('currentView', 'startMenu');
-    Session.set('joinError', null);
+    Session.set('errorMessage', null);
     return false;
   }
 })
@@ -353,7 +355,10 @@ Template.rolesMenu.helpers({
     }
     return roleKeys;
   },
-  roles: allRoles
+  roles: allRoles,
+  errorMessage: function() {
+    return Session.get('errorMessage');
+  }
 })
 
 Template.rolesMenu.events({
@@ -365,8 +370,10 @@ Template.rolesMenu.events({
       var selectedRoles = $('#choose-roles-form').find(':checkbox:checked').map(function() {
         return allRoles[this.value];
       }).get();
-
       Games.update(gameID, {$set: {state: 'settingUp', roles: selectedRoles}});
+      Session.set('errorMessage', null);
+    } else {
+      Session.set('errorMessage', 'Please select at least ' + (players.count() + 3) + ' roles.');
     }
 
     return false;

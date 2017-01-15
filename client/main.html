@@ -44,8 +44,8 @@
 <template name="joinGame">
   <h3>Join Game</h3>
 
-  {{#if joinError}}
-    <h5>{{ joinError }}</h5>
+  {{#if errorMessage}}
+    <h5>{{ errorMessage }}</h5>
   {{/if}}
 
   <form id="join-game">
@@ -77,6 +77,11 @@
 
 <template name="rolesMenu">
   <h3>Choose which roles</h3>
+
+  {{#if errorMessage}}
+    <h5>{{ errorMessage }}</h5>
+  {{/if}}
+
   <form id="choose-roles-form">
     <div id="choose-roles-list">
       {{#each roleKeys}}
@@ -171,9 +176,11 @@
         {{/each}}
       </ol>
     {{/if}}
+  {{else}}
+    <h4><a id="countdown">{{{ timeRemaining }}}</a></h4>
   {{/if}}
 
-  <h4><a id="countdown">{{{ timeRemaining }}}</a></h4>
+
 
   <h5>Center Cards</h5>
   <div class="center-cards">
