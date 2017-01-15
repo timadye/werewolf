@@ -346,12 +346,12 @@ Template.rolesMenu.helpers({
 })
 
 Template.rolesMenu.events({
-  'submit #choose-roles': function(event) {
+  'submit #choose-roles-form': function(event) {
     var gameID = getCurrentGame()._id;
     var players = Players.find({'gameID': gameID});
 
-    if ($('#choose-roles').find(':checkbox:checked').length >= players.count() + 3) {
-      var selectedRoles = $('#choose-roles').find(':checkbox:checked').map(function() {
+    if ($('#choose-roles-form').find(':checkbox:checked').length >= players.count() + 3) {
+      var selectedRoles = $('#choose-roles-form').find(':checkbox:checked').map(function() {
         return allRoles[this.value];
       }).get();
 

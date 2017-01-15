@@ -65,12 +65,14 @@
 
 <template name="rolesMenu">
   <h3>Choose which roles</h3>
-  <form id="choose-roles">
+  <form id="choose-roles-form">
     <div id="choose-roles-list">
       {{#each roleKeys}}
         <div class="checkbox">
-          <label>
-            <input type="checkbox" name="{{ key }}" value="{{ key }}" />{{ name }}<br>
+          <label class="role-checkbox">
+            <input type="checkbox" name="{{ key }}" value="{{ key }}" class="toggle-role"
+            onclick="$(this).parent().parent().toggleClass('selected-role')"/>
+            {{ name }}<br>
           </label>
         </div>
       {{/each}}
