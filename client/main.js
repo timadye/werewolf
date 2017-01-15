@@ -718,6 +718,10 @@ Template.dayView.helpers({
   }
 })
 
+Handlebars.registerHelper('noDeaths', function(game) {
+  return game.killed.length == 0;
+})
+
 Template.dayView.events({
   'click #countdown': function () {
     var game = getCurrentGame();

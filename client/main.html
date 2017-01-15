@@ -154,14 +154,18 @@
     <h4>{{ winningTeam }}</h4>
     <h4>You ended up as the {{ player.role.name }}.</h4>
     <h5>Voting results</h5>
-    <ol>
-      {{#each game.killed}}
-        <li>
-          {{ name }} (Role: {{ role.name }})
-          <br />
-        </li>
-      {{/each}}
-    </ol>
+    {{#if noDeaths game}}
+    <p>No one died.</p>
+    {{else}}
+      <ol>
+        {{#each game.killed}}
+          <li>
+            {{ name }} (Role: {{ role.name }})
+            <br />
+          </li>
+        {{/each}}
+      </ol>
+    {{/if}}
   {{/if}}
 
   <h4><a id="countdown">{{{ timeRemaining }}}</a></h4>
