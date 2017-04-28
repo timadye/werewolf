@@ -66,7 +66,7 @@ function getCurrentGame() {
 function getAccessLink(){
   var game = getCurrentGame();
 
-  if (!game){
+  if (!game) {
     return;
   }
   return Meteor.settings.public.url + game.accessCode + '/';
