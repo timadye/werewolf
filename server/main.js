@@ -25,6 +25,10 @@ Meteor.publish('players', function(gameID) {
   return Players.find({"gameID": gameID});
 });
 
+Meteor.publish('allGames', function() {
+  return Games.find({});
+});
+
 Meteor.methods({
   nameUsed: function(game, name) {
     return Players.find( {'gameID': game._id, 'name': name} ).count() > 0;
