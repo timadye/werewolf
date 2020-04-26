@@ -56,20 +56,25 @@ function generateNewPlayer(game, name) {
   return Players.findOne(playerID);
 }
 
+function setCurrentGame(game) {
+  if (game) {
+    if (game._id !== Session.get('gameID')) {
+      Session.set('gameID', game._id);
+      FlowRouter.go(`/${game.accessCode}`);
+    }
+  } else {
+    if (Session.get('gameID')) {
+      Session.set('gameID', null);
+      FlowRouter.go('/');
+    }
+  }
+}
+
 function getCurrentGame() {
   var gameID = Session.get('gameID');
   if (gameID) {
     return Games.findOne(gameID);
   }
-}
-
-function getAccessLink(){
-  var game = getCurrentGame();
-
-  if (!game) {
-    return;
-  }
-  return Meteor.settings.public.url + game.accessCode + '/';
 }
 
 function getCurrentPlayer() {
@@ -87,7 +92,7 @@ function resetUserState() {
     Players.remove(player._id);
   }
 
-  Session.set('gameID', null);
+  setCurrentGame(null);
   Session.set('playerID', null);
 }
 
@@ -110,7 +115,7 @@ function trackGameState() {
   var player = Players.findOne(playerID);
 
   if (!game || !player) {
-    Session.set('gameID', null);
+    setCurrentGame(null);
     Session.set('playerID', null);
     Session.set('currentView', 'startMenu');
     return;
@@ -131,29 +136,6 @@ function trackGameState() {
 Meteor.setInterval(function () {
   Session.set('time', new Date());
 }, 1000);
-
-function hasHistoryApi () {
-  return !!(window.history && window.history.pushState);
-}
-
-if (hasHistoryApi()){
-  function trackUrlState () {
-    var accessCode = null;
-    var game = getCurrentGame();
-    if (game) {
-      accessCode = game.accessCode;
-    } else {
-      accessCode = Session.get('urlAccessCode');
-    }
-
-    var currentURL = '/';
-    if (accessCode) {
-      currentURL += accessCode+'/';
-    }
-    window.history.pushState(null, null, currentURL);
-  }
-  Tracker.autorun(trackUrlState);
-}
 
 Tracker.autorun(trackGameState);
 
@@ -239,6 +221,8 @@ Template.createGame.events({
       Session.set('currentView', 'lobby');
     });
 
+    FlowRouter.go(`/${game.accessCode}`);
+
     return false;
   },
   'click .btn-back-start-menu': function() {
@@ -293,7 +277,7 @@ Template.joinGame.events({
         player = generateNewPlayer(game, playerName);
 
         Session.set('urlAccessCode', null);
-        Session.set('gameID', game._id);
+        setCurrentGame(game);
         Session.set('playerID', player._id);
         Session.set('currentView', 'lobby');
         Session.set('errorMessage', null);
