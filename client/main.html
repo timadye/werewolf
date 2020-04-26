@@ -22,46 +22,26 @@
 </template>
 
 <template name="startMenu">
-  <h3>One Night Ultimate Werewolf</h3>
+  <h3>Oxford Werewolf</h3>
+  <div>{{allGames}}</div>
 
-  <button type="button" id="btn-create-game-view" class="btn btn-secondary btn-lg">New Game</button>
-  <button type="button" id="btn-join-game-view" class="btn btn-secondary btn-lg">Join Game</button>
-</template>
-
-<template name="createGame">
-  <h3>Create Game</h3>
-  <form id="create-game">
+  <form id="start-menu">
     <div class="form-group">
-      <!-- <label for="text">Name</label> -->
-      <input type="text" class="form-control" id="player-name" name="playerName" placeholder='Enter your name'>
+      <input type="text" class="form-control" id="village-name" name="villageName" placeholder='Enter village name' autocorrect="off" autocapitalize="off">
     </div>
-    <input type="submit" class="btn btn-primary btn-lg" value='Create'>
-    <button class="btn btn-secondary btn-lg btn-back-start-menu">Back</button>
+    <input type="submit" class="btn btn-primary btn-lg" value='Enter Village'>
   </form>
+
 </template>
 
-<template name="joinGame">
-  <h3>Join Game</h3>
+<template name="lobby">
+  <h3>Assemble players and Set up game<br>
+  in village {{game.name}}</h3>
 
   {{#if errorMessage}}
     <h5>{{ errorMessage }}</h5>
   {{/if}}
 
-  <form id="join-game">
-    <div class="form-group">
-      <input type="text" class="form-control" id="player-name" name="playerName" placeholder='Enter your name'>
-    </div>
-    <div class="form-group">
-      <input type="text" class="form-control" id="access-code" name="accessCode" placeholder='Enter an access code' autocorrect="off" autocapitalize="off">
-    </div>
-    <input type="submit" class="btn btn-primary btn-lg" value='Join'>
-    <button class="btn btn-secondary btn-lg btn-back-start-menu">Back</button>
-  </form>
-</template>
-
-<template name="lobby">
-  <h3>Waiting for players</h3>
-  <h4>Access Code: {{game.accessCode}}</h4>
   <ol id="lobby-player-list">
     {{#each players}}
     <li>
@@ -69,17 +49,12 @@
     </li>
     {{/each}}
   </ol>
-
-  <button class="btn btn-primary btn-lg btn-start">Start Game</button>
-  <button class="btn btn-secondary btn-lg btn-leave">Leave Game</button>
-</template>
-
-<template name="rolesMenu">
-  <h3>Choose which roles</h3>
-
-  {{#if errorMessage}}
-    <h5>{{ errorMessage }}</h5>
-  {{/if}}
+  <form id="join-game">
+    <div class="form-group">
+      <input type="text" class="form-control" id="player-name" name="playerName" placeholder='Player name'>
+      <input type="submit" class="btn btn-primary btn-lg" value='Add'>
+    </div>
+  </form>
 
   <form id="choose-roles-form">
     <div id="choose-roles-list">
@@ -93,12 +68,10 @@
         </div>
       {{/each}}
     </div>
-    <input type="submit" class="btn btn-primary btn-lg" value='Start' />
   </form>
 
-  <br />
-  <button class="btn btn-secondary btn-md btn-end">End Game</button>
-  <button class="btn btn-secondary btn-md btn-leave">Leave Game</button>
+  <button class="btn btn-primary btn-lg btn-start">Start Game</button>
+  <button class="btn btn-secondary btn-lg btn-leave">Leave Village</button>
 </template>
 
 <template name="nightView">

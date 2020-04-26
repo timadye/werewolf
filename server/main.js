@@ -17,8 +17,8 @@ var cron = new Cron(60000);
 
 cron.addJob(5, cleanUp);
 
-Meteor.publish('games', function(accessCode) {
-  return Games.find({"accessCode": accessCode});
+Meteor.publish('games', function(villageName) {
+  return Games.find({"name": villageName});
 });
 
 Meteor.publish('players', function(gameID) {
