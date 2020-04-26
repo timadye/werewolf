@@ -96,6 +96,17 @@ function resetUserState() {
   Session.set('playerID', null);
 }
 
+function allGames(sep=" ") {
+  var games = Games.find({}, {'sort': {'createdAt': 1}}).fetch();
+  var all= [];
+  games.forEach(function(game) {
+//    if (!all.includes(game.accessCode)) {
+      all.push(game.accessCode);
+//    }
+  });
+  return all.join(sep);
+}
+
 /* sets the state of the game (which template to render) */
 /* types of game state:
     waitingForPlayers (lobby)
@@ -188,6 +199,17 @@ Template.main.helpers({
   }
 });
 
+Template.startMenu.helpers({
+  allGames: function() {
+    var all = allGames(", ");
+    if (all) {
+      return "Existing villages: "+all;
+    } else {
+      return "";
+    }
+  }
+});
+
 Template.startMenu.events({
   'click #btn-create-game-view': function() {
     Session.set('currentView', 'createGame');
@@ -199,6 +221,9 @@ Template.startMenu.events({
 
 Template.startMenu.rendered = function() {
   resetUserState();
+  Meteor.subscribe('allGames', function onReady() {
+    console.log(`startMenu: all games = ${allGames()}`);
+  });
 };
 
 Session.set('currentView', 'startMenu');
@@ -213,6 +238,8 @@ Template.createGame.events({
 
     var game = generateNewGame();
     var player = generateNewPlayer(game, playerName);
+
+    console.log(`createGame: all games = ${allGames()}`);
 
     Meteor.subscribe('games', game.accessCode);
     Meteor.subscribe('players', game._id, function onReady() {
@@ -261,6 +288,7 @@ Template.joinGame.events({
     }
 
     Meteor.subscribe('games', accessCode, function onReady() {
+      console.log(`joinGame: all games = ${allGames()}`);
       var game = Games.findOne({
         accessCode: accessCode
       });
