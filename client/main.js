@@ -53,7 +53,7 @@ function setCurrentGame(game) {
   if (game) {
     if (game._id !== Session.get('gameID')) {
       Session.set('gameID', game._id);
-      FlowRouter.go(`/${game.accessCode}`);
+      FlowRouter.go(`/${game.name}`);
     }
   } else {
     if (Session.get('gameID')) {
@@ -100,9 +100,9 @@ function allGames(sep=" ") {
   var games = Games.find({}, {'sort': {'createdAt': 1}}).fetch();
   var all= [];
   games.forEach(function(game) {
-    if (!all.includes(game.name)) {
+//    if (!all.includes(game.name)) {
       all.push(game.name);
-    }
+//    }
   });
   return all.join(sep);
 }
@@ -205,6 +205,9 @@ Template.main.helpers({
 
 Template.startMenu.rendered = function() {
   resetUserState();
+  Meteor.subscribe('allGames', function onReady() {
+    console.log(`startMenu: all games = ${allGames()}`);
+  });
 };
 
 Template.startMenu.helpers({
@@ -219,6 +222,11 @@ Template.startMenu.helpers({
 });
 
 Template.startMenu.events({
+  'click .btn-reset': function() {
+    console.log(`resetAllGames (was ${allGames()})`);
+    resetUserState();
+    Meteor.call('resetAllGames');
+  },
   'submit #start-menu': function(event) {
 
     var villageName = event.target.villageName.value;
@@ -262,7 +270,7 @@ Template.startMenu.events({
     });
     console.log(`2: All games = ${allGames()}`);
 
-    FlowRouter.go(`/${game.accessCode}`);
+    FlowRouter.go(`/${game.name}`);
 
     return false;
   }
@@ -276,7 +284,7 @@ Template.lobby.rendered = function (event) {
   var gameID = Session.get('gameID');
   console.log(`urlVillage = '${urlVillage}', gameID = ${gameID}`);
   if (!gameID && urlVillage) {
-    console.log(`join village '${urlVillage}', id=${game._id} from URL`);
+    console.log(`join village '${urlVillage}', id=${gameID} from URL`);
     var game = Games.findOne({name: name});
     if (!game) {
       reportError(`no village '${urlVillage}'`);
@@ -289,9 +297,9 @@ Template.lobby.rendered = function (event) {
     }
     Meteor.subscribe('games', game.name, function onReady() {
       Meteor.subscribe('players', game._id);
-      setCurrentGame(game);
       Session.set('gameID', game._id);
     });
+    FlowRouter.go(`/${game.name}`);
   }
 };
 
