@@ -23,7 +23,11 @@
 
 <template name="startMenu">
   <h3>Oxford Werewolf</h3>
-  <div>{{allGames}}</div>
+  <div>{{allGamesMsg}}</div>
+
+  {{#if errorMessage}}
+    <h5>{{ errorMessage }}</h5>
+  {{/if}}
 
   <form id="start-menu">
     <div class="form-group">

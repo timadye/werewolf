@@ -1,6 +1,8 @@
 import { Meteor } from 'meteor/meteor';
 import '../imports/roles.js';
 
+const showAllVillages = true;
+
 Meteor.startup(() => {
   Games.remove({});
   Players.remove({});
@@ -14,15 +16,21 @@ Meteor.publish('players', function(gameID) {
   return Players.find({"gameID": gameID});
 });
 
-Meteor.publish('allGames', function() {
-  return Games.find({});
-});
+if (showAllVillages) {
+  Meteor.publish('allGames', function() {
+    return Games.find({}, { fields: {name: 1}, sort: {createdAt: 1} });
+  });
+}
 
 Meteor.methods({
+  villageExists: function(villageName) {
+    return Games.find( {name: villageName} ).count() > 0;
+  },
   nameUsed: function(game, name) {
     return Players.find( {'gameID': game._id, 'name': name} ).count() > 0;
   },
   resetAllGames: function() {
+    console.log("reset all games");
     Games.remove({});
     Players.remove({});
   }

@@ -36,6 +36,26 @@ function createGame(name) {
   return Games.findOne(gameID);
 }
 
+function joinGame(name) {
+  Meteor.subscribe('games', name, function onReady() {
+    var game = Games.findOne({name: name});
+    if (!game) {
+      leaveGame();
+      reportError(`no village '${name}'`);
+      return false;
+    }
+    console.log(`join village '${name}', id=${game._id}`);
+    if (game.state !== 'waitingForPlayers') {
+      leaveGame();
+      reportError('Please wait. Cannot join village ${name} with game in progress.');
+      return false;
+    }
+    Meteor.subscribe('players', game._id);
+    Session.set('gameID', game._id);
+  });
+  return false;
+}
+
 function generateNewPlayer(game, name) {
 
   var player = {
@@ -53,11 +73,16 @@ function setCurrentGame(game) {
   if (game) {
     if (game._id !== Session.get('gameID')) {
       Session.set('gameID', game._id);
+    }
+    urlVillage = Session.get("urlVillage");
+    if (!urlVillage || urlVillage != game.name) {
       FlowRouter.go(`/${game.name}`);
     }
   } else {
     if (Session.get('gameID')) {
       Session.set('gameID', null);
+    }
+    if (Session.get("urlVillage")) {
       FlowRouter.go('/');
     }
   }
@@ -96,13 +121,11 @@ function resetUserState() {
   Session.set('playerID', null);
 }
 
-function allGames(sep=" ") {
-  var games = Games.find({}, {'sort': {'createdAt': 1}}).fetch();
+function listAllGames(sep=" ") {
+  var games = Games.find({}, {fields: {name: 1}}).fetch();
   var all= [];
   games.forEach(function(game) {
-//    if (!all.includes(game.name)) {
-      all.push(game.name);
-//    }
+    all.push(game.name);
   });
   return all.join(sep);
 }
@@ -123,6 +146,7 @@ function trackGameState() {
 
   var game = Games.findOne(gameID);
   if (!game) {
+    console.log(`gameID ${gameID} not found.`);
     setCurrentGame(null);
     Session.set('playerID', null);
     Session.set('currentView', 'startMenu');
@@ -132,6 +156,7 @@ function trackGameState() {
   if (playerID) {
     var player = Players.findOne(playerID);
     if (!player) {
+      console.log(`playerID ${playerID} not found.`);
       Session.set('playerID', null);
     }
   }
@@ -161,11 +186,7 @@ function leaveGame() {
   Session.set('playerID', null);
   Session.set('turnMessage', null);
   Session.set('errorMessage', null);
-
-//  var game = getCurrentGame();
-//  if (game && Players.find({gameID: game._id}).count() == 0) {
-//    Games.remove(game._id);
-//  }
+  setCurrentGame (null);
 };
 
 function resetGame() {
@@ -205,14 +226,15 @@ Template.main.helpers({
 
 Template.startMenu.rendered = function() {
   resetUserState();
+  // subscription allGames might not be published by server, but show all games if so.
   Meteor.subscribe('allGames', function onReady() {
-    console.log(`startMenu: all games = ${allGames()}`);
+    console.log(`all games = ${listAllGames()}`);
   });
 };
 
 Template.startMenu.helpers({
-  allGames: function() {
-    var all = allGames(", ");
+  allGamesMsg: function() {
+    var all = listAllGames(", ");
     if (all) {
       return "Existing villages: "+all;
     } else {
@@ -223,7 +245,7 @@ Template.startMenu.helpers({
 
 Template.startMenu.events({
   'click .btn-reset': function() {
-    console.log(`resetAllGames (was ${allGames()})`);
+    console.log(`reset all games`);
     resetUserState();
     Meteor.call('resetAllGames');
   },
@@ -250,27 +272,13 @@ Template.startMenu.events({
     }
 */
 
-    var game = Games.findOne({name: villageName});
-    if (!game) {
-      var game = createGame(villageName);
-      console.log(`1: All games = ${allGames()}`);
-    } else {
-      // TODO if the game is in progress
-      if (game.state !== 'waitingForPlayers') {
-        reportError('Please wait. Cannot join a game in progress.');
-        return false;
+    Meteor.call('villageExists', villageName, function(error,result) {
+      if (error) return false;
+      if (!result) {
+        createGame(villageName);
       }
-    }
-    console.log(`join village '${villageName}', id=${game._id}`);
-    Meteor.subscribe('games', game.name, function onReady() {
-      Meteor.subscribe('players', game._id);
-      Session.set('gameID', game._id);
-      Session.set('currentView', 'lobby');
-      Session.set('urlVillage', null);
+      FlowRouter.go(`/${villageName}`);
     });
-    console.log(`2: All games = ${allGames()}`);
-
-    FlowRouter.go(`/${game.name}`);
 
     return false;
   }
@@ -279,27 +287,11 @@ Template.startMenu.events({
 Session.set('currentView', 'startMenu');
 
 Template.lobby.rendered = function (event) {
-  console.log(`3: All games = ${allGames()}`);
-  var urlVillage = Session.get('urlVillage');
-  var gameID = Session.get('gameID');
-  console.log(`urlVillage = '${urlVillage}', gameID = ${gameID}`);
-  if (!gameID && urlVillage) {
-    console.log(`join village '${urlVillage}', id=${gameID} from URL`);
-    var game = Games.findOne({name: name});
-    if (!game) {
-      reportError(`no village '${urlVillage}'`);
-      leaveGame();
-      return false;
+  if (!Session.get('gameID')) {
+    var villageName = Session.get('urlVillage');
+    if (villageName) {
+      joinGame(villageName);
     }
-    if (game.state !== 'waitingForPlayers') {
-      reportError('Please wait. Cannot join a game in progress.');
-      return false;
-    }
-    Meteor.subscribe('games', game.name, function onReady() {
-      Meteor.subscribe('players', game._id);
-      Session.set('gameID', game._id);
-    });
-    FlowRouter.go(`/${game.name}`);
   }
 };
 
