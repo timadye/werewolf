@@ -61,11 +61,13 @@ function generateNewPlayer(game, name) {
   var player = {
     gameID: game._id,
     name: name,
+    isJoined: true,
     role: null,
     vote: null // id that this player votes to kill
   }
 
   var playerID = Players.insert(player);
+  console.log(`New player '${name}' (id=${playerID}) in game '${game.name}'`)
   return Players.findOne(playerID);
 }
 
@@ -99,6 +101,8 @@ function getCurrentPlayer() {
   var playerID = Session.get('playerID');
   if (playerID) {
     return Players.findOne(playerID);
+  } else {
+    return null;
   }
 }
 
@@ -256,22 +260,6 @@ Template.startMenu.events({
       return false;
     }
 
-/*
-    var action = 'enter-village';
-    var button = $(event.target).find("input[type=submit]:focus");
-    if (button[0] !== undefined) { action = button[0].id; }
-
-    if (action == 'new-village') {
-      var game = createGame(villageName);
-    } else {
-      var game = Games.findOne({name: villageName});
-      if (!game) {
-        console.error(`Village ${villageName} not found`);
-        return false;
-      }
-    }
-*/
-
     Meteor.call('villageExists', villageName, function(error,result) {
       if (error) return false;
       if (!result) {
@@ -310,15 +298,7 @@ Template.lobby.helpers({
       return null;
     }
 
-    var players = Players.find({'gameID': game._id}, {'sort': {'createdAt': 1}}).fetch();
-
-    players.forEach(function(player) {
-      if (player._id === currentPlayer._id) {
-        player.isCurrent = true;
-      }
-    });
-
-    return players;
+    return Players.find({'gameID': game._id}, {'sort': {'createdAt': 1}}).fetch();
   },
   roleKeys: function() {
     var roleKeys = [];
@@ -340,6 +320,19 @@ Template.lobby.events({
 
     var game = getCurrentGame();
     Games.update(game._id, {$set: {state: 'nightTime'}});
+  },
+  'click .toggle-player': function(event) {
+    var playerId = event.target.id;
+    $('#'+playerId).parent().parent().toggleClass('current-player');
+  },
+  'submit #lobby-add': function(event) {
+    var playerName = event.target.playerName.value;
+    var game = getCurrentGame();
+    var player = generateNewPlayer(game, playerName);
+    Session.set('playerID', player._id);
+    player.isCurrent = true;
+    event.target.playerName.value = '';
+    return false;
   },
   'submit #choose-roles-form': function(event) {
     var gameID = getCurrentGame()._id;

@@ -42,24 +42,29 @@
 </template>
 
 <template name="lobby">
-  <h3>Assemble players and Set up game<br>
-  in village {{game.name}}</h3>
+  <h2>{{game.name}} village</h2>
+  <h3>Assemble villagers and set up game</h3>
 
   {{#if errorMessage}}
     <h5>{{ errorMessage }}</h5>
   {{/if}}
 
-  <ol id="lobby-player-list">
+  <form id="lobby-player-form">
+    <div id="lobby-player-list">
     {{#each players}}
-    <li>
-      {{ name }}
-    </li>
+    <div class="checkbox">
+      <label class="player-checkbox">
+        <input type="checkbox" id="{{ _id }}" class="toggle-player"/>{{ name }}<br>
+      </label>
+    </div>
     {{/each}}
-  </ol>
-  <form id="join-game">
+    </div>
+  </form>
+
+  <form id="lobby-add">
     <div class="form-group">
-      <input type="text" class="form-control" id="player-name" name="playerName" placeholder='Player name'>
-      <input type="submit" class="btn btn-primary btn-lg" value='Add'>
+      <input type="text" class="form-control" id="player-name" name="playerName" placeholder='Your name'>
+      <button class="btn btn-primary btn-lg btn-add">Add</button>
     </div>
   </form>
 
