@@ -4,9 +4,9 @@ Wednesday, 9th October, 2013
 
 # Werewolf
 
-What exactly is Werewolf? It&#39;s a game. It&#39;s another one of those University of Oxford experiences. As far as I can tell, Werewolf is the most purposefully complicated psychological thriller role-playing game ever invented. You may have played variations of it, or similar games like Mafia elsewhere, but I assure you the Oxford version is different. The roles and rules have been developing over at least the past fifty years. There are rumours that this version hatched from a cosmic egg laid by Helliconia author Brian Aldiss. I can neither confirm nor deny that. Anyway, it is complicated, but worth it for the feeling of smug self-satisfaction you get when you do well at a difficult game developed by generations of Oxonian geniuses. Yeah.
+What exactly is Werewolf? It's a game. It's another one of those University of Oxford experiences. As far as I can tell, Werewolf is the most purposefully complicated psychological thriller role-playing game ever invented. You may have played variations of it, or similar games like Mafia elsewhere, but I assure you the Oxford version is different. The roles and rules have been developing over at least the past fifty years. There are rumours that this version hatched from a cosmic egg laid by Helliconia author Brian Aldiss. I can neither confirm nor deny that. Anyway, it is complicated, but worth it for the feeling of smug self-satisfaction you get when you do well at a difficult game developed by generations of Oxonian geniuses. Yeah.
 
-Please note that, for the purpose of clarity, I have used the gender neutral singular pronoun set &#39;ze&#39; and &#39;zir&#39; to denote an individual player of any gender, because using &#39;they&#39; as a gender neutral pronoun doesn&#39;t allow me to differentiate between a single player and a group of multiple players clearly.
+Please note that, for the purpose of clarity, I have used the gender neutral singular pronoun set 'ze' and 'zir' to denote an individual player of any gender, because using 'they' as a gender neutral pronoun doesn't allow me to differentiate between a single player and a group of multiple players clearly.
 
 ## Premise
 
@@ -16,13 +16,13 @@ In Werewolf, you all play together as residents of a remote, isolated village su
 
 The object of the game is to survive to the end of the game and earn bragging rights by doing so. Of course, you may have secondary objectives (you may want as many of your fellow villagers or werewolves to survive with you; that would be nice and all) but your primary objective must always be your own personal survival.
 
-## Day Phases &amp; Night Phases
+## Day Phases & Night Phases
 
 During the day phases, all players still alive are allowed to discuss the dire werewolf situation and solutions to the issue. The werewolves are able to coordinate with each other on their next target during the day phases, so be alert to suspicious looking eye contact, toe tapping, or hand signals.
 
 During the night phases, all players still alive bow their heads and close their eyes. Fate will call on each of the players with active night roles, one by one, to open zir eyes and select a target player as appropriate to zir role.
 
-If you are already deceased, you can keep your eyes open at all times, but you cannot contribute any reactions to what your observe, and may say nothing except for, &quot;Brains.&quot; You are dead and so you can no longer contribute any information to the players who are still alive.
+If you are already deceased, you can keep your eyes open at all times, but you cannot contribute any reactions to what your observe, and may say nothing except for, "Brains." You are dead and so you can no longer contribute any information to the players who are still alive.
 
 The duration of any day phase may be limited at the discretion of Fate.
 
@@ -50,7 +50,7 @@ During all subsequent night phases, Fate will call your assigned name. When you 
 
 **Werewolf Vigilante:** If you draw the Jack of Spades, you may be a werewolf vigilante.
 
-On occasion, Fate may choose to give one of the werewolves, usually the Jack of Spades werewolf, a crossbow, just to make an extra dangerous werewolf. The crossbow is only loaded with one arrow; it is a single use item, so use your shot wisely. The crossbow can only be fired during the day phase. All you need to do to fire your crossbow is point at your target player and loudly proclaim, &quot;Twang!&quot; Wait for Fate to confirm that your target has indeed died of zir injury.
+On occasion, Fate may choose to give one of the werewolves, usually the Jack of Spades werewolf, a crossbow, just to make an extra dangerous werewolf. The crossbow is only loaded with one arrow; it is a single use item, so use your shot wisely. The crossbow can only be fired during the day phase. All you need to do to fire your crossbow is point at your target player and loudly proclaim, "Twang!" Wait for Fate to confirm that your target has indeed died of zir injury.
 
 **Wolfsbane:** If you draw one of the black Kings, you are a wolfsbane.
 
@@ -62,7 +62,7 @@ During each night phase, Fate will call on you to open your eyes and select a lo
 
 **Villager Vigilante:** If you draw the Ace of Spades, you are the villager vigilante.
 
-You have a crossbow, but it is loaded with only one arrow; it is a single use item, so use your one shot wisely. The crossbow can only be fired during the day phase. All you need to do to fire your crossbow is to point at your target player and loudly proclaim, &quot;Twang!&quot; Wait for Fate to confirm that your target has indeed died of zir injury.
+You have a crossbow, but it is loaded with only one arrow; it is a single use item, so use your one shot wisely. The crossbow can only be fired during the day phase. All you need to do to fire your crossbow is to point at your target player and loudly proclaim, "Twang!" Wait for Fate to confirm that your target has indeed died of zir injury.
 
 **Mayor:** If you draw the Ten of Spades, you are the mayor of this troubled village.
 
@@ -95,7 +95,7 @@ In the case of star-crossed lovers (a lover pair on opposite sides of the confli
 
 If you are assigned a rival (much rarer), you cannot stand to live in the same village as your rival. Literally. You must do whatever you can to kill your rival or get your rival killed by other players during the course of the game. If, at the end of the game, you are both still alive, you will meet in the village square at dawn and duel to the death, as decided by Fate.
 
-### Winning &amp; Losing
+### Winning & Losing
 
 Fate cannot tell you if you have exterminated all of the werewolves and werewolf supporters, or killed all of the villagers, and will not tell you if you have already won. So the game does not automatically end as soon as one side has been eliminated. If you are a werewolf, and you think your team has won (in the checkmate sense that there is nothing any remaining villagers could possibly do to stop your conquest of their village), the werewolves can rise up by howling together. Fate will confirm if you have won. If you are a villager, and you think you have exterminated all of the werewolves and you feel it is safe to sleep, all the surviving villagers will enjoy a peaceful night of sleep, and Fate will wake you in the morning to confirm that you have won. Be prepared to be mistaken about winning on occasion.
 
