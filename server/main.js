@@ -1,35 +1,40 @@
 import { Meteor } from 'meteor/meteor';
 import '../imports/roles.js';
 
+const showAllVillages = true;
+
 Meteor.startup(() => {
   Games.remove({});
   Players.remove({});
 });
 
-function cleanUp(){
-  var cutOff = moment().subtract(2, 'hours').toDate().getTime();
-
-  Games.remove({ createdAt: {$lt: cutOff} });
-  Players.remove({ createdAt: {$lt: cutOff} });
-}
-
-var cron = new Cron(60000);
-
-cron.addJob(5, cleanUp);
-
-Meteor.publish('games', function(accessCode) {
-  return Games.find({"accessCode": accessCode});
+Meteor.publish('games', function(villageName) {
+  return Games.find({"name": villageName});
 });
 
 Meteor.publish('players', function(gameID) {
   return Players.find({"gameID": gameID});
 });
 
+if (showAllVillages) {
+  Meteor.publish('allGames', function() {
+    return Games.find({}, { fields: {name: 1}, sort: {createdAt: 1} });
+  });
+}
+
 Meteor.methods({
+  villageExists: function(villageName) {
+    return Games.find( {name: villageName} ).count() > 0;
+  },
   nameUsed: function(game, name) {
     return Players.find( {'gameID': game._id, 'name': name} ).count() > 0;
+  },
+  resetAllGames: function() {
+    console.log("reset all games");
+    Games.remove({});
+    Players.remove({});
   }
-})
+});
 
 Games.find({'state': 'settingUp'}).observeChanges({
   added: function(id, game) {
@@ -37,7 +42,7 @@ Games.find({'state': 'settingUp'}).observeChanges({
     assignRoles(id, players, game.roles);
     Games.update(id, {$set: {state: 'nightTime'}});
   }
-})
+});
 
 // returns a NEW array
 function shuffleArray(array) {
