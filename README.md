@@ -1,15 +1,5 @@
-# One Night Ultimate Werewolf
+# Oxford Werewolf
 
-This is the code that currently runs [http://ultimatewerewolf.herokuapp.com](http://ultimatewerewolf.herokuapp.com), a free online version of the hidden-role social deduction game One Night Ultimate Werewolf. I built this app because I love playing this game, and I've always wanted to learn Meteor and full-stack web development.
+What exactly is Werewolf? It's a game. It's another one of those University of Oxford experiences. As far as I can tell, Werewolf is the most purposefully complicated psychological thriller role-playing game ever invented. You may have played variations of it, or similar games like Mafia elsewhere, but I assure you the Oxford version is different. The [roles and rules](Werewolf.md) have been developing over at least the past fifty years. There are rumours that this version hatched from a cosmic egg laid by __Helliconia__ author Brian Aldiss. I can neither confirm nor deny that. Anyway, it is complicated, but worth it for the feeling of smug self-satisfaction you get when you do well at a difficult game developed by generations of Oxonian geniuses.
 
-## Disclaimer
-
-This is an unofficial fan project of the game One Night Ultimate Werewolf, which was originally published by [Bézier Games](http://beziergames.com). This project is also heavily inspired by the open source code for [Spyfall](http://spyfall.crabhat.com).
-
-## Game Rules
-
-The rules of One Night Ultimate Werewolf are outlined in [this PDF](https://www.fgbradleys.com/rules/rules2/OneNightUltimateWerewolf-rules.pdf).
-
-## Author
-
-Katie Jiang
+The code here is an attempt to capture that experience online, or perhaps to allow face-to-face playing without a human __Fate__ (which anyway is a contradiction in terms). It is implemented in [Meteor](https://github.com/meteor/meteor), based on code for [__One Night Ultimate Werewolf__](https://github.com/katiejiang/1n-werewolf) by [Katie Jiang](https://github.com/katiejiang/), which can be run from [http://ultimatewerewolf.herokuapp.com](http://ultimatewerewolf.herokuapp.com).
