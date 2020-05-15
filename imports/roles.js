@@ -1,67 +1,78 @@
 allRoles = {
-  // taking out doppelganger bc it complicates game too much
-  // doppelganger : {
-  //   name: 'Doppelganger',
-  //   order: 0
-  // },
-  werewolf1 : {
+  werewolf_1 : {
     name: 'Werewolf',
     order: 3
   },
-  werewolf2 : {
+  werewolf_2 : {
     name: 'Werewolf',
     order: 3
   },
-  minion : {
-    name: 'Minion',
-    order: 4
+  werewolf_3 : {
+    name: 'Werewolf',
+    order: 3
   },
-  mason1 : {
-    name: 'Mason',
-    order: 5
+  werewolf_vigilante : {
+    name: 'Werewolf Vigilante',
+    order: 3
   },
-  mason2 : {
-    name: 'Mason',
-    order: 5
+  wolfsbane : {
+    name: 'Wolfsbane',
+    order: 6
+  },
+  trapper : {
+    name: 'Trapper',
+    order: 7
   },
   seer : {
     name: 'Seer',
-    order: 6
-  },
-  robber : {
-    name: 'Robber',
-    order: 7
-  },
-  troublemaker : {
-    name: 'Troublemaker',
     order: 8
   },
-  drunk : {
-    name: 'Drunk',
+  seer_inconstant: {
+    name: 'Inconstant Seer',
+    order: 8
+  },
+  vigilante : {
+    name: 'Vigilante',
     order: 9
   },
-  insomniac : {
-    name: 'Insomniac',
+  mayor : {
+    name: 'Mayor',
     order: 10
   },
-  villager1 : {
-    name: 'Villager',
+  cultist_1 : {
+    name: 'Cultist',
     order: 15
   },
-  villager2 : {
-    name: 'Villager',
+  cultist_2 : {
+    name: 'Cultist',
     order: 15
   },
-  villager3 : {
-    name: 'Villager',
+  cultist_3 : {
+    name: 'Cultist',
     order: 15
   },
-  hunter : {
-    name: 'Hunter',
+  cultist_4 : {
+    name: 'Cultist',
     order: 15
   },
-  tanner : {
-    name: 'Tanner',
-    order: 15
-  }
+  dark : {
+    name: 'Dark Villager',
+    order: 16
+  },
+  lovers_1 : {
+    name: 'Lover Pair',
+    order: 17
+  },
+  lovers_2 : {
+    name: 'Lover Pair',
+    order: 17
+  },
+  lovers_trio : {
+    name: 'Lover Trio',
+    order: 18
+  },
+  rivals : {
+    name: 'Rival Pair',
+    order: 17
+  },
 }

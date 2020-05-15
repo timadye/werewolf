@@ -28,7 +28,8 @@ function createGame(name) {
     paused: false,
     pausedTime: null,
     // playerIDs, sorted afterwards
-    killed: []
+    killed: [],
+    roles: []
   };
 
   var gameID = Games.insert(game);
@@ -150,6 +151,36 @@ function listAllGames(sep=" ") {
   return all.join(sep);
 }
 
+function readyToStart() {
+  var game = getCurrentGame();
+  if (!game) {
+    return false;
+  }
+  nroles = 0;
+  nlovers = 0;
+  count = { werewolf:0, cultist:0 };
+  for (i in game.roles) {
+    role = game.roles[i];
+    srole = role.split("_",1)[0];
+    count[srole]++;
+    if (role == "lovers_trio") {
+      nlovers += 3;
+    } else if (srole == "lovers" || srole == "rivals") {
+      nlovers += 2;
+    } else {
+      nroles++;
+    }
+  }
+  if (!(count.werewolf >= 1 && (count.cultist == 0 || count.cultist >= 2))) {
+    console.log(`readyToStart=false: #roles=${nroles} #werewolf=${count.werewolf} #cultist=${count.cultist} #lovers=${nlovers}`);
+    return false;
+  }
+  var nplayers = Players.find({ gameID: game._id, session: {$ne: null} }).count();
+  ok = (nplayers >= nroles && nplayers > count.werewolf && nplayers >= nlovers);
+  console.log(`readyToStart=${ok}: ${nplayers} players, ${nroles} roles, ${count.werewolf} werewolves, ${count.cultist} cultists, ${nlovers} lovers/rivals`);
+  return ok;
+}
+
 /* sets the state of the game (which template to render) */
 /* types of game state:
     waitingForPlayers (lobby)
@@ -240,6 +271,7 @@ Template.startMenu.rendered = function() {
   Meteor.subscribe('allGames', function onReady() {
     console.log(`all games = ${listAllGames()}`);
   });
+  this.find("input").focus();
 };
 
 Template.startMenu.helpers({
@@ -287,6 +319,7 @@ Template.lobby.rendered = function (event) {
       joinGame(villageName);
     }
   }
+  this.find("input").focus();
 };
 
 Template.lobby.helpers({
@@ -301,7 +334,6 @@ Template.lobby.helpers({
     if (!game) {
       return null;
     }
-
     return Players.find({'gameID': game._id}, {'sort': {'createdAt': 1}}).fetch();
   },
   playerClass: function() {
@@ -323,7 +355,14 @@ Template.lobby.helpers({
     }
     return roleKeys;
   },
+  roleClass: function() {
+    var game= getCurrentGame();
+    return (game && game.roles.includes(this.key)) ? "selected-role" : null;
+  },
   roles: allRoles,
+  startButtonDisabled: function() {
+    return readyToStart() ? null : "disabled";
+  },
   errorMessage: function() {
     return Session.get('errorMessage');
   }
@@ -347,6 +386,17 @@ Template.lobby.events({
     setCurrentPlayer (player._id);
     event.target.playerName.value = '';
     return false;
+  },
+  'click .toggle-role': function(event) {
+    var role = event.target.id;
+    var game = getCurrentGame();
+    var ind = game.roles.indexOf(role);
+    if (ind >= 0) {
+      game.roles.splice(ind,1);
+    } else {
+      game.roles.push(role);
+    }
+    Games.update(game._id, {$set: {roles: game.roles}});
   },
   'submit #choose-roles-form': function(event) {
     var gameID = getCurrentGame()._id;

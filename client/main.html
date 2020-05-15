@@ -31,9 +31,9 @@
 
   <form id="start-menu">
     <div class="form-group">
-      <input type="text" class="form-control" id="village-name" name="villageName" placeholder='Enter village name' autocorrect="off" autocapitalize="off">
+      <input type="text" class="form-control" id="village-name" name="villageName" placeholder="Enter village name" autocorrect="off" autocapitalize="off" autofocus>
     </div>
-    <input type="submit" class="btn btn-primary btn-lg" value='Enter Village'>
+    <input type="submit" class="btn btn-primary btn-lg" value="Enter Village">
   </form>
 
   <br/>
@@ -52,7 +52,7 @@
   <form id="lobby-player-form">
     <div id="lobby-player-list">
     {{#each players}}
-    <div class="checkbox {{ playerClass isActive }}">
+    <div class="checkbox {{ playerClass }}">
       <label class="player-checkbox">
         <input type="checkbox" id="{{ _id }}" class="toggle-player"/>{{ name }}<br>
       </label>
@@ -63,7 +63,7 @@
 
   <form id="lobby-add">
     <div class="form-group">
-      <input type="text" class="form-control" id="player-name" name="playerName" placeholder='Your name'>
+      <input type="text" class="form-control" id="player-name" name="playerName" placeholder="Your name" autofocus>
       <button class="btn btn-primary btn-lg btn-add">Add</button>
     </div>
   </form>
@@ -71,18 +71,16 @@
   <form id="choose-roles-form">
     <div id="choose-roles-list">
       {{#each roleKeys}}
-        <div class="checkbox">
+        <div class="checkbox {{ roleClass }}">
           <label class="role-checkbox">
-            <input type="checkbox" name="{{ key }}" value="{{ key }}" class="toggle-role"
-            onclick="$(this).parent().parent().toggleClass('selected-role')"/>
-            {{ name }}<br>
+            <input type="checkbox" id="{{ key }}" class="toggle-role"/>{{ name }}<br>
           </label>
         </div>
       {{/each}}
     </div>
   </form>
 
-  <button class="btn btn-primary btn-lg btn-start">Start Game</button>
+  <button class="btn btn-primary btn-lg btn-start" {{ startButtonDisabled }}>Start Game</button>
   <button class="btn btn-secondary btn-lg btn-leave">Leave Village</button>
 </template>
 
