@@ -1,5 +1,5 @@
 <p align=right>
-[Wednesday, 9th October, 2013](https://www.dropbox.com/s/e0xdm855tednfho/Werewolf.doc "original copy of Werewolf rules from Whitney")
+<a href="https://www.dropbox.com/s/e0xdm855tednfho/Werewolf.doc" title="original copy of Werewolf rules from Whitney">Wednesday, 9th October, 2013</a>
 </p>
 
 # Werewolf
