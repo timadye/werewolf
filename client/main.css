@@ -63,11 +63,12 @@ li {
 
 #lobby-player-list .current-player:hover {
   color: white;
-  background-color: darkred;
+  background-color: red;
 }
 
 #lobby-player-list .active-player {
-  background-color: lightgreen;
+  color: white;
+  background-color: darkgreen;
 }
 
 #lobby-player-list .active-player:hover {

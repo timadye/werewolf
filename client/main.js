@@ -61,7 +61,7 @@ function generateNewPlayer(game, name) {
   var player = {
     gameID: game._id,
     name: name,
-    isJoined: true,
+    session: null,
     role: null,
     vote: null // id that this player votes to kill
   }
@@ -98,12 +98,28 @@ function getCurrentGame() {
 }
 
 function getCurrentPlayer() {
-  var playerID = Session.get('playerID');
-  if (playerID) {
-    return Players.findOne(playerID);
-  } else {
-    return null;
+  return Players.findOne({session: Meteor.default_connection._lastSessionId});
+}
+
+function setCurrentPlayer (newID, toggle=false) {
+  player = getCurrentPlayer();
+  if (player) {
+    if (newID == player._id) {
+      if (toggle) {
+        Players.update(player._id, {$set: {session: null}});
+        return null;
+      } else {
+        return player._id;
+      }
+    } else {
+      Players.update(player._id, {$set: {session: null}});
+    }
   }
+  if (newID) {
+    Players.update(newID, {$set: {session: Meteor.default_connection._lastSessionId}});
+    return newID;
+  }
+  return null;
 }
 
 function reportError(msg) {
@@ -122,7 +138,7 @@ function resetUserState() {
   }
 
   setCurrentGame(null);
-  Session.set('playerID', null);
+  setCurrentPlayer(null);
 }
 
 function listAllGames(sep=" ") {
@@ -142,7 +158,6 @@ function listAllGames(sep=" ") {
  */
 function trackGameState() {
   var gameID = Session.get('gameID');
-  var playerID = Session.get('playerID');
 
   if (!gameID) {
     return;
@@ -152,17 +167,9 @@ function trackGameState() {
   if (!game) {
     console.log(`gameID ${gameID} not found.`);
     setCurrentGame(null);
-    Session.set('playerID', null);
+    setCurrentPlayer(null)
     Session.set('currentView', 'startMenu');
     return;
-  }
-
-  if (playerID) {
-    var player = Players.findOne(playerID);
-    if (!player) {
-      console.log(`playerID ${playerID} not found.`);
-      Session.set('playerID', null);
-    }
   }
 
   if (game.state === 'waitingForPlayers') {
@@ -187,7 +194,6 @@ function leaveGame() {
     Players.remove(player._id);
   }
   Session.set('currentView', 'startMenu');
-  Session.set('playerID', null);
   Session.set('turnMessage', null);
   Session.set('errorMessage', null);
   setCurrentGame (null);
@@ -292,13 +298,23 @@ Template.lobby.helpers({
   },
   players: function() {
     var game = getCurrentGame();
-    var currentPlayer = getCurrentPlayer();
-
     if (!game) {
       return null;
     }
 
     return Players.find({'gameID': game._id}, {'sort': {'createdAt': 1}}).fetch();
+  },
+  playerClass: function() {
+    var player= Players.findOne(this._id);
+    if (!player) {
+      return null;
+    } else if (player.session == Meteor.default_connection._lastSessionId) {
+      return "current-player";
+    } else if (player.session) {
+      return "active-player";
+    } else {
+      return null;
+    }
   },
   roleKeys: function() {
     var roleKeys = [];
@@ -322,15 +338,13 @@ Template.lobby.events({
     Games.update(game._id, {$set: {state: 'nightTime'}});
   },
   'click .toggle-player': function(event) {
-    var playerId = event.target.id;
-    $('#'+playerId).parent().parent().toggleClass('current-player');
+    setCurrentPlayer (event.target.id, true);
   },
   'submit #lobby-add': function(event) {
     var playerName = event.target.playerName.value;
     var game = getCurrentGame();
     var player = generateNewPlayer(game, playerName);
-    Session.set('playerID', player._id);
-    player.isCurrent = true;
+    setCurrentPlayer (player._id);
     event.target.playerName.value = '';
     return false;
   },

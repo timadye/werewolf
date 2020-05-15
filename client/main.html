@@ -52,7 +52,7 @@
   <form id="lobby-player-form">
     <div id="lobby-player-list">
     {{#each players}}
-    <div class="checkbox">
+    <div class="checkbox {{ playerClass isActive }}">
       <label class="player-checkbox">
         <input type="checkbox" id="{{ _id }}" class="toggle-player"/>{{ name }}<br>
       </label>
