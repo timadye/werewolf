@@ -29,7 +29,7 @@ function createGame(name) {
     pausedTime: null,
     // playerIDs, sorted afterwards
     killed: [],
-    roles: []
+    roles: ["werewolf_1", "werewolf_2", "wolfsbane", "trapper"]
   };
 
   var gameID = Games.insert(game);
@@ -142,13 +142,21 @@ function resetUserState() {
   setCurrentPlayer(null);
 }
 
-function listAllGames(sep=" ") {
-  var games = Games.find({}, {fields: {name: 1}}).fetch();
+function allGamesFetch() {
+  if (Session.get('allGamesSubscribed')) {
+    return Games.find({}, {fields: {name: 1}}).fetch();
+  } else {
+    return [];
+  }
+}
+
+function allGames() {
+  var games = allGamesFetch();
   var all= [];
   games.forEach(function(game) {
     all.push(game.name);
   });
-  return all.join(sep);
+  return all;
 }
 
 function readyToStart() {
@@ -267,22 +275,18 @@ Template.main.helpers({
 
 Template.startMenu.rendered = function() {
   resetUserState();
+  Session.set('allGamesSubscribed',false);
   // subscription allGames might not be published by server, but show all games if so.
   Meteor.subscribe('allGames', function onReady() {
-    console.log(`all games = ${listAllGames()}`);
+    Session.set('allGamesSubscribed',true);
+    console.log(`all games = ${allGames()}`);
+    $(".allGames-removed").removeClass("allGames-removed");
   });
   this.find("input").focus();
 };
 
 Template.startMenu.helpers({
-  allGamesMsg: function() {
-    var all = listAllGames(", ");
-    if (all) {
-      return "Existing villages: "+all;
-    } else {
-      return "";
-    }
-  }
+  allGamesButtons: allGamesFetch
 });
 
 Template.startMenu.events({
@@ -290,6 +294,10 @@ Template.startMenu.events({
     console.log(`reset all games`);
     resetUserState();
     Meteor.call('resetAllGames');
+  },
+  'click .join-village': function(event) {
+    var villageName = event.target.id;
+    FlowRouter.go(`/${villageName}`);
   },
   'submit #start-menu': function(event) {
 

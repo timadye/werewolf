@@ -30,9 +30,11 @@ Meteor.methods({
     return Players.find( {'gameID': game._id, 'name': name} ).count() > 0;
   },
   resetAllGames: function() {
-    console.log("reset all games");
-    Games.remove({});
-    Players.remove({});
+    if (showAllVillages) {
+      console.log("reset all games");
+      Games.remove({});
+      Players.remove({});
+    }
   }
 });
 
