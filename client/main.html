@@ -93,10 +93,12 @@
 </template>
 
 <template name="nightView">
-  <h3>Night View for {{ player.name }}</h3>
+  <h3>Night View for {{ playerName }}</h3>
 
   <p>
-    You are the {{ player.role.name }}.
+    You are the {{ roleName }}.<br>
+    {{ showLovers }}<br>
+    All roles: {{ listAllRoles }}.
   </p>
 
   {{#if stillNight game turnIndex}}

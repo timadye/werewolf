@@ -37,35 +37,59 @@ Meteor.methods({
 
 Games.find({'state': 'settingUp'}).observeChanges({
   added: function(id, game) {
-    var players = Players.find({gameID: id});
+    console.log (`Start game "${game.name}"`);
+    const players = Players.find({ gameID: id, session: {$ne: null} }, { fields: {_id:1, name:1} }).fetch();
     assignRoles(id, players, game.roles);
     Games.update(id, {$set: {state: 'nightTime'}});
   }
 });
 
 // returns a NEW array
-function shuffleArray (array, npick=array.length) {
-  var copy = array.slice();
+function shuffleArray (array, npick=array.length, remove=false) {
+  var copy = remove ? array : array.slice();
   var result = [];
-  for (var i = 0; i < npick; i++) {
-    result.concat (copy.splice (Math.floor(Math.random() * copy.length), 1));
+  for (let i = 0; i < npick; i++) {
+    result.push (copy.splice (Math.floor(Math.random() * copy.length), 1)[0]);
   }
   return result;
 }
 
-function assignRoles(gameID, players, roles) {
-  var shuffledRoles = shuffleArray(roles);
+function assignRoles(gameID, players, roleNames) {
+  // console.log('roles =', roleNames);
+  var decks = {roles:[], lovers:[]};
+  for (const name of roleNames) {
+    const deck = (allRoles[name]||{}) . deck;
+    (decks[deck] || (decks[deck]=[])) . push(name);
+  }
+
+  var nvillagers = 0;
+  while (decks.roles.length < players.length) {
+    decks.roles.push("villager_"+(++nvillagers));
+  }
+  var shuffledRoles = shuffleArray (decks.roles, players.length);
+  // console.log('shuffled roles =', shuffledRoles);
+
+  var unloved = players.slice();
+  var lovers = {lovers: [], rivals: []};
+  for (const name of decks.lovers) {
+    const role= allRoles[name]||{};
+    (lovers[role.type] || (lovers[role.type]=[])) . push (shuffleArray (unloved, role.number, true));
+  }
+
   var playerRoles = [];
-  players.forEach(function(player) {
-    role = shuffledRoles.pop();
-    Players.update(player._id, {$set: {role: role}});
-    playerRoles.push(role);
-  });
-  playerRoles.sort(function(role1, role2) {
-    return role1.order - role2.order;
-  });
-  Games.update(gameID, {$set: {playerRoles: playerRoles}});
-  Games.update(gameID, {$set: {centerCards: shuffledRoles}});
+  for (let i = 0; i < players.length; i++) {
+    const playerID = players[i]._id;
+    const role = shuffledRoles[i];
+    playerLovers = {};
+    for (const loverType in lovers) {
+      playerLovers[loverType] = lovers[loverType].flatMap (c => c.some (p => p._id==playerID) ? c.filter (p => (p._id != playerID)) : []);
+    }
+    console.log (`Player ${players[i].name} is ${role} (lovers=${playerLovers.lovers.map(p=>p.name)}, rivals=${playerLovers.rivals.map(p=>p.name)})`);
+    Players.update (playerID, {$set: {role: role, lovers: playerLovers}});
+    playerRoles[role] = playerID;
+  }
+  // console.log('player roles =', playerRoles, 'lovers =', lovers);
+  Games.update(gameID, {$set: {playerRoles: playerRoles, lovers: lovers}});
 }
 
 Games.find({'swapping': true}).observeChanges({

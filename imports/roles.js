@@ -4,7 +4,7 @@ allRoles = {
     type: 'werewolf',
     index: 0,
     dark: true,
-    deck: 0,
+    deck: 'roles',
     order: 3
   },
   werewolf_2 : {
@@ -12,7 +12,7 @@ allRoles = {
     type: 'werewolf',
     index: 1,
     dark: true,
-    deck: 0,
+    deck: 'roles',
     order: 3
   },
   werewolf_3 : {
@@ -20,7 +20,7 @@ allRoles = {
     type: 'werewolf',
     index: 2,
     dark: true,
-    deck: 0,
+    deck: 'roles',
     order: 3
   },
   werewolf_vigilante : {
@@ -28,7 +28,7 @@ allRoles = {
     type: 'werewolf',
     index: 3,
     dark: true,
-    deck: 0,
+    deck: 'roles',
     vigilante: true,
     order: 3
   },
@@ -36,14 +36,14 @@ allRoles = {
     name: 'Wolfsbane',
     type: 'wolfsbane',
     dark: false,
-    deck: 0,
+    deck: 'roles',
     order: 6
   },
   trapper : {
     name: 'Trapper',
     type: 'trapper',
     dark: false,
-    deck: 0,
+    deck: 'roles',
     order: 7
   },
   seer : {
@@ -51,7 +51,7 @@ allRoles = {
     type: 'seer',
     index: 0,
     dark: false,
-    deck: 0,
+    deck: 'roles',
     unreliable: false,
     order: 8
   },
@@ -60,7 +60,7 @@ allRoles = {
     type: 'seer',
     index: 1,
     dark: false,
-    deck: 0,
+    deck: 'roles',
     unreliable: true,
     order: 8
   },
@@ -69,7 +69,7 @@ allRoles = {
     type: 'vigilante',
     index: 0,
     dark: false,
-    deck: 0,
+    deck: 'roles',
     vigilante: true,
     order: 9
   },
@@ -77,7 +77,7 @@ allRoles = {
     name: 'Mayor',
     type: 'mayor',
     dark: false,
-    deck: 0,
+    deck: 'roles',
     order: 10
   },
   cultist_1 : {
@@ -85,7 +85,7 @@ allRoles = {
     type: 'cultist',
     index: 0,
     dark: false,
-    deck: 0,
+    deck: 'roles',
     order: 15
   },
   cultist_2 : {
@@ -93,7 +93,7 @@ allRoles = {
     type: 'cultist',
     index: 1,
     dark: false,
-    deck: 0,
+    deck: 'roles',
     order: 15
   },
   cultist_3 : {
@@ -101,7 +101,7 @@ allRoles = {
     type: 'cultist',
     index: 2,
     dark: false,
-    deck: 0,
+    deck: 'roles',
     order: 15
   },
   cultist_4 : {
@@ -109,21 +109,21 @@ allRoles = {
     type: 'cultist',
     index: 3,
     dark: false,
-    deck: 0,
+    deck: 'roles',
     order: 15
   },
   darkVillager : {
     name: 'Dark Villager',
     type: 'darkVillager',
     dark: true,
-    deck: 0,
+    deck: 'roles',
     order: 16
   },
   lovers_1 : {
     name: 'Lover Pair',
     type: 'lovers',
     index: 0,
-    deck: 1,
+    deck: 'lovers',
     number: 2,
     order: 17
   },
@@ -131,7 +131,7 @@ allRoles = {
     name: 'Lover Pair',
     type: 'lovers',
     index: 1,
-    deck: 1,
+    deck: 'lovers',
     number: 2,
     order: 17
   },
@@ -139,14 +139,14 @@ allRoles = {
     name: 'Lover Trio',
     type: 'lovers',
     index: 2,
-    deck: 1,
+    deck: 'lovers',
     number: 3,
     order: 18
   },
   rivals : {
     name: 'Rival Pair',
     type: 'rivals',
-    deck: 1,
+    deck: 'lovers',
     number: 2,
     order: 17
   },

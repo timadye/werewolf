@@ -4,6 +4,7 @@ function initialGame() {
   var game = {
     centerCards: [],
     playerRoles: [],
+    lovers: [],
     state: 'waitingForPlayers',
     turnIndex: 0,
     numMoves: 0,
@@ -23,14 +24,16 @@ function initialGame() {
     pausedTime: null,
     // playerIDs, sorted afterwards
     killed: [],
-    // default roles
-    roles: ["werewolf_1", "werewolf_2", "wolfsbane", "trapper"]
   };
   return game;
 }
 
 function createGame(name) {
-  var game = { name: name, ... initialGame() };
+  var game = { name: name,
+               // default roles
+               roles: ["werewolf_1", "werewolf_2", "wolfsbane", "trapper"],
+               ... initialGame()
+             };
   var gameID = Games.insert(game);
   console.log(`New village '${name}' (${gameID})`)
   return Games.findOne(gameID);
@@ -59,11 +62,6 @@ function joinGame(name) {
       return false;
     }
     console.log(`join village '${name}', id=${game._id}`);
-    if (game.state !== 'waitingForPlayers') {
-      leaveGame();
-      reportError('Please wait. Cannot join village ${name} with game in progress.');
-      return false;
-    }
     Meteor.subscribe('players', game._id);
     Session.set('gameID', game._id);
   });
@@ -121,6 +119,22 @@ function setCurrentPlayer (newID, toggle=false) {
   return null;
 }
 
+function roleInfo (name) {
+  return name ? (allRoles[name] || {
+    name: 'Ordinary Villager',
+    type: 'villager',
+    dark: false,
+    deck: 'roles',
+    order: 20
+  }) : {
+    name: 'Zombie',
+    type: 'zombie',
+    dark: false,
+    deck: 'roles',
+    order: 999
+  };
+}
+
 function reportError(msg) {
   if (msg) {
     console.error(msg);
@@ -129,13 +143,6 @@ function reportError(msg) {
 }
 
 function resetUserState() {
-  var player = getCurrentPlayer();
-  var game = getCurrentGame();
-
-  if (player) {
-    Players.remove(player._id);
-  }
-
   setCurrentGame(null);
   setCurrentPlayer(null);
 }
@@ -162,21 +169,23 @@ function readyToStart() {
   if (!game) {
     return false;
   }
-  var count = { role:0, lover:0, dark:0, light:1, werewolf:0, cultist:0 };
+  var types = { werewolf:0, cultist:0 };
+  var decks = { roles:0,    lovers:0  };
+  var ndark=  { [false]:0, [true]:0   };
   for (name of game.roles) {
     role = allRoles[name];
     var n = role.number || 1;
-    count[role.type]                               += n;
-    count[{0:    "role", 1:   "lover"}[role.deck]] += n;  // deck0=roles, deck1=lovers/rivals
-    count[{false:"light",true:"dark" }[role.dark]] += n;
+    types[role.type] += n;
+    decks[role.deck] += n;  // deck=roles or lovers
+    ndark[role.dark] += n;
   }
-  if (!(count.werewolf >= 1 && count.cultist != 1)) {
-    console.log(`readyToStart=false: ${count.role} roles, ${count.dark} dark, ${count.werewolf} werewolves, ${count.cultist} cultists, ${count.lover} lovers/rivals`);
+  if (!(types.werewolf >= 1 && types.cultist != 1)) {
+    console.log(`readyToStart=false: ${decks.roles} roles, ${ndark[true]} dark, ${types.werewolf} werewolves, ${types.cultist} cultists, ${decks.lovers} lovers/rivals`);
     return false;
   }
   var nplayers = Players.find({ gameID: game._id, session: {$ne: null} }).count();
-  ok = (nplayers >= count.role && nplayers >= count.lover && nplayers > count.dark);
-  console.log(`readyToStart=${ok}: ${nplayers} players, ${count.role} roles, ${count.dark} dark, ${count.werewolf} werewolves, ${count.cultist} cultists, ${count.lover} lovers/rivals`);
+  ok = (nplayers >= decks.roles && nplayers >= decks.lovers && nplayers > ndark[true]);
+  console.log(`readyToStart=${ok}: ${nplayers} players, ${decks.roles} roles, ${ndark[true]} dark, ${types.werewolf} werewolves, ${types.cultist} cultists, ${decks.lovers} lovers/rivals`);
   return ok;
 }
 
@@ -219,14 +228,9 @@ Meteor.setInterval(function () {
 Tracker.autorun(trackGameState);
 
 function leaveGame() {
-  var player = getCurrentPlayer();
-  if (player) {
-    Players.remove(player._id);
-  }
   Session.set('currentView', 'startMenu');
   Session.set('turnMessage', null);
   Session.set('errorMessage', null);
-  setCurrentGame (null);
 };
 
 function resetGame() {
@@ -357,7 +361,7 @@ Template.lobby.events({
     Session.set('currentView', 'rolesMenu');
 
     var game = getCurrentGame();
-    Games.update(game._id, {$set: {state: 'nightTime'}});
+    Games.update(game._id, {$set: {state: 'settingUp'}});
   },
   'click .toggle-player': function(event) {
     setCurrentPlayer (event.target.id, true);
@@ -380,22 +384,6 @@ Template.lobby.events({
       game.roles.push(role);
     }
     Games.update(game._id, {$set: {roles: game.roles}});
-  },
-  'submit #choose-roles-form': function(event) {
-    var gameID = getCurrentGame()._id;
-    var players = Players.find({'gameID': gameID});
-
-    if ($('#choose-roles-form').find(':checkbox:checked').length >= players.count() + 3) {
-      var selectedRoles = $('#choose-roles-form').find(':checkbox:checked').map(function() {
-        return allRoles[this.value];
-      }).get();
-      Games.update(gameID, {$set: {state: 'settingUp', roles: selectedRoles}});
-      reportError(null);
-    } else {
-      reportError('Please select at least ' + (players.count() + 3) + ' roles.');
-    }
-
-    return false;
   }
 })
 
@@ -485,6 +473,29 @@ Handlebars.registerHelper('stillNight', function(game) {
 Template.nightView.helpers({
   game: getCurrentGame,
   player: getCurrentPlayer,
+  playerName: () => {
+    const player = getCurrentPlayer();
+    return player ? player.name : "the undead";
+  },
+  roleName: () => {
+    const player = getCurrentPlayer();
+    return roleInfo (player ? player.role : null) . name;
+  },
+  showLovers: () => {
+    const player = getCurrentPlayer();
+    if (!player) return "";
+    var msg = [];
+    const lovers = player.lovers;
+    for (const [label, type] of [['You are in love with ', 'lovers'], ['Your rival is ', 'rivals']]) {
+      if (lovers[type].length) {
+        msg.push (label + (lovers[type] .map(p=>p.name) .join(" and ")));
+      }
+    }
+    msg = msg.join("; ");
+    if (msg) msg += ".";
+    return msg;
+  },
+  listAllRoles: () => getCurrentGame().roles.map (r => roleInfo(r).name) . join(", "),
   players: function () {
     var game = getCurrentGame();
     if (!game) {
