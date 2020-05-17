@@ -1,13 +1,7 @@
 import '../imports/roles.js';
 
-function createGame(name) {
-  var game = Games.findOne({name: name});
-  if (game) {
-    console.log(`Village ${name} already exists`);
-    return game;
-  }
-  game = {
-    name: name,
+function initialGame() {
+  var game = {
     centerCards: [],
     playerRoles: [],
     state: 'waitingForPlayers',
@@ -29,12 +23,31 @@ function createGame(name) {
     pausedTime: null,
     // playerIDs, sorted afterwards
     killed: [],
+    // default roles
     roles: ["werewolf_1", "werewolf_2", "wolfsbane", "trapper"]
   };
+  return game;
+}
 
+function createGame(name) {
+  var game = { name: name, ... initialGame() };
   var gameID = Games.insert(game);
-  console.log(`New village '${name}', id=${gameID}`)
+  console.log(`New village '${name}' (${gameID})`)
   return Games.findOne(gameID);
+}
+
+function createPlayer(game, name) {
+  var player = {
+    gameID: game._id,
+    name: name,
+    session: null,
+    role: null,
+    vote: null // id that this player votes to kill
+  }
+
+  var playerID = Players.insert(player);
+  console.log(`New player '${name}' (${playerID}) in game '${game.name}'`)
+  return Players.findOne(playerID);
 }
 
 function joinGame(name) {
@@ -55,21 +68,6 @@ function joinGame(name) {
     Session.set('gameID', game._id);
   });
   return false;
-}
-
-function generateNewPlayer(game, name) {
-
-  var player = {
-    gameID: game._id,
-    name: name,
-    session: null,
-    role: null,
-    vote: null // id that this player votes to kill
-  }
-
-  var playerID = Players.insert(player);
-  console.log(`New player '${name}' (id=${playerID}) in game '${game.name}'`)
-  return Players.findOne(playerID);
 }
 
 function setCurrentGame(game) {
@@ -164,28 +162,21 @@ function readyToStart() {
   if (!game) {
     return false;
   }
-  nroles = 0;
-  nlovers = 0;
-  count = { werewolf:0, cultist:0 };
-  for (i in game.roles) {
-    role = game.roles[i];
-    srole = role.split("_",1)[0];
-    count[srole]++;
-    if (role == "lovers_trio") {
-      nlovers += 3;
-    } else if (srole == "lovers" || srole == "rivals") {
-      nlovers += 2;
-    } else {
-      nroles++;
-    }
+  var count = { role:0, lover:0, dark:0, light:1, werewolf:0, cultist:0 };
+  for (name of game.roles) {
+    role = allRoles[name];
+    var n = role.number || 1;
+    count[role.type]                               += n;
+    count[{0:    "role", 1:   "lover"}[role.deck]] += n;  // deck0=roles, deck1=lovers/rivals
+    count[{false:"light",true:"dark" }[role.dark]] += n;
   }
-  if (!(count.werewolf >= 1 && (count.cultist == 0 || count.cultist >= 2))) {
-    console.log(`readyToStart=false: #roles=${nroles} #werewolf=${count.werewolf} #cultist=${count.cultist} #lovers=${nlovers}`);
+  if (!(count.werewolf >= 1 && count.cultist != 1)) {
+    console.log(`readyToStart=false: ${count.role} roles, ${count.dark} dark, ${count.werewolf} werewolves, ${count.cultist} cultists, ${count.lover} lovers/rivals`);
     return false;
   }
   var nplayers = Players.find({ gameID: game._id, session: {$ne: null} }).count();
-  ok = (nplayers >= nroles && nplayers > count.werewolf && nplayers >= nlovers);
-  console.log(`readyToStart=${ok}: ${nplayers} players, ${nroles} roles, ${count.werewolf} werewolves, ${count.cultist} cultists, ${nlovers} lovers/rivals`);
+  ok = (nplayers >= count.role && nplayers >= count.lover && nplayers > count.dark);
+  console.log(`readyToStart=${ok}: ${nplayers} players, ${count.role} roles, ${count.dark} dark, ${count.werewolf} werewolves, ${count.cultist} cultists, ${count.lover} lovers/rivals`);
   return ok;
 }
 
@@ -240,25 +231,9 @@ function leaveGame() {
 
 function resetGame() {
   var game = getCurrentGame();
-  Games.update(game._id, {$set: {
-    centerCards: [],
-    playerRoles: [],
-    state: 'waitingForPlayers',
-    turnIndex: 0,
-    numMoves: 0,
-    moveLimit: 0,
-    selectedPlayerIds: [],
-    selectedCenterCards: [],
-    werewolfCenter: false,
-    swaps: [],
-    swapping: false,
-    insomniacRole: allRoles.insomniac,
-    endTime: null,
-    paused: false,
-    pausedTime: null,
-    // playerIDs, sorted afterwards
-    killed: []
-  }});
+  if (game) {
+    Games.update(game._id, { $set: initialGame() });
+  }
 }
 
 function endGame() {
@@ -390,7 +365,7 @@ Template.lobby.events({
   'submit #lobby-add': function(event) {
     var playerName = event.target.playerName.value;
     var game = getCurrentGame();
-    var player = generateNewPlayer(game, playerName);
+    var player = createPlayer(game, playerName);
     setCurrentPlayer (player._id);
     event.target.playerName.value = '';
     return false;

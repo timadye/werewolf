@@ -26,9 +26,6 @@ Meteor.methods({
   villageExists: function(villageName) {
     return Games.find( {name: villageName} ).count() > 0;
   },
-  nameUsed: function(game, name) {
-    return Players.find( {'gameID': game._id, 'name': name} ).count() > 0;
-  },
   resetAllGames: function() {
     if (showAllVillages) {
       console.log("reset all games");
@@ -47,19 +44,12 @@ Games.find({'state': 'settingUp'}).observeChanges({
 });
 
 // returns a NEW array
-function shuffleArray(array) {
+function shuffleArray (array, npick=array.length) {
+  var copy = array.slice();
   var result = [];
-  for (var i = 0; i < array.length; i++) {
-    result.push(array[i]);
+  for (var i = 0; i < npick; i++) {
+    result.concat (copy.splice (Math.floor(Math.random() * copy.length), 1));
   }
-
-  for (var i = array.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var temp = result[i];
-      result[i] = result[j];
-      result[j] = temp;
-  }
-
   return result;
 }
 
