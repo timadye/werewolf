@@ -5,6 +5,7 @@ allRoles = {
     index: 0,
     dark: true,
     deck: 'roles',
+    fellows: 'werewolf',
     order: 3
   },
   werewolf_2 : {
@@ -13,6 +14,7 @@ allRoles = {
     index: 1,
     dark: true,
     deck: 'roles',
+    fellows: 'werewolf',
     order: 3
   },
   werewolf_3 : {
@@ -21,6 +23,7 @@ allRoles = {
     index: 2,
     dark: true,
     deck: 'roles',
+    fellows: 'werewolf',
     order: 3
   },
   werewolf_vigilante : {
@@ -30,7 +33,16 @@ allRoles = {
     dark: true,
     deck: 'roles',
     vigilante: true,
+    fellows: 'werewolf',
     order: 3
+  },
+  darkVillager : {
+    name: 'Dark Villager',
+    type: 'darkVillager',
+    dark: true,
+    deck: 'roles',
+    fellows: 'werewolf',
+    order: 4
   },
   wolfsbane : {
     name: 'Wolfsbane',
@@ -86,6 +98,7 @@ allRoles = {
     index: 0,
     dark: false,
     deck: 'roles',
+    fellows: 'cultist',
     order: 15
   },
   cultist_2 : {
@@ -94,6 +107,7 @@ allRoles = {
     index: 1,
     dark: false,
     deck: 'roles',
+    fellows: 'cultist',
     order: 15
   },
   cultist_3 : {
@@ -102,6 +116,7 @@ allRoles = {
     index: 2,
     dark: false,
     deck: 'roles',
+    fellows: 'cultist',
     order: 15
   },
   cultist_4 : {
@@ -110,14 +125,8 @@ allRoles = {
     index: 3,
     dark: false,
     deck: 'roles',
+    fellows: 'cultist',
     order: 15
-  },
-  darkVillager : {
-    name: 'Dark Villager',
-    type: 'darkVillager',
-    dark: true,
-    deck: 'roles',
-    order: 16
   },
   lovers_1 : {
     name: 'Lover Pair',
@@ -125,6 +134,7 @@ allRoles = {
     index: 0,
     deck: 'lovers',
     number: 2,
+    fellows: 'lover',
     order: 17
   },
   lovers_2 : {
@@ -133,14 +143,16 @@ allRoles = {
     index: 1,
     deck: 'lovers',
     number: 2,
+    fellows: 'lover',
     order: 17
   },
-  lovers_trio : {
-    name: 'Lover Trio',
+  lovers_triad : {
+    name: 'Lover Triad',
     type: 'lovers',
     index: 2,
     deck: 'lovers',
     number: 3,
+    fellows: 'lover',
     order: 18
   },
   rivals : {
@@ -148,6 +160,23 @@ allRoles = {
     type: 'rivals',
     deck: 'lovers',
     number: 2,
+    fellows: 'rival',
     order: 17
   },
+};
+
+roleInfo = function (name) {
+  return name ? (allRoles[name] || {
+    name: 'Ordinary Villager',
+    type: 'villager',
+    dark: false,
+    deck: 'roles',
+    order: 20
+  }) : {
+    name: 'Zombie',
+    type: 'zombie',
+    dark: false,
+    deck: 'roles',
+    order: 999
+  };
 }

@@ -1,4 +1,5 @@
 import '../imports/roles.js';
+import '../imports/utils.js';
 
 function initialGame() {
   var game = {
@@ -117,22 +118,6 @@ function setCurrentPlayer (newID, toggle=false) {
     return newID;
   }
   return null;
-}
-
-function roleInfo (name) {
-  return name ? (allRoles[name] || {
-    name: 'Ordinary Villager',
-    type: 'villager',
-    dark: false,
-    deck: 'roles',
-    order: 20
-  }) : {
-    name: 'Zombie',
-    type: 'zombie',
-    dark: false,
-    deck: 'roles',
-    order: 999
-  };
 }
 
 function reportError(msg) {
@@ -481,20 +466,16 @@ Template.nightView.helpers({
     const player = getCurrentPlayer();
     return roleInfo (player ? player.role : null) . name;
   },
-  showLovers: () => {
-    const player = getCurrentPlayer();
-    if (!player) return "";
-    var msg = [];
-    const lovers = player.lovers;
-    for (const [label, type] of [['You are in love with ', 'lovers'], ['Your rival is ', 'rivals']]) {
-      if (lovers[type].length) {
-        msg.push (label + (lovers[type] .map(p=>p.name) .join(" and ")));
-      }
-    }
-    msg = msg.join("; ");
-    if (msg) msg += ".";
-    return msg;
-  },
+  showFellows: () => Object.entries ((getCurrentPlayer()||{}).fellows) . map (([f,players]) => {
+    const pmsg = players.map (p=>p.name) . join(" and ");
+    const fmsg = {
+      werewolf: ["The other werewolf is ",  "The other werewoves are " ],
+      cultist:  ["Your fellow cultist is ", "Your fellow cultists are "],
+      lover:    ["You are in love with ",   "You are in love with "    ],
+      rival:    ["Your rival is ",          "Your rivals are "         ],
+    }[f];
+    return (fmsg ? fmsg[players.length==1?0:1] : f+": ")+pmsg+".<br>";
+  }) . join(""),
   listAllRoles: () => getCurrentGame().roles.map (r => roleInfo(r).name) . join(", "),
   players: function () {
     var game = getCurrentGame();

@@ -1,7 +1,9 @@
 import { Meteor } from 'meteor/meteor';
 import '../imports/roles.js';
+import '../imports/utils.js';
 
 const showAllVillages = true;
+const debug = 2;
 
 Meteor.startup(() => {
   Games.remove({});
@@ -28,7 +30,7 @@ Meteor.methods({
   },
   resetAllGames: function() {
     if (showAllVillages) {
-      console.log("reset all games");
+      if (debug>=1) console.log("reset all games");
       Games.remove({});
       Players.remove({});
     }
@@ -37,59 +39,60 @@ Meteor.methods({
 
 Games.find({'state': 'settingUp'}).observeChanges({
   added: function(id, game) {
-    console.log (`Start game "${game.name}"`);
+    if (debug>=1) console.log (`Start game '${game.name}' (${id})`);
     const players = Players.find({ gameID: id, session: {$ne: null} }, { fields: {_id:1, name:1} }).fetch();
     assignRoles(id, players, game.roles);
     Games.update(id, {$set: {state: 'nightTime'}});
   }
 });
 
-// returns a NEW array
-function shuffleArray (array, npick=array.length, remove=false) {
-  var copy = remove ? array : array.slice();
-  var result = [];
-  for (let i = 0; i < npick; i++) {
-    result.push (copy.splice (Math.floor(Math.random() * copy.length), 1)[0]);
-  }
-  return result;
-}
-
 function assignRoles(gameID, players, roleNames) {
-  // console.log('roles =', roleNames);
-  var decks = {roles:[], lovers:[]};
-  for (const name of roleNames) {
-    const deck = (allRoles[name]||{}) . deck;
-    (decks[deck] || (decks[deck]=[])) . push(name);
-  }
+  if (debug>=3) console.log('roles =', roleNames);
 
-  var nvillagers = 0;
-  while (decks.roles.length < players.length) {
-    decks.roles.push("villager_"+(++nvillagers));
+  const allFellows = keyArrayFromEntries (Object.entries(allRoles) . map (([k,v]) => [v.fellows, k]));
+  if (debug>=3) console.log('allFellows =', allFellows);
+
+  var decks = keyArrayMap (roleNames,
+                                 name => [(allRoles[name]||{}).deck, name],
+                                 initObject (Object.values(allRoles) . map (v => v.deck)));
+  for (let i=1; decks.roles.length < players.length; i++) {
+    decks.roles.push ("villager_"+i);
   }
-  var shuffledRoles = shuffleArray (decks.roles, players.length);
-  // console.log('shuffled roles =', shuffledRoles);
+  if (debug>=3) console.log('decks =', decks);
+
+  const shuffledRoles = shuffleArray (decks.roles, players.length);
+  if (debug>=3) console.log('shuffledRoles =', shuffledRoles);
+  if (debug>=3) console.log('players =', players);
+  const playerRoles = objectMap (players, (player,i) => ({[shuffledRoles[i]]: player}));
+  if (debug>=3) console.log('playerRoles =', playerRoles);
+
+  const roleFellows = objectMap (allFellows, (([f,roles]) => ({[f]: [roles.flatMap (r => {const p = playerRoles[r]; return p ? [p] : []})]})));
 
   var unloved = players.slice();
-  var lovers = {lovers: [], rivals: []};
-  for (const name of decks.lovers) {
-    const role= allRoles[name]||{};
-    (lovers[role.type] || (lovers[role.type]=[])) . push (shuffleArray (unloved, role.number, true));
-  }
+  const fellows = keyArrayMap (decks.lovers,
+                                     role => { const r = allRoles[role]; return r ? [r.fellows, shuffleArray (unloved, r.number, true)] : []},
+                                     roleFellows);
+  if (debug>=3) Object.entries(fellows).forEach(([k,v])=>console.log(`fellows[${k}] =`,v));
 
-  var playerRoles = [];
-  for (let i = 0; i < players.length; i++) {
-    const playerID = players[i]._id;
-    const role = shuffledRoles[i];
-    playerLovers = {};
-    for (const loverType in lovers) {
-      playerLovers[loverType] = lovers[loverType].flatMap (c => c.some (p => p._id==playerID) ? c.filter (p => (p._id != playerID)) : []);
+  Object.entries (playerRoles) . forEach (([role, player]) => {
+    const playerID = player._id;
+    const playerFellows = objectMap (fellows,
+                                           ([fellowType, fellowPlayers]) => {
+                                             const others = fellowPlayers.flatMap (f =>
+                                                                                     f.some   (p => (p._id == playerID))
+                                                                                   ? f.filter (p => (p._id != playerID))
+                                                                                   : []);
+                                             return others.length ? {[fellowType]: others} : null;
+                                           });
+    if (debug>=1) {
+      let fellowsStr = Object.entries (playerFellows) . map (([f,pi]) => [f+"="+(pi.map(p=>p.name).join(","))]) . join(" ");
+      if (fellowsStr) fellowsStr = " (fellow "+fellowsStr+")";
+      console.log (`Player ${player.name} (${player._id}) is ${role}${fellowsStr}`);
     }
-    console.log (`Player ${players[i].name} is ${role} (lovers=${playerLovers.lovers.map(p=>p.name)}, rivals=${playerLovers.rivals.map(p=>p.name)})`);
-    Players.update (playerID, {$set: {role: role, lovers: playerLovers}});
-    playerRoles[role] = playerID;
-  }
-  // console.log('player roles =', playerRoles, 'lovers =', lovers);
-  Games.update(gameID, {$set: {playerRoles: playerRoles, lovers: lovers}});
+    Players.update (playerID, {$set: {role: role, fellows: playerFellows}});
+  });
+
+  Games.update(gameID, {$set: {playerRoles: playerRoles, fellows: fellows}});
 }
 
 Games.find({'swapping': true}).observeChanges({
