@@ -82,10 +82,10 @@ function assignRoles(gameID, players, roleNames) {
                                                                                      f.some   (p => (p._id == playerID))
                                                                                    ? f.filter (p => (p._id != playerID))
                                                                                    : []);
-                                             return others.length ? {[fellowType]: others} : null;
+                                             return others.length ? {[fellowType]: others.map(p=>p.name)} : null;
                                            });
     if (debug>=1) {
-      let fellowsStr = Object.entries (playerFellows) . map (([f,pi]) => [f+"="+(pi.map(p=>p.name).join(","))]) . join(" ");
+      let fellowsStr = Object.entries (playerFellows) . map (([f,pa]) => [f+"="+(pa.join(","))]) . join(" ");
       if (fellowsStr) fellowsStr = " (fellow "+fellowsStr+")";
       console.log (`Player ${player.name} (${player._id}) is ${role}${fellowsStr}`);
     }

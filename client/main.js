@@ -90,9 +90,7 @@ function setCurrentGame(game) {
 
 function getCurrentGame() {
   var gameID = Session.get('gameID');
-  if (gameID) {
-    return Games.findOne(gameID);
-  }
+  return gameID ? Games.findOne(gameID) : null;
 }
 
 function getCurrentPlayer() {
@@ -149,6 +147,18 @@ function allGames() {
   return all;
 }
 
+function allPlayersFind (game=null, includeInactive=false) {
+  if (!game) {
+    game = getCurrentGame();
+    if (!game) return null;
+  }
+  return Players.find( { gameID: game._id, ...includeInactive || {session: {$ne: null}} }, {fields: {name: 1}});
+}
+
+function allPlayers (game, includeInactive=false) {
+  return allPlayersFind (game, includeInactive) . fetch();
+}
+
 function readyToStart() {
   var game = getCurrentGame();
   if (!game) {
@@ -168,7 +178,7 @@ function readyToStart() {
     console.log(`readyToStart=false: ${decks.roles} roles, ${ndark[true]} dark, ${types.werewolf} werewolves, ${types.cultist} cultists, ${decks.lovers} lovers/rivals`);
     return false;
   }
-  var nplayers = Players.find({ gameID: game._id, session: {$ne: null} }).count();
+  var nplayers = allPlayersFind (game) . count();
   ok = (nplayers >= decks.roles && nplayers >= decks.lovers && nplayers > ndark[true]);
   console.log(`readyToStart=${ok}: ${nplayers} players, ${decks.roles} roles, ${ndark[true]} dark, ${types.werewolf} werewolves, ${types.cultist} cultists, ${decks.lovers} lovers/rivals`);
   return ok;
@@ -182,14 +192,9 @@ function readyToStart() {
  */
 function trackGameState() {
   var gameID = Session.get('gameID');
-
-  if (!gameID) {
-    return;
-  }
-
   var game = Games.findOne(gameID);
   if (!game) {
-    console.log(`gameID ${gameID} not found.`);
+    if (gameID) console.log(`gameID ${gameID} not found.`);
     setCurrentGame(null);
     setCurrentPlayer(null)
     Session.set('currentView', 'startMenu');
@@ -302,11 +307,7 @@ Template.lobby.helpers({
     return getCurrentGame();
   },
   players: function() {
-    var game = getCurrentGame();
-    if (!game) {
-      return null;
-    }
-    return Players.find({'gameID': game._id}, {'sort': {'createdAt': 1}}).fetch();
+    return allPlayers (null, true);
   },
   playerClass: function() {
     var player= Players.findOne(this._id);
@@ -467,24 +468,17 @@ Template.nightView.helpers({
     return roleInfo (player ? player.role : null) . name;
   },
   showFellows: () => Object.entries ((getCurrentPlayer()||{}).fellows) . map (([f,players]) => {
-    const pmsg = players.map (p=>p.name) . join(" and ");
+    const pmsg = players.join(" and ");
     const fmsg = {
-      werewolf: ["The other werewolf is ",  "The other werewoves are " ],
-      cultist:  ["Your fellow cultist is ", "Your fellow cultists are "],
-      lover:    ["You are in love with ",   "You are in love with "    ],
-      rival:    ["Your rival is ",          "Your rivals are "         ],
+      werewolf: ["The other werewolf is ",  "The other werewolves are " ],
+      cultist:  ["Your fellow cultist is ", "Your fellow cultists are " ],
+      lover:    ["You are in love with ",   "You are in love with "     ],
+      rival:    ["Your rival is ",          "Your rivals are "          ],
     }[f];
     return (fmsg ? fmsg[players.length==1?0:1] : f+": ")+pmsg+".<br>";
   }) . join(""),
   listAllRoles: () => getCurrentGame().roles.map (r => roleInfo(r).name) . join(", "),
-  players: function () {
-    var game = getCurrentGame();
-    if (!game) {
-      return null;
-    }
-
-    return Players.find({'gameID': game._id}, {'sort': {'createdAt': 1}}).fetch();
-  },
+  players: allPlayers,
   turnIndex: function () {
     return getCurrentGame().turnIndex;
   },
@@ -711,14 +705,7 @@ function getVotingTimeRemaining() {
 Template.dayView.helpers({
   game: getCurrentGame,
   player: getCurrentPlayer,
-  players: function () {
-    var game = getCurrentGame();
-    if (!game) {
-      return null;
-    }
-
-    return Players.find({'gameID': game._id}, {'sort': {'createdAt': 1}}).fetch();
-  },
+  players: allPlayers,
   timeRemaining: function () {
     var game = getCurrentGame();
     if (game.state === 'voting' || game.state === 'finishedVoting') {
