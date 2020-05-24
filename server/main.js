@@ -95,78 +95,34 @@ function assignRoles(gameID, players, roleNames) {
   Games.update(gameID, {$set: {playerRoles: playerRoles, fellows: fellows}});
 }
 
-Games.find({'swapping': true}).observeChanges({
-  added: function(id, game) {
-    for (index in game.swaps) {
-      var swap = game.swaps[index];
-      Players.update(swap.id, {$set: {role : swap.role}});
+Players.find({'vote': {$ne: null}}).observeChanges({
+  added: function(id, player) {
+    const gameID = player.gameID;
+    if (debug>=3) console.log(`Player ${player.name} (${id}) initially voted for ${player.vote}`);
+    const players = Players.find({ gameID: gameID, session: {$ne: null} }, { fields: {_id:1, name:1, vote:1} }).fetch();
+    if (players.some (p => !p.vote)) return null;
+    const game = Games.findOne(gameID);
+    if (debug>=1) {
+      console.log(`Game ${game.name} ${game.state}: all ${players.length} players voted`);
+      for (const player of players) {
+        const vote = players.find (p => p._id === player.vote);
+        if (vote)
+          console.log(`Player ${player.name} (${id}) voted for ${vote.name} (${player.vote})`);
+        else
+          console.log(`Player ${player.name} (${id}) invalid vote for ${player.vote}`);
+      }
     }
-
-    var gameEndTime = moment().add(game.discussionTime, 'minutes').valueOf();
-    Games.update(id, {$set: {
-      swaps: [],
-      swapping: false,
-      endTime: gameEndTime,
-      paused: false,
-      pausedTime: null
-    }});
+    if (game.state == "nightTime") dawn (game, players);
+    else if (game.state == "dayTime") lynch (game, players);
+    Players.update({gameID: gameID, session: {$ne: null}}, {$set: {vote: null}}, {multi: true});
+    Games.update(gameID, {$set: {state: 'dayTime'}});
   }
-})
+});
 
-Games.find({'state': 'voting'}).observeChanges({
-  added: function(id, game) {
-    var votingEndTime = moment().add(10, 'seconds').valueOf();
-    Games.update(id, {$set: {
-      endTime: votingEndTime,
-      paused: false,
-      pausedTime: null
-    }});
-  }
-})
+function dawn (game, players) {
+  console.log ("Dawn");
+}
 
-Games.find({'state': 'finishedVoting'}).observeChanges({
-  added: function(id, game) {
-    var players = Players.find({gameID: id});
-    var votes = [];
-    players.forEach(function(player) {
-      if (player.vote) {
-        votes.push(player.vote);
-      }
-    });
-
-    if (votes.length > 0) {
-
-      var voteFrequency = {};
-      for (index in votes) {
-        var vote = votes[index].toString();
-        if (voteFrequency[vote]) {
-          voteFrequency[vote] += 1;
-        } else {
-          voteFrequency[vote] = 1;
-        }
-      }
-      var sortedVotes = [];
-      for (key in voteFrequency) {
-        sortedVotes.push({playerID : key, numVotes: voteFrequency[key]});
-      }
-      sortedVotes.sort(function(vote1, vote2) {
-        return vote1.numVotes - vote2.numVotes;
-      }).reverse();
-
-      var killed = [];
-      killed.push(Players.findOne(sortedVotes[0].playerID));
-      for (var i = 1; i < sortedVotes.length; i++) {
-        if (sortedVotes[i].numVotes == sortedVotes[0].numVotes) {
-          killed.push(Players.findOne(sortedVotes[i].playerID));
-        } else {
-          break;
-        }
-      }
-      if (killed.length == game.playerRoles.length) {
-        killed = [];
-      }
-
-      Games.update(id, {$set: {'killed': killed}});
-    }
-  }
-})
+function lynch (game, players) {
+  console.log ("Lynching");
+}

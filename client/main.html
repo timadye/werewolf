@@ -101,33 +101,19 @@
     All roles: {{ listAllRoles }}.
   </p>
 
-  {{#if stillNight game turnIndex}}
-    {{#if equals activeRole.name player.role.name }}
-      <p>
-        {{instructions game players player}}
-      </p>
-      {{#if turnMessage}}
-        <p>
-          {{turnMessage}}
-        </p>
-      {{/if}}
-    {{else}}
-      It is not your turn.
-    {{/if}}
-  {{/if}}
+  <h4>Select a player</h4>
 
-  <h5>Players</h5>
-  <div class="ingame-player-list">
+  <form id="night-player-form">
+    <div id="night-player-list">
     {{#each players}}
-    <button class="btn btn-secondary player-cards" id="{{ _id }}">
-      {{ name }} <br />
-    </button>
+    <div class="checkbox {{ playerClass }}">
+      <label class="player-checkbox">
+        <input type="checkbox" id="{{ _id }}" class="toggle-player"/>{{ name }}<br>
+      </label>
+    </div>
     {{/each}}
-  </div>
-
-  <button class="btn btn-primary btn-lg" id="btn-end-turn">End Turn</button>
-  <br />
-  <br />
+    </div>
+  </form>
 
   <button class="btn btn-secondary btn-md btn-end">End Game</button>
   <button class="btn btn-secondary btn-md btn-leave">Leave Game</button>
@@ -135,57 +121,16 @@
 </template>
 
 <template name="dayView">
-  <h3>Day View for {{ player.name }}</h3>
+  <h3>Day View for {{ playerName }}</h3>
 
-  {{#if equals game.state 'voting'}}
   <p>
-    Vote for one player to kill.
+    You are the {{ roleName }}.<br>
+    {{{ showFellows }}}
+    All roles: {{ listAllRoles }}.
   </p>
-  {{/if}}
 
-  {{#if equals game.state 'finishedVoting'}}
-    <h4>{{ winningTeam }}</h4>
-    <h4>You ended up as the {{ player.role.name }}.</h4>
-    <h5>Voting results</h5>
-    {{#if noDeaths game}}
-    <p>No one died.</p>
-    {{else}}
-      <ol>
-        {{#each game.killed}}
-          <li>
-            {{ name }} (Role: {{ role.name }})
-            <br />
-          </li>
-        {{/each}}
-      </ol>
-    {{/if}}
-  {{else}}
-    <h4><a id="countdown">{{{ timeRemaining }}}</a></h4>
-  {{/if}}
-
-
-
-  <h5>Center Cards</h5>
-  <div class="center-cards">
-    {{#each game.centerCards}}
-      <button class="btn btn-secondary">
-        Card {{@index}}
-      </button>
-    {{/each}}
-  </div>
-
-  <h5>Players</h5>
-  <div class="ingame-player-list">
-    {{#each players}}
-      <button class="btn btn-secondary vote-player" id = {{ _id }}>
-        {{ name }} <br />
-      </button>
-      {{#if equals game.state 'finishedVoting'}}
-      (Role: {{ role.name }})
-      {{/if}}
-    {{/each}}
-  </div>
-
+  <button class="btn btn-primary btn-lg btn-sleep">Sleep</button>
+  <br>
   <button class="btn btn-secondary btn-md btn-vote-now">Vote Now</button>
   <button class="btn btn-secondary btn-md btn-end">End Game</button>
   <button class="btn btn-secondary btn-md btn-leave">Leave Game</button>

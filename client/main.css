@@ -169,27 +169,41 @@ input[type="checkbox"] {
   visibility: hidden;
 }
 
-.center-cards > button:hover {
-  background-color: gold;
-}
-
-.selected-card {
-  background-color: lightgreen;
-}
-
-.selected-card:hover {
-  background-color: lightgreen;
-}
-
-.ingame-player-list {
+#night-player-form {
   margin-left: 10%;
   margin-right: 10%;
-  max-width: 80%;
-  margin-bottom: 20px;
 }
 
-.ingame-player-list > button:hover {
-  background-color: gold;
+#night-player-list {
+  column-count: 2;
+  column-gap: 4px;
+  margin-bottom: 15px;
+}
+
+#night-player-list div {
+  display: inline-block;
+  width: 100%;
+  text-align: left;
+  box-sizing: border-box;
+  list-style-type: none;
+  background-color: #ccc;
+  margin: 0 0 4px 0;
+  cursor: pointer;
+  border-radius: 7px;
+}
+
+#night-player-list div:hover {
+  background-color: #aaa;
+}
+
+#night-player-list .voted-player {
+  color: white;
+  background-color: #070;
+}
+
+#night-player-list .voted-player:hover {
+  color: white;
+  background-color: #090;
 }
 
 .footer {
