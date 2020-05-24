@@ -2,7 +2,7 @@ import '../imports/roles.js';
 import '../imports/utils.js';
 
 function initialGame() {
-  var game = {
+  return {
     centerCards: [],
     playerRoles: [],
     lovers: [],
@@ -26,30 +26,27 @@ function initialGame() {
     // playerIDs, sorted afterwards
     killed: [],
   };
-  return game;
 }
 
 function createGame(name) {
-  var game = { name: name,
-               // default roles
-               roles: ["werewolf_1", "werewolf_2", "wolfsbane", "trapper"],
-               ... initialGame()
-             };
-  var gameID = Games.insert(game);
+  const gameID = Games.insert({
+    name: name,
+    // default roles
+    roles: ["werewolf_1", "werewolf_2", "wolfsbane", "trapper"],
+    ... initialGame()
+  });
   console.log(`New village '${name}' (${gameID})`)
   return Games.findOne(gameID);
 }
 
 function createPlayer(game, name) {
-  var player = {
+  const playerID = Players.insert({
     gameID: game._id,
     name: name,
     session: null,
     role: null,
     vote: null // id that this player votes to kill
-  }
-
-  var playerID = Players.insert(player);
+  });
   console.log(`New player '${name}' (${playerID}) in game '${game.name}'`)
   return Players.findOne(playerID);
 }
@@ -89,7 +86,7 @@ function setCurrentGame(game) {
 }
 
 function getCurrentGame() {
-  var gameID = Session.get('gameID');
+  const gameID = Session.get('gameID');
   return gameID ? Games.findOne(gameID) : null;
 }
 
@@ -98,7 +95,7 @@ function getCurrentPlayer() {
 }
 
 function setCurrentPlayer (newID, toggle=false) {
-  player = getCurrentPlayer();
+  const player = getCurrentPlayer();
   if (player) {
     if (newID == player._id) {
       if (toggle) {
@@ -119,9 +116,7 @@ function setCurrentPlayer (newID, toggle=false) {
 }
 
 function reportError(msg) {
-  if (msg) {
-    console.error(msg);
-  }
+  if (msg) console.error(msg);
   Session.set('errorMessage', msg);
 }
 
@@ -131,20 +126,11 @@ function resetUserState() {
 }
 
 function allGamesFetch() {
-  if (Session.get('allGamesSubscribed')) {
-    return Games.find({}, {fields: {name: 1}}).fetch();
-  } else {
-    return [];
-  }
+  return Session.get('allGamesSubscribed') ? Games.find ({}, {fields: {name: 1}}).fetch() : [];
 }
 
 function allGames() {
-  var games = allGamesFetch();
-  var all= [];
-  games.forEach(function(game) {
-    all.push(game.name);
-  });
-  return all;
+  return allGamesFetch() . map ((game) => game.name);
 }
 
 function allPlayersFind (game=null, includeInactive=false) {
@@ -156,20 +142,19 @@ function allPlayersFind (game=null, includeInactive=false) {
 }
 
 function allPlayers (game, includeInactive=false) {
-  return allPlayersFind (game, includeInactive) . fetch();
+  var ret = allPlayersFind (game, includeInactive)
+  return ret ? ret.fetch() : null;
 }
 
 function readyToStart() {
-  var game = getCurrentGame();
-  if (!game) {
-    return false;
-  }
+  const game = getCurrentGame();
+  if (!game) return false;
   var types = { werewolf:0, cultist:0 };
   var decks = { roles:0,    lovers:0  };
   var ndark=  { [false]:0, [true]:0   };
   for (name of game.roles) {
     role = allRoles[name];
-    var n = role.number || 1;
+    const n = role.number || 1;
     types[role.type] += n;
     decks[role.deck] += n;  // deck=roles or lovers
     ndark[role.dark] += n;
@@ -178,7 +163,7 @@ function readyToStart() {
     console.log(`readyToStart=false: ${decks.roles} roles, ${ndark[true]} dark, ${types.werewolf} werewolves, ${types.cultist} cultists, ${decks.lovers} lovers/rivals`);
     return false;
   }
-  var nplayers = allPlayersFind (game) . count();
+  const nplayers = allPlayersFind (game) . count();
   ok = (nplayers >= decks.roles && nplayers >= decks.lovers && nplayers > ndark[true]);
   console.log(`readyToStart=${ok}: ${nplayers} players, ${decks.roles} roles, ${ndark[true]} dark, ${types.werewolf} werewolves, ${types.cultist} cultists, ${decks.lovers} lovers/rivals`);
   return ok;
@@ -188,19 +173,12 @@ function readyToStart() {
 /* types of game state:
     waitingForPlayers (lobby)
     settingUp (loading)
-    playing
+    nightTime
+    dayTime
  */
 function trackGameState() {
-  const gameID = Session.get('gameID');
   const game = getCurrentGame();
-  if (!game) {
-    if (gameID) console.log(`gameID ${gameID} not found.`);
-    setCurrentGame(null);
-    setCurrentPlayer(null)
-    Session.set('currentView', 'startMenu');
-    return;
-  }
-
+  if (!game) return;
   if (game.state === 'waitingForPlayers') {
     Session.set('currentView', 'lobby');
   } else if (game.state === 'nightTime') {
@@ -208,10 +186,9 @@ function trackGameState() {
   } else if (game.state === 'dayTime') {
     Session.set('currentView', 'dayView');
   }
-  // game.state can also be finishedVoting and voting
 }
 
-Meteor.setInterval(function () {
+Meteor.setInterval(() => {
   Session.set('time', new Date());
 }, 1000);
 
@@ -235,7 +212,7 @@ function endGame() {
 }
 
 Template.main.helpers({
-  whichView: function() {
+  whichView: () => {
     return Session.get('currentView');
   }
 });
@@ -257,23 +234,23 @@ Template.startMenu.helpers({
 });
 
 Template.startMenu.events({
-  'click .btn-reset': function() {
+  'click .btn-reset': () => {
     console.log(`reset all games`);
     resetUserState();
     Meteor.call('resetAllGames');
   },
-  'click .join-village': function(event) {
-    var villageName = event.target.id;
+  'click .join-village': (event) => {
+    const villageName = event.target.id;
     FlowRouter.go(`/${villageName}`);
   },
-  'submit #start-menu': function(event) {
+  'submit #start-menu': (event) => {
 
-    var villageName = event.target.villageName.value;
+    const villageName = event.target.villageName.value;
     if (!villageName) {
       return false;
     }
 
-    Meteor.call('villageExists', villageName, function(error,result) {
+    Meteor.call('villageExists', villageName, (error,result) => {
       if (error) return false;
       if (!result) {
         createGame(villageName);
@@ -287,9 +264,9 @@ Template.startMenu.events({
 
 Session.set('currentView', 'startMenu');
 
-Template.lobby.rendered = function (event) {
+Template.lobby.rendered = function(event) {
   if (!Session.get('gameID')) {
-    var villageName = Session.get('urlVillage');
+    const villageName = Session.get('urlVillage');
     if (villageName) {
       joinGame(villageName);
     }
@@ -298,17 +275,11 @@ Template.lobby.rendered = function (event) {
 };
 
 Template.lobby.helpers({
-  errorMessage: function() {
-    return Session.get('errorMessage');
-  },
-  game: function() {
-    return getCurrentGame();
-  },
-  players: function() {
-    return allPlayers (null, true);
-  },
+  errorMessage: () => Session.get('errorMessage'),
+  game: getCurrentGame,
+  players: () => allPlayers (null, true),
   playerClass: function() {
-    var player= Players.findOne(this._id);
+    const player= Players.findOne(this._id);
     if (!player) {
       return null;
     } else if (player.session == Meteor.default_connection._lastSessionId) {
@@ -319,7 +290,7 @@ Template.lobby.helpers({
       return null;
     }
   },
-  roleKeys: function() {
+  roleKeys: () => {
     var roleKeys = [];
     for (key in allRoles) {
       roleKeys.push({ key : key, name : allRoles[key].name });
@@ -327,39 +298,35 @@ Template.lobby.helpers({
     return roleKeys;
   },
   roleClass: function() {
-    var game= getCurrentGame();
+    const game= getCurrentGame();
     return (game && game.roles.includes(this.key)) ? "selected-role" : null;
   },
   roles: allRoles,
-  startButtonDisabled: function() {
-    return readyToStart() ? null : "disabled";
-  },
-  errorMessage: function() {
-    return Session.get('errorMessage');
-  }
+  startButtonDisabled: () => readyToStart() ? null : "disabled",
+  errorMessage: () => Session.get('errorMessage'),
 })
 
 Template.lobby.events({
   'click .btn-leave': leaveGame,
-  'click .btn-start': function() {
+  'click .btn-start': () => {
     const gameID = Session.get('gameID');
     if (gameID) Games.update(gameID, {$set: {state: 'settingUp'}});
   },
-  'click .toggle-player': function(event) {
+  'click .toggle-player': (event) => {
     setCurrentPlayer (event.target.id, true);
   },
-  'submit #lobby-add': function(event) {
-    var playerName = event.target.playerName.value;
-    var game = getCurrentGame();
-    var player = createPlayer(game, playerName);
+  'submit #lobby-add': (event) => {
+    const playerName = event.target.playerName.value;
+    const game = getCurrentGame();
+    const player = createPlayer(game, playerName);
     setCurrentPlayer (player._id);
     event.target.playerName.value = '';
     return false;
   },
-  'click .toggle-role': function(event) {
-    var role = event.target.id;
+  'click .toggle-role': (event) => {
+    const role = event.target.id;
     var game = getCurrentGame();
-    var ind = game.roles.indexOf(role);
+    const ind = game.roles.indexOf(role);
     if (ind >= 0) {
       game.roles.splice(ind,1);
     } else {
@@ -406,7 +373,7 @@ Template.nightView.helpers({
   listAllRoles: listAllRoles,
   players: allPlayers,
   playerClass: function() {
-    var player= Players.findOne(this._id);
+    const player= Players.findOne(this._id);
     if (!player) {
       return null;
     } else if (player.vote) {
@@ -424,7 +391,7 @@ Template.dayView.helpers({
   listAllRoles: listAllRoles,
   players: allPlayers,
   playerClass: function() {
-    var player= Players.findOne(this._id);
+    const player= Players.findOne(this._id);
     if (!player) {
       return null;
     } else if (player.vote) {
@@ -436,7 +403,7 @@ Template.dayView.helpers({
 });
 
 Template.nightView.events({
-  'click .toggle-player': function(event) {
+  'click .toggle-player': (event) => {
     const player = getCurrentPlayer();
     if (player) Players.update (player._id, {$set: {vote: event.target.id}});
   },
