@@ -1,4 +1,5 @@
 allRoles = {
+// roles deck
   werewolf_1 : {
     name: 'Werewolf',
     type: 'werewolf',
@@ -6,7 +7,7 @@ allRoles = {
     dark: true,
     deck: 'roles',
     fellows: 'werewolf',
-    order: 3
+    active: 'night',
   },
   werewolf_2 : {
     name: 'Werewolf',
@@ -15,7 +16,7 @@ allRoles = {
     dark: true,
     deck: 'roles',
     fellows: 'werewolf',
-    order: 3
+    active: 'night',
   },
   werewolf_3 : {
     name: 'Werewolf',
@@ -24,7 +25,7 @@ allRoles = {
     dark: true,
     deck: 'roles',
     fellows: 'werewolf',
-    order: 3
+    active: 'night',
   },
   werewolf_vigilante : {
     name: 'Werewolf Vigilante',
@@ -34,7 +35,7 @@ allRoles = {
     deck: 'roles',
     vigilante: true,
     fellows: 'werewolf',
-    order: 3
+    active: 'night',
   },
   darkVillager : {
     name: 'Dark Villager',
@@ -42,21 +43,21 @@ allRoles = {
     dark: true,
     deck: 'roles',
     fellows: 'werewolf',
-    order: 4
+    active: null,
   },
   wolfsbane : {
     name: 'Wolfsbane',
     type: 'wolfsbane',
     dark: false,
     deck: 'roles',
-    order: 6
+    active: 'night',
   },
   trapper : {
     name: 'Trapper',
     type: 'trapper',
     dark: false,
     deck: 'roles',
-    order: 7
+    active: 'night',
   },
   seer : {
     name: 'Seer',
@@ -65,7 +66,7 @@ allRoles = {
     dark: false,
     deck: 'roles',
     unreliable: false,
-    order: 8
+    active: 'night',
   },
   seer_unreliable: {
     name: 'Unreliable Seer',
@@ -74,7 +75,7 @@ allRoles = {
     dark: false,
     deck: 'roles',
     unreliable: true,
-    order: 8
+    active: 'night',
   },
   vigilante : {
     name: 'Vigilante',
@@ -83,14 +84,14 @@ allRoles = {
     dark: false,
     deck: 'roles',
     vigilante: true,
-    order: 9
+    active: 'day',
   },
   mayor : {
     name: 'Mayor',
     type: 'mayor',
     dark: false,
     deck: 'roles',
-    order: 10
+    active: null,
   },
   cultist_1 : {
     name: 'Cultist',
@@ -99,7 +100,7 @@ allRoles = {
     dark: false,
     deck: 'roles',
     fellows: 'cultist',
-    order: 15
+    active: null,
   },
   cultist_2 : {
     name: 'Cultist',
@@ -108,7 +109,7 @@ allRoles = {
     dark: false,
     deck: 'roles',
     fellows: 'cultist',
-    order: 15
+    active: null,
   },
   cultist_3 : {
     name: 'Cultist',
@@ -117,7 +118,7 @@ allRoles = {
     dark: false,
     deck: 'roles',
     fellows: 'cultist',
-    order: 15
+    active: null,
   },
   cultist_4 : {
     name: 'Cultist',
@@ -126,8 +127,9 @@ allRoles = {
     dark: false,
     deck: 'roles',
     fellows: 'cultist',
-    order: 15
+    active: null,
   },
+// lovers deck
   lovers_1 : {
     name: 'Lover Pair',
     type: 'lovers',
@@ -135,7 +137,6 @@ allRoles = {
     deck: 'lovers',
     number: 2,
     fellows: 'lover',
-    order: 17
   },
   lovers_2 : {
     name: 'Lover Pair',
@@ -144,7 +145,6 @@ allRoles = {
     deck: 'lovers',
     number: 2,
     fellows: 'lover',
-    order: 17
   },
   lovers_triad : {
     name: 'Lover Triad',
@@ -153,7 +153,6 @@ allRoles = {
     deck: 'lovers',
     number: 3,
     fellows: 'lover',
-    order: 18
   },
   rivals : {
     name: 'Rival Pair',
@@ -161,7 +160,6 @@ allRoles = {
     deck: 'lovers',
     number: 2,
     fellows: 'rival',
-    order: 17
   },
 };
 
@@ -171,12 +169,10 @@ roleInfo = function (name) {
     type: 'villager',
     dark: false,
     deck: 'roles',
-    order: 20
   }) : {
     name: 'Zombie',
     type: 'zombie',
     dark: false,
     deck: 'roles',
-    order: 999
   };
 }

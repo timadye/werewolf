@@ -24,7 +24,9 @@ function initialGame() {
     paused: false,
     pausedTime: null,
     // playerIDs, sorted afterwards
-    killed: [],
+    deaths: [],
+    injuries: [],
+    history: []
   };
 }
 
@@ -45,7 +47,8 @@ function createPlayer(game, name) {
     name: name,
     session: null,
     role: null,
-    vote: null // id that this player votes to kill
+    vote: null, // id that this player votes to kill
+    alive: true
   });
   console.log(`New player '${name}' (${playerID}) in game '${game.name}'`)
   return Players.findOne(playerID);
@@ -138,7 +141,7 @@ function allPlayersFind (game=null, includeInactive=false) {
     game = getCurrentGame();
     if (!game) return null;
   }
-  return Players.find( { gameID: game._id, ...includeInactive || {session: {$ne: null}} }, {fields: {name: 1}});
+  return Players.find( { gameID: game._id, ...includeInactive || {session: {$ne: null}, alive: true} }, {fields: {name: 1}});
 }
 
 function allPlayers (game, includeInactive=false) {
@@ -230,7 +233,7 @@ Template.startMenu.rendered = function() {
 };
 
 Template.startMenu.helpers({
-  allGamesButtons: allGamesFetch
+  allGamesButtons: allGamesFetch,
 });
 
 Template.startMenu.events({
@@ -259,7 +262,7 @@ Template.startMenu.events({
     });
 
     return false;
-  }
+  },
 });
 
 Session.set('currentView', 'startMenu');
@@ -371,7 +374,11 @@ Template.nightView.helpers({
   roleName: roleName,
   showFellows: showFellows,
   listAllRoles: listAllRoles,
-  players: allPlayers,
+  alive: () => {
+    const player = getCurrentPlayer();
+    return (player && player.alive);
+  },
+  players: () => [ ... allPlayers(), { _id: 0, name: 'none' } ],
   playerClass: function() {
     const player= Players.findOne(this._id);
     if (!player) {
@@ -389,7 +396,11 @@ Template.dayView.helpers({
   roleName: roleName,
   showFellows: showFellows,
   listAllRoles: listAllRoles,
-  players: allPlayers,
+  alive: () => {
+    const player = getCurrentPlayer();
+    return (player && player.alive);
+  },
+  players: () => [ ... allPlayers(), { _id: "0", name: 'none' } ],
   playerClass: function() {
     const player= Players.findOne(this._id);
     if (!player) {
@@ -400,6 +411,16 @@ Template.dayView.helpers({
       return null;
     }
   },
+  showCasualties: () => {
+    const game= getCurrentGame();
+    if (!game) return null;
+    let msg = [];
+    if (game.deaths.length)
+      msg.push (game.deaths.join(" and ") + (game.deaths.length >= 2 ? " are" : " is") + " dead.");
+    if (game.injuries.length)
+      msg.push (game.injuries.join(" and ") + (game.injuries.length >= 2 ? " are" : " is") + " injured.");
+    return msg.length ? msg.join("<br>") : "There are no injuries.";
+  },
 });
 
 Template.nightView.events({
@@ -408,14 +429,14 @@ Template.nightView.events({
     if (player) Players.update (player._id, {$set: {vote: event.target.id}});
   },
   'click .btn-leave': leaveGame,
-  'click .btn-end': endGame
+  'click .btn-end': endGame,
 });
 
 Template.dayView.events({
   'click .btn-sleep': (event) => {
     const gameID = Session.get('gameID');
-    if (gameID) Games.update(gameID, {$set: {state: 'nightTime'}});
+    if (gameID) Games.update(gameID, {$set: {state: 'nightTime', deaths: [], injuries: []}});
   },
   'click .btn-leave': leaveGame,
-  'click .btn-end': endGame
+  'click .btn-end': endGame,
 });

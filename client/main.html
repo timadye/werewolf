@@ -100,6 +100,7 @@
     All roles: {{ listAllRoles }}.
   </p>
 
+  {{#if alive}}
   <h4>Select a player</h4>
 
   <form id="night-player-form">
@@ -113,6 +114,9 @@
     {{/each}}
     </div>
   </form>
+  {{else}}
+  <p>You are dead.</p>
+  {{/if}}
 
   <button class="btn btn-secondary btn-md btn-end">End Game</button>
   <button class="btn btn-secondary btn-md btn-leave">Leave Game</button>
@@ -127,6 +131,15 @@
     {{{ showFellows }}}
     All roles: {{ listAllRoles }}.
   </p>
+
+  <p>
+    {{{ showCasualties }}}
+  </p>
+
+  {{#if alive}}
+  {{else}}
+  <p>You are dead.</p>
+  {{/if}}
 
   <button class="btn btn-primary btn-lg btn-sleep">Sleep</button>
   <br>
