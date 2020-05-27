@@ -30,6 +30,16 @@ function initialGame() {
   };
 }
 
+function initialPlayer() {
+  return {
+    role: null,
+    vote: null, // id that this player selects at night
+    call: null, // id that this player selects in the day
+    lynch: null, // 'lynch' or 'spare'
+    alive: true
+  };
+}
+
 function createGame(name) {
   const gameID = Games.insert({
     name: name,
@@ -46,9 +56,7 @@ function createPlayer(game, name) {
     gameID: game._id,
     name: name,
     session: null,
-    role: null,
-    vote: null, // id that this player votes to kill
-    alive: true
+    ... initialPlayer()
   });
   console.log(`New player '${name}' (${playerID}) in game '${game.name}'`)
   return Players.findOne(playerID);
@@ -133,20 +141,21 @@ function allGamesFetch() {
 }
 
 function allGames() {
-  return allGamesFetch() . map ((game) => game.name);
+  const ret = allGamesFetch();
+  return ret ? ret.map((game) => game.name) : ret;
 }
 
-function allPlayersFind (game=null, includeInactive=false) {
-  if (!game) {
-    game = getCurrentGame();
-    if (!game) return null;
+function allPlayersFind (gameID=null, includeInactive=false) {
+  if (!gameID) {
+    gameID = Session.get('gameID');
+    if (!gameID) return null;
   }
-  return Players.find( { gameID: game._id, ...includeInactive || {session: {$ne: null}, alive: true} }, {fields: {name: 1}});
+  return Players.find( { gameID: gameID, ...includeInactive || {session: {$ne: null}, alive: true} }, {fields: {name: 1}});
 }
 
-function allPlayers (game, includeInactive=false) {
-  var ret = allPlayersFind (game, includeInactive)
-  return ret ? ret.fetch() : null;
+function allPlayers (gameID=null, includeInactive=false) {
+  const ret = allPlayersFind (gameID, includeInactive)
+  return ret ? ret.fetch() : [];
 }
 
 function readyToStart() {
@@ -166,7 +175,7 @@ function readyToStart() {
     console.log(`readyToStart=false: ${decks.roles} roles, ${ndark[true]} dark, ${types.werewolf} werewolves, ${types.cultist} cultists, ${decks.lovers} lovers/rivals`);
     return false;
   }
-  const nplayers = allPlayersFind (game) . count();
+  const nplayers = allPlayersFind (game._id) . count();
   ok = (nplayers >= decks.roles && nplayers >= decks.lovers && nplayers > ndark[true]);
   console.log(`readyToStart=${ok}: ${nplayers} players, ${decks.roles} roles, ${ndark[true]} dark, ${types.werewolf} werewolves, ${types.cultist} cultists, ${decks.lovers} lovers/rivals`);
   return ok;
@@ -205,7 +214,12 @@ function leaveGame() {
 
 function resetGame() {
   const gameID = Session.get('gameID');
-  if (gameID) Games.update(gameID, { $set: initialGame() });
+  if (gameID) {
+    Games.update(gameID, { $set: initialGame() });
+    for (const player of allPlayers (gameID, true)) {
+      Players.update(player._id, { $set: initialPlayer() });
+    }
+  }
 }
 
 function endGame() {
@@ -396,16 +410,27 @@ Template.dayView.helpers({
   roleName: roleName,
   showFellows: showFellows,
   listAllRoles: listAllRoles,
+  voting: () => {
+    let calls = {}, lynching = 0;
+    for (const {call} of Players.find({call: {$ne: null}}, {fields: {call:1} }) . fetch()) {
+      if (call in calls) {
+        if (++calls[call] == 2) lynching++;
+      } else {
+        calls[call] = 1;
+      }
+    }
+    return lynching==1;
+  },
   alive: () => {
     const player = getCurrentPlayer();
     return (player && player.alive);
   },
-  players: () => [ ... allPlayers(), { _id: "0", name: 'none' } ],
+  players: allPlayers,
   playerClass: function() {
-    const player= Players.findOne(this._id);
-    if (!player) {
-      return null;
-    } else if (player.vote) {
+    const ncalls= Players.find({call: this._id}) . count();
+    if (ncalls >= 2) {
+      return "lynch-player";
+    } else if (ncalls >= 1) {
       return "voted-player";
     } else {
       return null;
@@ -433,10 +458,25 @@ Template.nightView.events({
 });
 
 Template.dayView.events({
+  'click .toggle-player': (event) => {
+    const player = getCurrentPlayer();
+    if (player) {
+      let call = event.target.id;
+      if (player.call == call) call = null;
+      Players.update (player._id, {$set: {call: call}});
+    }
+  },
   'click .btn-sleep': (event) => {
     const gameID = Session.get('gameID');
     if (gameID) Games.update(gameID, {$set: {state: 'nightTime', deaths: [], injuries: []}});
   },
+  'click .btn-lynch': () => lynchVote("lynch"),
+  'click .btn-spare': () => lynchVote("spare"),
   'click .btn-leave': leaveGame,
   'click .btn-end': endGame,
 });
+
+function lynchVote(vote) {
+  const player = getCurrentPlayer();
+  if (player) Players.update (player._id, {$set: {lynch: vote}});
+}

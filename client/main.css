@@ -169,18 +169,18 @@ input[type="checkbox"] {
   visibility: hidden;
 }
 
-#night-player-form {
+#player-form {
   margin-left: 10%;
   margin-right: 10%;
 }
 
-#night-player-list {
+#player-list {
   column-count: 2;
   column-gap: 4px;
   margin-bottom: 15px;
 }
 
-#night-player-list div {
+#player-list div {
   display: inline-block;
   width: 100%;
   text-align: left;
@@ -192,18 +192,28 @@ input[type="checkbox"] {
   border-radius: 7px;
 }
 
-#night-player-list div:hover {
+#player-list div:hover {
   background-color: #aaa;
 }
 
-#night-player-list .voted-player {
+#player-list .voted-player {
   color: white;
   background-color: #070;
 }
 
-#night-player-list .voted-player:hover {
+#player-list .voted-player:hover {
   color: white;
   background-color: #090;
+}
+
+#player-list .lynch-player {
+  color: white;
+  background-color: #900;
+}
+
+#player-list .lynch-player:hover {
+  color: white;
+  background-color: #b00;
 }
 
 .footer {

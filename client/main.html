@@ -102,21 +102,25 @@
 
   {{#if alive}}
   <h4>Select a player</h4>
+  {{else}}
+  <h4>You are dead.</h4>
+  {{/if}}
 
-  <form id="night-player-form">
-    <div id="night-player-list">
+  <form id="player-form">
+    <div id="player-list">
     {{#each players}}
     <div class="checkbox {{ playerClass }}">
       <label class="player-checkbox">
+        {{#if alive}}
         <input type="checkbox" id="{{ _id }}" class="toggle-player"/>{{ name }}<br>
+        {{else}}
+        <input type="checkbox" id="{{ _id }}"/>{{ name }}<br>
+        {{/if}}
       </label>
     </div>
     {{/each}}
     </div>
   </form>
-  {{else}}
-  <p>You are dead.</p>
-  {{/if}}
 
   <button class="btn btn-secondary btn-md btn-end">End Game</button>
   <button class="btn btn-secondary btn-md btn-leave">Leave Game</button>
@@ -137,13 +141,37 @@
   </p>
 
   {{#if alive}}
+  <h4>Select a player
+  <button class="btn btn-primary btn-md btn-twang">Twang!</button></h4>
   {{else}}
-  <p>You are dead.</p>
+  <h4>You are dead.</h4>
   {{/if}}
 
-  <button class="btn btn-primary btn-lg btn-sleep">Sleep</button>
+  <form id="player-form">
+    <div id="player-list">
+    {{#each players}}
+    <div class="checkbox {{ playerClass }}">
+      <label class="player-checkbox">
+        {{#if alive}}
+        <input type="checkbox" id="{{ _id }}" class="toggle-player"/>{{ name }}<br>
+        {{else}}
+        <input type="checkbox" id="{{ _id }}"/>{{ name }}<br>
+        {{/if}}
+      </label>
+    </div>
+    {{/each}}
+    </div>
+  </form>
   <br>
-  <button class="btn btn-secondary btn-md btn-vote-now">Vote Now</button>
+  <br>
+  {{#if voting}}
+  <button class="btn btn-primary btn-lg btn-lynch">Lynch</button>
+  <button class="btn btn-primary btn-lg btn-spare">Spare</button>
+  {{else}}
+  <button class="btn btn-primary btn-lg btn-sleep">Sleep</button>
+  {{/if}}
+  <br>
+  <br>
   <button class="btn btn-secondary btn-md btn-end">End Game</button>
   <button class="btn btn-secondary btn-md btn-leave">Leave Game</button>
 

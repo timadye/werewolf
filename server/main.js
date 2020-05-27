@@ -114,21 +114,19 @@ Players.find({'vote': {$ne: null}}).observeChanges({
       console.log(`Game ${game.name} ${game.state}: all ${players.length} players voted`);
       for (const player of players) {
         if (player.vote == "0") {
-          console.log(`Player ${player.name} (${id}) did not vote (${player.vote})`);
+          console.log(`  Player ${player.name} (${id}) did not vote (${player.vote})`);
         } else {
           const vote = players.find (p => p._id === player.vote);
           if (vote)
-            console.log(`Player ${player.name} (${id}) voted for ${vote.name} (${player.vote})`);
+            console.log(`  Player ${player.name} (${id}) voted for ${vote.name} (${player.vote})`);
           else
-            console.log(`Player ${player.name} (${id}) invalid vote for ${player.vote}`);
+            console.log(`  Player ${player.name} (${id}) invalid vote for ${player.vote}`);
         }
       }
     }
     if (game.state == "nightTime") {
       dawn (game, players);
       Players.update({gameID: gameID, session: {$ne: null}}, {$set: {vote: null}}, {multi: true});
-    } else if (game.state == "dayTime") {
-      lynch (game, players);
     }
   }
 });
@@ -200,8 +198,7 @@ function dawn (game, playersIn) {
                           $push: { history: players }});
 }
 
-function loverSuicide (game, playerMap, player) {
-  const suicides = [];
+function loverSuicide (game, playerMap, player, suicides=[]) {
   for (let lovers of game.fellows.lover) {
     if (lovers.some (p => p._id == player._id)) {
       for (let lover of lovers) {
@@ -219,10 +216,77 @@ function loverSuicide (game, playerMap, player) {
 
   // Suicide lovers of lovers (is this a thing?)
   for (let suicide of suicides) {
-    loverSuicide (game, playerMap, suicide);
+    loverSuicide (game, playerMap, suicide, suicides);
   }
+  return suicides;
 }
 
+Players.find({'lynch': {$ne: null}}).observeChanges({
+  added: function(id, player) {
+    const gameID = player.gameID;
+    if (debug>=3) console.log(`Player ${player.name} (${id}) initially voted to ${player.lynch}`);
+    const players = Players.find({ gameID: gameID, session: {$ne: null}, alive: true }, { fields: {_id:1, name:1, call:1, lynch:1} }).fetch();
+    if (players.some (p => !p.lynch)) return null;
+    const game = Games.findOne(gameID);
+    if (debug>=1) {
+      console.log(`Game ${game.name} ${game.state}: all ${players.length} players voted`);
+      for (const player of players) {
+        console.log(`  Player ${player.name} (${player._id}) voted to ${player.lynch}`, player.call ? `(lynch call on ${player.call})` : "");
+      }
+    }
+    if (game.state == "dayTime") {
+      lynch (game, players);
+      Players.update({gameID: gameID, session: {$ne: null}}, {$set: {call: null, lynch: null}}, {multi: true});
+    }
+  }
+});
+
 function lynch (game, players) {
-  console.log ("Lynching");
+  const victimIn = lynchCall (players);
+  if (!victimIn) return;
+  const votes = keyArrayMap (players, p => [p.lynch, p._id], {lynch:[], spare:[]});
+  const calls = players.flatMap (p => (p.call == victimIn._id ? [p._id] : []));
+  const dead = (votes.lynch.length > votes.spare.length);
+  const victim = { _id: victimIn._id, name: victimIn.name, ... votes, attackers: calls, casualty: dead?2:0, cause: 'lynch' };
+  if (debug >= 1) console.log (`Player ${victim.name} (${victim._id}) was ${dead?"lynched":"spared"} by ${votes.lynch.length} to ${votes.spare.length}`);
+
+  var history = [victim], deaths=[];
+  if (dead) {
+    // why doesn't this find suicides?????????????????????
+    if (debug >= 3) console.log ('lovers =', game.fellows.lover);
+    const playerMap = objectMap (players, p => ({[p._id]: p}));
+    history = history . concat (loverSuicide (game, playerMap, victim));
+
+    for (let player of history) {
+      if (player.casualty >= 2) {
+        deaths.push(player.name);
+        Players.update (player._id, {$set: {alive: false}});
+      }
+    }
+    if (debug >= 1) console.log (`Lynching: deaths = ${deaths}`);
+    if (debug >= 2) console.log ('details =', history);
+  }
+
+  Games.update(game._id, {$push: { history: history, ... dead && {deaths: victim.name } }});
+}
+
+function lynchCall (players) {
+  if (debug >= 3) console.log('players =', players);
+  let calls = {}, lynching = [];
+  for (const player of players) {
+    if (player.call && player.call in calls) {
+      if (++calls[player.call] == 2)
+        lynching.push (players.find (p => p._id == player.call));
+    } else {
+      calls[player.call] = 1;
+    }
+  }
+  if (lynching.length == 1) {
+    return lynching[0];
+  } else if (lynching.length == 0) {
+    if (debug >= 0) console.log (`Ignore vote on call which was not seconded on ${Object(calls).keys().join(" and ")}`);
+  }  else {
+    if (debug >= 0) console.log (`Ignore vote on multiple calls on ${lynching.join(" and ")}`);
+  }
+  return null;
 }
