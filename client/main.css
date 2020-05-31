@@ -12,7 +12,27 @@
   font-family: 'HKGroteskRegular', inherit;
 }
 
+html {
+  --current-bg-color: white;
+  --current-fg-color: black;
+}
+
+html.night {
+  --current-bg-color: #222;
+  --current-fg-color: white;
+}
+
+html.day {
+  --current-bg-color: #ffc;
+  --current-fg-color: black;
+}
+
+p, h1, h2, h3, h4 {
+  color: var(--current-fg-color);
+}
+
 body {
+  background-color: var(--current-bg-color);
   text-align: center;
   margin: 0 auto 0 auto;
   max-width: 500px;
@@ -190,6 +210,8 @@ input[type="checkbox"] {
   margin: 0 0 4px 0;
   cursor: pointer;
   border-radius: 7px;
+  border: solid 0.3em;
+  border-color: var(--current-bg-color);
 }
 
 #player-list div:hover {
@@ -215,6 +237,11 @@ input[type="checkbox"] {
   color: white;
   background-color: #b00;
 }
+
+#player-list .crossbow-loaded {
+  border-color: #c0c;
+}
+
 
 .footer {
   right: 0;

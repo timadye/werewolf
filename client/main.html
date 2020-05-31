@@ -49,7 +49,7 @@
 </template>
 
 <template name="lobby">
-  <h2>{{game.name}} village</h2>
+  <h2>{{gameName}} village</h2>
   <h3>Assemble villagers and set up game</h3>
 
   {{#if errorMessage}}
@@ -92,12 +92,12 @@
 </template>
 
 <template name="nightView">
-  <h3>Night View for {{ playerName }}</h3>
+  <p>{{gameName}} roles: {{ listAllRoles }}</p>
+  <h3>Nighttime for {{ playerName }}</h3>
 
   <p>
     You are the {{ roleName }}.<br>
     {{{ showFellows }}}
-    All roles: {{ listAllRoles }}.
   </p>
 
   {{#if alive}}
@@ -128,12 +128,12 @@
 </template>
 
 <template name="dayView">
-  <h3>Day View for {{ playerName }}</h3>
+  <p>{{gameName}} roles: {{ listAllRoles }}</p>
+  <h3>Daytime for {{ playerName }}</h3>
 
   <p>
     You are the {{ roleName }}.<br>
     {{{ showFellows }}}
-    All roles: {{ listAllRoles }}.
   </p>
 
   <p>
@@ -142,7 +142,10 @@
 
   {{#if alive}}
   <h4>Select a player
-  <button class="btn btn-primary btn-md btn-twang">Twang!</button></h4>
+  {{#if haveVigilante}}
+  <button class="btn btn-primary btn-md btn-twang">Load crossbow</button>
+  {{/if}}
+  </h4>
   {{else}}
   <h4>You are dead.</h4>
   {{/if}}

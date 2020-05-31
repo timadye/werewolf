@@ -1,6 +1,8 @@
 import '../imports/roles.js';
 import '../imports/utils.js';
 
+const debug = 1;
+
 function initialGame() {
   return {
     centerCards: [],
@@ -36,7 +38,9 @@ function initialPlayer() {
     vote: null, // id that this player selects at night
     call: null, // id that this player selects in the day
     lynch: null, // 'lynch' or 'spare'
-    alive: true
+    alive: true,
+    crossbow: false, // crossbow loaded
+    twang: null // id of crossbow victim
   };
 }
 
@@ -47,7 +51,7 @@ function createGame(name) {
     roles: ["werewolf_1", "werewolf_2", "wolfsbane", "trapper"],
     ... initialGame()
   });
-  console.log(`New village '${name}' (${gameID})`)
+  if (debug>=1) console.log(`New village '${name}' (${gameID})`)
   return Games.findOne(gameID);
 }
 
@@ -58,7 +62,7 @@ function createPlayer(game, name) {
     session: null,
     ... initialPlayer()
   });
-  console.log(`New player '${name}' (${playerID}) in game '${game.name}'`)
+  if (debug>=1) console.log(`New player '${name}' (${playerID}) in game '${game.name}'`)
   return Players.findOne(playerID);
 }
 
@@ -70,7 +74,7 @@ function joinGame(name) {
       reportError(`no village '${name}'`);
       return false;
     }
-    console.log(`join village '${name}', id=${game._id}`);
+    if (debug>=1) console.log(`Join village '${name}', id=${game._id}`);
     Meteor.subscribe('players', game._id);
     Session.set('gameID', game._id);
   });
@@ -99,6 +103,22 @@ function setCurrentGame(game) {
 function getCurrentGame() {
   const gameID = Session.get('gameID');
   return gameID ? Games.findOne(gameID) : null;
+}
+
+function gameName(gameID) {
+  if (gameID === undefined) gameID = Session.get('gameID');
+  if (!gameID) return null;
+  const game = Games.findOne(gameID, { fields: { name: 1 } });
+  return game ? game.name : null;
+}
+
+function playerName(playerID) {
+  const player = Players.findOne(
+    (playerID !== undefined) ? playerID
+                             : {session: Meteor.default_connection._lastSessionId},
+    { fields: { name: 1 } }
+  );
+  return player ? player.name : null;
 }
 
 function getCurrentPlayer() {
@@ -172,12 +192,12 @@ function readyToStart() {
     ndark[role.dark] += n;
   }
   if (!(types.werewolf >= 1 && types.cultist != 1)) {
-    console.log(`readyToStart=false: ${decks.roles} roles, ${ndark[true]} dark, ${types.werewolf} werewolves, ${types.cultist} cultists, ${decks.lovers} lovers/rivals`);
+    if (debug>=2) console.log(`readyToStart=false: ${decks.roles} roles, ${ndark[true]} dark, ${types.werewolf} werewolves, ${types.cultist} cultists, ${decks.lovers} lovers/rivals`);
     return false;
   }
   const nplayers = allPlayersFind (game._id) . count();
   ok = (nplayers >= decks.roles && nplayers >= decks.lovers && nplayers > ndark[true]);
-  console.log(`readyToStart=${ok}: ${nplayers} players, ${decks.roles} roles, ${ndark[true]} dark, ${types.werewolf} werewolves, ${types.cultist} cultists, ${decks.lovers} lovers/rivals`);
+  if (debug>=2) console.log(`readyToStart=${ok}: ${nplayers} players, ${decks.roles} roles, ${ndark[true]} dark, ${types.werewolf} werewolves, ${types.cultist} cultists, ${decks.lovers} lovers/rivals`);
   return ok;
 }
 
@@ -228,6 +248,21 @@ function endGame() {
   Session.set('turnMessage', null);
 }
 
+// Handlebars.registerHelper() wrapper.
+// Blaze/Spacebars/Handlebars doesn't seem to allow multiple helpers to be defined at once as implied here:
+//   https://handlebarsjs.com/api-reference/runtime.html#handlebars-registerhelper-name-helper
+// registerHelper({helper: ()=>{}}) can be used instead.
+function registerHelper(helpers, helper) {
+  if (typeof helpers == "object" && helper === undefined) {
+    for (const [k,v] of Object.entries(helpers)) {
+      if (debug>=3) console.log(`Handlebars.registerHelper(${k},${v})`);
+      Handlebars.registerHelper(k,v);
+    }
+  } else {
+    Handlebars.registerHelper(helpers,helper);
+  }
+}
+
 Template.main.helpers({
   whichView: () => {
     return Session.get('currentView');
@@ -240,7 +275,7 @@ Template.startMenu.rendered = function() {
   // subscription allGames might not be published by server, but show all games if so.
   Meteor.subscribe('allGames', function onReady() {
     Session.set('allGamesSubscribed',true);
-    console.log(`all games = ${allGames()}`);
+    if (debug>=3) console.log(`all games = ${allGames()}`);
     $(".allGames-removed").removeClass("allGames-removed");
   });
   this.find("input").focus();
@@ -252,7 +287,7 @@ Template.startMenu.helpers({
 
 Template.startMenu.events({
   'click .btn-reset': () => {
-    console.log(`reset all games`);
+    if (debug>=1) console.log(`reset all games`);
     resetUserState();
     Meteor.call('resetAllGames');
   },
@@ -292,8 +327,6 @@ Template.lobby.rendered = function(event) {
 };
 
 Template.lobby.helpers({
-  errorMessage: () => Session.get('errorMessage'),
-  game: getCurrentGame,
   players: () => allPlayers (null, true),
   playerClass: function() {
     const player= Players.findOne(this._id);
@@ -353,41 +386,35 @@ Template.lobby.events({
   },
 });
 
-function playerName() {
-  const player = getCurrentPlayer();
-  return player ? player.name : "the undead";
-}
-
-function roleName() {
-  const player = getCurrentPlayer();
-  return roleInfo (player ? player.role : null) . name;
-}
-
-function showFellows() {
-  const player = getCurrentPlayer();
-  if (!player) return null;
-  return Object.entries (player.fellows) . map (([f,players]) => {
-    const pmsg = players.join(" and ");
-    const fmsg = {
-      werewolf: ["The other werewolf is ",  "The other werewolves are " ],
-      cultist:  ["Your fellow cultist is ", "Your fellow cultists are " ],
-      lover:    ["You are in love with ",   "You are in love with "     ],
-      rival:    ["Your rival is ",          "Your rivals are "          ],
-    }[f];
-    return (fmsg ? fmsg[players.length==1?0:1] : f+": ")+pmsg+".<br>";
-  }) . join("");
-}
-
-function listAllRoles() {
-  return getCurrentGame().roles.map (r => roleInfo(r).name) . join(", ");
-}
-
+registerHelper ({
+  errorMessage: () => Session.get('errorMessage'),
+  game: getCurrentGame,
+  gameName: gameName,
+  playerName: () => (playerName() || "the undead"),
+  roleName: () => {
+    const player = getCurrentPlayer();
+    return roleInfo (player ? player.role : null) . name;
+  },
+  showFellows: () => {
+    const player = getCurrentPlayer();
+    if (!player) return null;
+    return Object.entries (player.fellows) . map (([f,players]) => {
+      const pmsg = players.join(" and ");
+      const fmsg = {
+        werewolf: ["The other werewolf is ",  "The other werewolves are " ],
+        cultist:  ["Your fellow cultist is ", "Your fellow cultists are " ],
+        lover:    ["You are in love with ",   "You are in love with "     ],
+        rival:    ["Your rival is ",          "Your rivals are "          ],
+      }[f];
+      return (fmsg ? fmsg[players.length==1?0:1] : f+": ")+pmsg+".<br>";
+    }) . join("");
+  },
+  listAllRoles: () => {
+    return getCurrentGame().roles.map (r => roleInfo(r).name) . join(", ");
+  }
+});
 
 Template.nightView.helpers({
-  playerName: playerName,
-  roleName: roleName,
-  showFellows: showFellows,
-  listAllRoles: listAllRoles,
   alive: () => {
     const player = getCurrentPlayer();
     return (player && player.alive);
@@ -405,11 +432,24 @@ Template.nightView.helpers({
   },
 });
 
+Template.nightView.rendered = () => {
+  $('html').addClass("night");
+};
+
+Template.nightView.destroyed = () => {
+  $('html').removeClass("night");
+};
+
+Template.dayView.rendered = () => {
+  $('html').addClass("day");
+};
+
+Template.dayView.destroyed = () => {
+  $('html').removeClass("day");
+};
+
 Template.dayView.helpers({
-  playerName: playerName,
-  roleName: roleName,
-  showFellows: showFellows,
-  listAllRoles: listAllRoles,
+  haveVigilante: () => getCurrentGame().roles.some (r => roleInfo(r).vigilante),
   voting: () => {
     let calls = {}, lynching = 0;
     for (const {call} of Players.find({call: {$ne: null}}, {fields: {call:1} }) . fetch()) {
@@ -428,13 +468,15 @@ Template.dayView.helpers({
   players: allPlayers,
   playerClass: function() {
     const ncalls= Players.find({call: this._id}) . count();
-    if (ncalls >= 2) {
-      return "lynch-player";
+    const loaded= Players.find({_id: this._id, crossbow: true}) . count();
+    let cl = [];
+    if (loaded) cl.push ("crossbow-loaded");
+    if        (ncalls >= 2) {
+      cl.push ("lynch-player");
     } else if (ncalls >= 1) {
-      return "voted-player";
-    } else {
-      return null;
+      cl.push ("voted-player");
     }
+    return cl.join(" ");
   },
   showCasualties: () => {
     const game= getCurrentGame();
@@ -461,10 +503,21 @@ Template.dayView.events({
   'click .toggle-player': (event) => {
     const player = getCurrentPlayer();
     if (player) {
-      let call = event.target.id;
-      if (player.call == call) call = null;
-      Players.update (player._id, {$set: {call: call}});
+      if (player.crossbow) {
+        const victimID = (roleInfo(player.role).vigilante && !player.twang) ? event.target.id : null;
+        Players.update (player._id, {$set: {crossbow: false, ...victimID && {twang: victimID} }} );
+      } else {
+        let call = event.target.id;
+        if (player.call == call) call = null;
+        Players.update (player._id, {$set: {call: call}});
+      }
     }
+  },
+  'click .btn-twang': () => {
+    // allow anyone to load a crossbow, but only vigilante can fire.
+    const player = getCurrentPlayer();
+    if (player)
+      Players.update (player._id, {$set: {call: null, crossbow: !player.crossbow}});
   },
   'click .btn-sleep': (event) => {
     const gameID = Session.get('gameID');

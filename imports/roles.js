@@ -92,6 +92,7 @@ allRoles = {
     dark: false,
     deck: 'roles',
     active: null,
+    votes: 2,
   },
   cultist_1 : {
     name: 'Cultist',
