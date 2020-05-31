@@ -5,27 +5,9 @@ const debug = 1;
 
 function initialGame() {
   return {
-    centerCards: [],
     playerRoles: [],
     lovers: [],
     state: 'waitingForPlayers',
-    turnIndex: 0,
-    numMoves: 0,
-    moveLimit: 0,
-    selectedPlayerIds: [],
-    selectedCenterCards: [],
-    // whether or not werewolf can click center or player cards
-    werewolfCenter: false,
-    // list of swaps in the form of { player_id : ___, new_role : ___ }
-    swaps: [],
-    swapping: false,
-    insomniacRole: allRoles.insomniac,
-    // time
-    discussionTime: 5,
-    endTime: null,
-    paused: false,
-    pausedTime: null,
-    // playerIDs, sorted afterwards
     deaths: [],
     injuries: [],
     history: []
