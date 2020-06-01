@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor';
 import '../imports/roles.js';
 import '../imports/utils.js';
 
-const showAllVillages = true;
+const showAllVillages = false;
 const debug = 1;
 
 Meteor.startup(() => {
