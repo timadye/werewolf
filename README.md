@@ -4,4 +4,4 @@ What exactly is _Werewolf?_ It's a game. It's another one of those [University o
 
 The code here is an attempt to capture that experience online, or perhaps to allow face-to-face playing without a human _Fate_ (which anyway is a contradiction in terms). It is implemented in [Meteor](https://github.com/meteor/meteor), based on [code](https://github.com/timadye/werewolf/tree/1n-werewolf) for [_One Night Ultimate Werewolf_](https://github.com/katiejiang/werewolf) by [Katie Jiang](https://github.com/katiejiang/), which can be run from [http://ultimatewerewolf.herokuapp.com](http://ultimatewerewolf.herokuapp.com).
 
-_Oxford Werewolf_ is still a work-in-progress. It mostly works, but there is still quite a bit still to tidy up.
+_Oxford Werewolf_ is still a work-in-progress. It mostly works, but there is quite a bit still to tidy up.
