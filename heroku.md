@@ -13,4 +13,5 @@ heroku addons:create mongolab:sandbox
 heroku config   # shows MONGODB_URI to set MONGO_URL in next command
 heroku config:add MONGO_URL=<MONGODB_URI>
 heroku config:add ROOT_URL=https://oxford-werewolf.herokuapp.com
+heroku config:add WEREWOLF_HIDE=1
 ```

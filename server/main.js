@@ -2,10 +2,11 @@ import { Meteor } from 'meteor/meteor';
 import '../imports/roles.js';
 import '../imports/utils.js';
 
-const showAllVillages = false;
-const debug = 1;
+const showAllVillages = !Number(process.env.WEREWOLF_HIDE);
+const debug            = Number(process.env.WEREWOLF_DEBUG || 1);
 
 Meteor.startup(() => {
+  console.log(`Start Werewolf server: showAllVillages=${showAllVillages}, debug=${debug}`);
   Games.remove({});
   Players.remove({});
 });
