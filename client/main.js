@@ -38,6 +38,12 @@ function createGame(name) {
 }
 
 function createPlayer(game, name) {
+  if (!game || !name) return null;
+  const player = Players.findOne({gameID: game._id, name: name});
+  if (player) {
+    if (debug>=1) console.log(`Player '${name}' (${player._id}) is already in game '${game.name}'`)
+    return player;
+  }
   const playerID = Players.insert({
     gameID: game._id,
     name: name,
@@ -46,6 +52,19 @@ function createPlayer(game, name) {
   });
   if (debug>=1) console.log(`New player '${name}' (${playerID}) in game '${game.name}'`)
   return Players.findOne(playerID);
+}
+
+function removePlayer(game, name) {
+  if (!game) return;
+  if (name) {
+    var player = Players.findOne({gameID: game._id, name: name});
+  } else {
+    var player = getCurrentPlayer();
+  }
+  if (player) {
+    console.log (`Remove player '${player.name}' (${player._id}) from game '${game.name}'`);
+    Players.remove(player._id);
+  }
 }
 
 function joinGame(name) {
@@ -183,6 +202,20 @@ function readyToStart() {
   return ok;
 }
 
+var interval = null;
+function startClock (start=true) {
+  if (interval) Meteor.clearInterval(interval);
+  Session.set('time', 0);
+  if (start) {
+    interval = Meteor.setInterval(() => {
+    const secs = Session.get('time') || 0;
+    Session.set('time', secs+1);
+    }, 1000);
+  } else {
+    interval = null;
+  }
+}
+
 /* sets the state of the game (which template to render) */
 /* types of game state:
     waitingForPlayers (lobby)
@@ -201,10 +234,6 @@ function trackGameState() {
     Session.set('currentView', 'dayView');
   }
 }
-
-Meteor.setInterval(() => {
-  Session.set('time', new Date());
-}, 1000);
 
 Tracker.autorun(trackGameState);
 
@@ -348,10 +377,18 @@ Template.lobby.events({
     setCurrentPlayer (event.target.id, true);
   },
   'submit #lobby-add': (event) => {
+    const target = event.explicitOriginalTarget || event.relatedTarget || document.activeElement || {};
+    const action = target.name || 'player-add';
     const playerName = event.target.playerName.value;
+    if (debug >= 2) console.log(`action = ${action}, name = '${playerName}'`);
     const game = getCurrentGame();
-    const player = createPlayer(game, playerName);
-    setCurrentPlayer (player._id);
+    if (action != 'player-remove') {
+      const player = createPlayer(game, playerName);
+      if (player) setCurrentPlayer (player._id);
+    } else {
+      removePlayer(game, playerName);
+      setCurrentPlayer (null);
+    }
     event.target.playerName.value = '';
     return false;
   },
@@ -372,7 +409,7 @@ registerHelper ({
   errorMessage: () => Session.get('errorMessage'),
   game: getCurrentGame,
   gameName: gameName,
-  playerName: () => (playerName() || "the undead"),
+  playerName: () => (playerName() || "a lurker"),
   roleName: () => {
     const player = getCurrentPlayer();
     return roleInfo (player ? player.role : null) . name;
@@ -391,9 +428,26 @@ registerHelper ({
       return (fmsg ? fmsg[players.length==1?0:1] : f+": ")+pmsg+".<br>";
     }) . join("");
   },
+  showAllRoles: () => {
+    const game = getCurrentGame();
+    if (!game) return null;
+    var msg = Object.entries (game.playerRoles) . map (([playerID, role]) => `${playerName(playerID)} is the ${roleInfo(role).name}.`);
+    for (fellow of ['lover', 'rival']) {
+      for (fellows of game.fellows[fellow]) {
+        msg.push (fellows.map(p => p.name).join(" and ") + ` are ${fellow}s.`);
+      }
+    }
+    return msg.join("<br>");
+  },
   listAllRoles: () => {
     return getCurrentGame().roles.map (r => roleInfo(r).name) . join(", ");
-  }
+  },
+  hiddenRole: () => Session.get("hiddenRole"),
+  time: () => {
+    const secs = Session.get("time");
+    return Math.floor(secs/60).toString() + ":" +
+           Math.floor(secs%60).toString().padStart(2,'0');
+  },
 });
 
 Template.nightView.helpers({
@@ -416,18 +470,24 @@ Template.nightView.helpers({
 
 Template.nightView.rendered = () => {
   $('html').addClass("night");
+  hideRole();
+  startClock();
 };
 
 Template.nightView.destroyed = () => {
   $('html').removeClass("night");
+  startClock(false);
 };
 
 Template.dayView.rendered = () => {
   $('html').addClass("day");
+  hideRole();
+  startClock();
 };
 
 Template.dayView.destroyed = () => {
   $('html').removeClass("day");
+  startClock(false);
 };
 
 Template.dayView.helpers({
@@ -477,6 +537,8 @@ Template.nightView.events({
     const player = getCurrentPlayer();
     if (player) Players.update (player._id, {$set: {vote: event.target.id}});
   },
+  'click .btn-show': () => hideRole(false),
+  'click .btn-hide': () => hideRole(true),
   'click .btn-leave': leaveGame,
   'click .btn-end': endGame,
 });
@@ -507,6 +569,8 @@ Template.dayView.events({
   },
   'click .btn-lynch': () => lynchVote("lynch"),
   'click .btn-spare': () => lynchVote("spare"),
+  'click .btn-show': () => hideRole(false),
+  'click .btn-hide': () => hideRole(true),
   'click .btn-leave': leaveGame,
   'click .btn-end': endGame,
 });
@@ -514,4 +578,8 @@ Template.dayView.events({
 function lynchVote(vote) {
   const player = getCurrentPlayer();
   if (player) Players.update (player._id, {$set: {lynch: vote}});
+}
+
+function hideRole (hide=true) {
+  Session.set ("hiddenRole", hide);
 }

@@ -87,6 +87,13 @@ li {
   display: none;
 }
 
+#player-name {
+  display: inline;
+  margin-left: 0;
+  margin-right: 3px;
+  width: 51%;
+}
+
 #lobby-player-form {
   margin-left: 10%;
   margin-right: 10%;
@@ -242,6 +249,19 @@ input[type="checkbox"] {
   border-color: #c0c;
 }
 
+.dead-player {
+  background-color: var(--current-fg-color);
+  color: var(--current-bg-color);
+}
+
+.top-right {
+  background-color: var(--current-fg-color);
+  color: var(--current-bg-color);
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0 5px 0 5px;
+}
 
 .footer {
   right: 0;
