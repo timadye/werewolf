@@ -166,15 +166,16 @@ function allGames() {
   return ret ? ret.map((game) => game.name) : ret;
 }
 
-function allPlayersFind (gameID=null, includeInactive=false) {
+function allPlayersFind (gameID=null, includeInactive=0) {
+  // includeInactive: 0=active and alive, 1=active, 2=all
   if (!gameID) {
     gameID = Session.get('gameID');
     if (!gameID) return null;
   }
-  return Players.find( { gameID: gameID, ...includeInactive || {session: {$ne: null}, alive: true} }, {fields: {name: 1}});
+  return Players.find( { gameID: gameID, ...includeInactive<2 && {session: {$ne: null}, ...includeInactive<1 && {alive: true}} }, {fields: {name: 1}});
 }
 
-function allPlayers (gameID=null, includeInactive=false) {
+function allPlayers (gameID=null, includeInactive=0) {
   const ret = allPlayersFind (gameID, includeInactive)
   return ret ? ret.fetch() : [];
 }
@@ -247,7 +248,7 @@ function resetGame() {
   const gameID = Session.get('gameID');
   if (gameID) {
     Games.update(gameID, { $set: initialGame() });
-    for (const player of allPlayers (gameID, true)) {
+    for (const player of allPlayers (gameID, 2)) {
       Players.update(player._id, { $set: initialPlayer() });
     }
   }
@@ -338,7 +339,7 @@ Template.lobby.rendered = function(event) {
 };
 
 Template.lobby.helpers({
-  players: () => allPlayers (null, true),
+  players: () => allPlayers (null, 2),
   playerClass: function() {
     const player= Players.findOne(this._id);
     if (!player) {
@@ -410,11 +411,13 @@ registerHelper ({
   game: getCurrentGame,
   gameName: gameName,
   playerName: () => (playerName() || "a lurker"),
+
   roleName: () => {
     const player = getCurrentPlayer();
     return roleInfo (player ? player.role : null) . name;
   },
-  showFellows: () => {
+
+  allFellows: () => {
     const player = getCurrentPlayer();
     if (!player) return null;
     return Object.entries (player.fellows) . map (([f,players]) => {
@@ -425,28 +428,48 @@ registerHelper ({
         lover:    ["You are in love with ",   "You are in love with "     ],
         rival:    ["Your rival is ",          "Your rivals are "          ],
       }[f];
-      return (fmsg ? fmsg[players.length==1?0:1] : f+": ")+pmsg+".<br>";
-    }) . join("");
+      return (fmsg ? fmsg[players.length==1?0:1] : f+": ")+pmsg;
+    });
   },
-  showAllRoles: () => {
+
+  allRoles: () => {
     const game = getCurrentGame();
     if (!game) return null;
-    var msg = Object.entries (game.playerRoles) . map (([playerID, role]) => `${playerName(playerID)} is the ${roleInfo(role).name}.`);
+    var msg = Object.entries (game.playerRoles) . map (([playerID, role]) => `${playerName(playerID)} is the ${roleInfo(role).name}`);
     for (fellow of ['lover', 'rival']) {
       for (fellows of game.fellows[fellow]) {
-        msg.push (fellows.map(p => p.name).join(" and ") + ` are ${fellow}s.`);
+        msg.push (fellows.map(p => p.name).join(" and ") + ` are ${fellow}s`);
       }
     }
-    return msg.join("<br>");
+    return msg;
   },
+
   listAllRoles: () => {
     return getCurrentGame().roles.map (r => roleInfo(r).name) . join(", ");
   },
+
   hiddenRole: () => Session.get("hiddenRole"),
   time: () => {
     const secs = Session.get("time");
     return Math.floor(secs/60).toString() + ":" +
            Math.floor(secs%60).toString().padStart(2,'0');
+  },
+
+  history: () => {
+    const game = getCurrentGame();
+    if (!game) return null;
+    const players = allPlayers (game._id, 1);
+    const playerMap = objectMap (players, p => ({[p._id]: p}));
+    console.log ('history = ', game.history);
+    console.log ('playerMap =', playerMap);
+    var day = 0;
+    return {
+      players: players,
+      turns: game.history.map(t => ({
+        name: `Day ${++day}`,
+        players: t.map(p => (playerMap[p.vote]||{}).name),
+      }))
+    };
   },
 });
 
@@ -520,15 +543,15 @@ Template.dayView.helpers({
     }
     return cl.join(" ");
   },
-  showCasualties: () => {
+  allCasualties: () => {
     const game= getCurrentGame();
     if (!game) return null;
     let msg = [];
     if (game.deaths.length)
-      msg.push (game.deaths.join(" and ") + (game.deaths.length >= 2 ? " are" : " is") + " dead.");
+      msg.push (game.deaths.join(" and ") + (game.deaths.length >= 2 ? " are" : " is") + " dead");
     if (game.injuries.length)
-      msg.push (game.injuries.join(" and ") + (game.injuries.length >= 2 ? " are" : " is") + " injured.");
-    return msg.length ? msg.join("<br>") : "There are no injuries.";
+      msg.push (game.injuries.join(" and ") + (game.injuries.length >= 2 ? " are" : " is") + " injured");
+    return msg;
   },
 });
 
