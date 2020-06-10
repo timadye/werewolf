@@ -458,18 +458,28 @@ registerHelper ({
   history: () => {
     const game = getCurrentGame();
     if (!game) return null;
-    const players = allPlayers (game._id, 1);
-    const playerMap = objectMap (players, p => ({[p._id]: p}));
+    if (!game.history.length) return null;
+    const players = game.history[0].players;
+    let i=0;
+    const playerMap = objectMap (players, p => ({[p._id]: {...p, index:i++}}));
     console.log ('history = ', game.history);
     console.log ('playerMap =', playerMap);
     var day = 0;
-    return {
-      players: players,
+    let table = {
+      header: players,
       turns: game.history.map(t => ({
-        name: `Day ${++day}`,
-        players: t.map(p => (playerMap[p.vote]||{}).name),
+        name: t.phase == "night" ? `night ${++day}` : t.phase,
+        players: (() => {
+          let cols=Array(players.length).fill({class:"", name:""});
+          for (p of t.players) {
+            cols[playerMap[p._id].index] = {class:"", name:(playerMap[p.vote]||{}).name};
+          }
+          return cols;
+        })()
       }))
     };
+    console.log ('table = ', table);
+    return table;
   },
 });
 

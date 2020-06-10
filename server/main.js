@@ -195,7 +195,7 @@ function dawn (game, playersFound) {
   if (debug >= 2) console.log ('details =', players);
 
   Games.update(game._id, {$set: {deaths: deaths, injuries: injuries, state: 'dayTime'},
-                          $push: { history: players }});
+                          $push: { history: {phase: 'night', players: players} }});
 }
 
 Players.find({'lynch': {$ne: null}}).observeChanges({
@@ -236,7 +236,7 @@ function lynch (game, players) {
 
   const [history, deaths] = killPlayer ("Lynching", game, players, victim);
 
-  Games.update(game._id, {$push: { history: history, ... dead && {deaths: { $each: deaths }} }});
+  Games.update(game._id, {$push: { history: {phase: 'lynch', players: history}, ... dead && {deaths: { $each: deaths }} }});
 }
 
 function lynchCall (players) {
@@ -285,7 +285,7 @@ function twang (game, players, vigilanteID, vigilante) {
 
   const [history, deaths] = killPlayer ("Vigilante", game, players, victim);
 
-  Games.update(game._id, {$push: { history: history, deaths: { $each: deaths }}});
+  Games.update(game._id, {$push: { history: {phase: 'vigilante', players: history}, deaths: { $each: deaths }}});
 }
 
 function killPlayer (cause, game, players, victim) {

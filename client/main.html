@@ -142,8 +142,8 @@
           <thead>
           <tr>
             <th scope="col">Turn</th>
-            {{#each player in players}}
-              <th scope="col">{{player.name}}</th>
+            {{#each head in header}}
+              <th scope="col">{{head.name}}</th>
             {{/each}}
           </tr>
           </thead>
@@ -152,7 +152,7 @@
             <tr>
               <th scope="row">{{turn.name}}</th>
               {{#each player in turn.players}}
-                <td>{{player}}</td>
+                <td class="{{player.class}}">{{player.name}}</td>
               {{/each}}
             </tr>
           {{/each}}
@@ -239,8 +239,8 @@
           <thead>
           <tr>
             <th scope="col">Turn</th>
-            {{#each player in players}}
-              <th scope="col">{{player.name}}</th>
+            {{#each head in header}}
+              <th scope="col">{{head.name}}</th>
             {{/each}}
           </tr>
           </thead>
@@ -249,7 +249,7 @@
             <tr>
               <th scope="row">{{turn.name}}</th>
               {{#each player in turn.players}}
-                <td>{{player}}</td>
+                <td class="{{player.class}}">{{player.name}}</td>
               {{/each}}
             </tr>
           {{/each}}
