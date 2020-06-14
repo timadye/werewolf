@@ -217,27 +217,6 @@ function startClock (start=true) {
   }
 }
 
-/* sets the state of the game (which template to render) */
-/* types of game state:
-    waitingForPlayers (lobby)
-    settingUp (loading)
-    nightTime
-    dayTime
- */
-function trackGameState() {
-  const game = getCurrentGame();
-  if (!game) return;
-  if (game.state === 'waitingForPlayers') {
-    Session.set('currentView', 'lobby');
-  } else if (game.state === 'nightTime') {
-    Session.set('currentView', 'nightView');
-  } else if (game.state === 'dayTime') {
-    Session.set('currentView', 'dayView');
-  }
-}
-
-Tracker.autorun(trackGameState);
-
 function leaveGame() {
   Session.set('currentView', 'startMenu');
   Session.set('turnMessage', null);
@@ -260,6 +239,19 @@ function endGame() {
   Session.set('turnMessage', null);
 }
 
+function lynchVote(vote) {
+  const player = getCurrentPlayer();
+  if (player) Players.update (player._id, {$set: {lynch: vote}});
+}
+
+function hideRole (hide=true) {
+  Session.set ("hiddenRole", hide);
+}
+
+//======================================================================
+// Session
+//======================================================================
+
 // Handlebars.registerHelper() wrapper.
 // Blaze/Spacebars/Handlebars doesn't seem to allow multiple helpers to be defined at once as implied here:
 //   https://handlebarsjs.com/api-reference/runtime.html#handlebars-registerhelper-name-helper
@@ -268,18 +260,48 @@ function registerHelper(helpers, helper) {
   if (typeof helpers == "object" && helper === undefined) {
     for (const [k,v] of Object.entries(helpers)) {
       if (debug>=3) console.log(`Handlebars.registerHelper(${k},${v})`);
-      Handlebars.registerHelper(k,v);
+      Template.registerHelper(k,v);
     }
   } else {
-    Handlebars.registerHelper(helpers,helper);
+    Template.registerHelper(helpers,helper);
   }
 }
+
+/* sets the state of the game (which template to render) */
+/* types of game state:
+    waitingForPlayers (lobby)
+    settingUp (loading)
+    nightTime
+    dayTime
+ */
+function trackGameState() {
+  const game = getCurrentGame();
+  if (!game) return;
+  if (game.state === 'waitingForPlayers') {
+    Session.set('currentView', 'lobby');
+  } else if (game.state === 'nightTime') {
+    Session.set('currentView', 'nightView');
+  } else if (game.state === 'dayTime') {
+    Session.set('currentView', 'dayView');
+  }
+}
+
+Tracker.autorun(trackGameState);
+Session.set('currentView', 'startMenu');
+
+//======================================================================
+// main template
+//======================================================================
 
 Template.main.helpers({
   whichView: () => {
     return Session.get('currentView');
   }
 });
+
+//======================================================================
+// startMenu template
+//======================================================================
 
 Template.startMenu.rendered = function() {
   resetUserState();
@@ -326,7 +348,9 @@ Template.startMenu.events({
   },
 });
 
-Session.set('currentView', 'startMenu');
+//======================================================================
+// lobby template
+//======================================================================
 
 Template.lobby.rendered = function(event) {
   if (!Session.get('gameID')) {
@@ -406,11 +430,58 @@ Template.lobby.events({
   },
 });
 
+//======================================================================
+// Game playing templates
+//======================================================================
+
+Template.nightView.rendered = () => {
+  $('html').addClass("night");
+  hideRole();
+  startClock();
+};
+
+Template.nightView.destroyed = () => {
+  $('html').removeClass("night");
+  startClock(false);
+};
+
+Template.dayView.rendered = () => {
+  $('html').addClass("day");
+  hideRole();
+  startClock();
+};
+
+Template.dayView.destroyed = () => {
+  $('html').removeClass("day");
+  startClock(false);
+};
+
 registerHelper ({
   errorMessage: () => Session.get('errorMessage'),
   game: getCurrentGame,
   gameName: gameName,
   playerName: () => (playerName() || "a lurker"),
+  alive: () => {
+    const player = getCurrentPlayer();
+    return (player && player.alive);
+  },
+});
+
+
+Template.gameHeader.helpers({
+  listAllRoles: () => {
+    return getCurrentGame().roles.map (r => roleInfo(r).name) . join(", ");
+  },
+
+  time: () => {
+    const secs = Session.get("time");
+    return Math.floor(secs/60).toString() + ":" +
+           Math.floor(secs%60).toString().padStart(2,'0');
+  },
+});
+
+Template.roleInfo.helpers({
+  hiddenRole: () => Session.get("hiddenRole"),
 
   roleName: () => {
     const player = getCurrentPlayer();
@@ -444,17 +515,6 @@ registerHelper ({
     return msg;
   },
 
-  listAllRoles: () => {
-    return getCurrentGame().roles.map (r => roleInfo(r).name) . join(", ");
-  },
-
-  hiddenRole: () => Session.get("hiddenRole"),
-  time: () => {
-    const secs = Session.get("time");
-    return Math.floor(secs/60).toString() + ":" +
-           Math.floor(secs%60).toString().padStart(2,'0');
-  },
-
   history: () => {
     const game = getCurrentGame();
     if (!game) return null;
@@ -484,10 +544,6 @@ registerHelper ({
 });
 
 Template.nightView.helpers({
-  alive: () => {
-    const player = getCurrentPlayer();
-    return (player && player.alive);
-  },
   players: () => [ ... allPlayers(), { _id: 0, name: 'none' } ],
   playerClass: function() {
     const player= Players.findOne(this._id);
@@ -501,28 +557,6 @@ Template.nightView.helpers({
   },
 });
 
-Template.nightView.rendered = () => {
-  $('html').addClass("night");
-  hideRole();
-  startClock();
-};
-
-Template.nightView.destroyed = () => {
-  $('html').removeClass("night");
-  startClock(false);
-};
-
-Template.dayView.rendered = () => {
-  $('html').addClass("day");
-  hideRole();
-  startClock();
-};
-
-Template.dayView.destroyed = () => {
-  $('html').removeClass("day");
-  startClock(false);
-};
-
 Template.dayView.helpers({
   haveVigilante: () => getCurrentGame().roles.some (r => roleInfo(r).vigilante),
   voting: () => {
@@ -535,10 +569,6 @@ Template.dayView.helpers({
       }
     }
     return lynching==1;
-  },
-  alive: () => {
-    const player = getCurrentPlayer();
-    return (player && player.alive);
   },
   players: allPlayers,
   playerClass: function() {
@@ -565,6 +595,7 @@ Template.dayView.helpers({
   },
 });
 
+
 Template.nightView.events({
   'click .toggle-player': (event) => {
     const player = getCurrentPlayer();
@@ -572,8 +603,6 @@ Template.nightView.events({
   },
   'click .btn-show': () => hideRole(false),
   'click .btn-hide': () => hideRole(true),
-  'click .btn-leave': leaveGame,
-  'click .btn-end': endGame,
 });
 
 Template.dayView.events({
@@ -604,15 +633,9 @@ Template.dayView.events({
   'click .btn-spare': () => lynchVote("spare"),
   'click .btn-show': () => hideRole(false),
   'click .btn-hide': () => hideRole(true),
+});
+
+Template.gameFooter.events({
   'click .btn-leave': leaveGame,
   'click .btn-end': endGame,
 });
-
-function lynchVote(vote) {
-  const player = getCurrentPlayer();
-  if (player) Players.update (player._id, {$set: {lynch: vote}});
-}
-
-function hideRole (hide=true) {
-  Session.set ("hiddenRole", hide);
-}
