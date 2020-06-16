@@ -18,6 +18,7 @@
 </template>
 
 <template name="footer">
+<a href="https://github.com/timadye/werewolf/blob/master/Werewolf.md" target="_blank">Instructions</a>
 </template>
 
 <template name="startMenu">
@@ -193,30 +194,50 @@
       {{#each role in allRoles}}
         {{role}}.<br>
       {{/each}}
-      </p><p>
-      <table class="table">
-        {{#let history=history}}
+      </p>
+      {{#let history=history}}
+      {{#if history.turns.length}}
+      <p>
+      <table class="table table-bordered table-sm">
           <thead>
           <tr>
             <th scope="col">Turn</th>
             {{#each head in history.header}}
-              <th scope="col">{{head.name}}</th>
+              <th scope="col" class="player-head">{{head.name}}</th>
             {{/each}}
           </tr>
           </thead>
           <tbody>
           {{#each turn in history.turns}}
             <tr>
-              <th scope="row">{{turn.name}}</th>
+              <th scope="row" class="{{turn.turn.class}}">{{turn.turn.name}}</th>
               {{#each player in turn.players}}
                 <td class="{{player.class}}">{{player.name}}</td>
               {{/each}}
             </tr>
           {{/each}}
           </tbody>
-        {{/let}}
+      </table>
+      </p><p>
+      <table class="table table-bordered table-sm key">
+        <caption>Key</caption>
+        <thead>
+          <tr>
+            <th scope="col">Turn: action</th>
+            <th scope="col">Player result</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="night-row">Night: selected player</td> <td class="alive">Alive</td></tr>
+          <tr><td class="day-row">Lynch: vote</td>              <td class="dead">Dead</td></tr>
+          <tr><td class="day-row">Vigilante: TWANG!</td>        <td class="dead-suicide">Lover&#39;s suicide</td></tr>
+          <tr><td rowspan="0"></td>                             <td class="injured">Injured</td></tr>
+          <tr>                                                  <td class="injured-trapper">Trapper injury</td></tr>
+        </tbody>
       </table>
       </p>
+      {{/if}}
+      {{/let}}
     {{/if}}
   {{/if}}
 </template>

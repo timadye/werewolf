@@ -27,6 +27,16 @@ html.day {
   --current-fg-color: black;
 }
 
+.night-row {
+  background-color: #222;
+  color: white;
+}
+
+.day-row {
+  background-color: #ffc;
+  color: black;
+}
+
 p, h1, h2, h3, h4 {
   color: var(--current-fg-color);
 }
@@ -254,19 +264,59 @@ input[type="checkbox"] {
   color: var(--current-bg-color);
 }
 
+.dead {
+  color: white;
+  background-color: #900;
+}
+
+.dead-suicide {
+  color: white;
+  background-color: #c0c;
+}
+
+.injured {
+  color: white;
+  background-color: #fa0;
+}
+
+.injured-trapper {
+  color: white;
+  background-color: #88f;
+}
+
+.alive {
+  color: white;
+  background-color: #070;
+}
+
+.key {
+  width: 70%;
+}
+
+.player-head {
+  text-align: center;
+}
+
+caption {
+  color: var(--current-fg-color);
+}
+
 .top-right {
   background-color: var(--current-fg-color);
   color: var(--current-bg-color);
-  position: absolute;
+  position: fixed;
   top: 0;
   right: 0;
   padding: 0 5px 0 5px;
 }
 
 .footer {
+  position: absolute;
   right: 0;
-  bottom: 0;
-  left: 0;
-  text-align: center;
-  padding: 1rem;
+  border: solid 0.1em;
+  border-color: var(--current-fg-color);
+  display: inline-block;
+  text-align: right;
+  margin: 50px 2px 2px 2px;
+  float: right;
 }
