@@ -176,7 +176,7 @@ function allPlayersFind (gameID=null, includeInactive=0) {
 }
 
 function allPlayers (gameID=null, includeInactive=0) {
-  const ret = allPlayersFind (gameID, includeInactive)
+  const ret = allPlayersFind (gameID, includeInactive);
   return ret ? ret.fetch() : [];
 }
 
@@ -505,7 +505,7 @@ Template.roleInfo.helpers({
     });
   },
 
-  allRoles: () => {
+  allRoles: () => {  // not used any more
     const game = getCurrentGame();
     if (!game) return null;
     var msg = Object.entries (game.playerRoles) . map (([playerID, role]) => `${playerName(playerID)} is the ${roleInfo(role).name}`);
@@ -520,63 +520,74 @@ Template.roleInfo.helpers({
   history: () => {
     const game = getCurrentGame();
     if (!game) return null;
-    if (!game.history.length) return null;
-    const players = game.history[0].players;
-    let i=0;
-    const playerMap = objectMap (players, p => ({[p._id]: {...p, role: game.playerRoles[p._id], index:i++}}));
-    if (debug >= 2) console.log ('history = ', game.history, 'playerMap =', playerMap);
+    if (debug >= 2) console.log ('history = ', game.history);
+    const col0 = {class:"", name:""};
+    const players = allPlayers (game._id, 1) . map (p => ({...p, role: roleInfo(game.playerRoles[p._id]), col: {...col0}, alive:true}));
+    if (debug >= 2) console.log ('players = ', players);
+    const playerMap = objectMap (players, p => ({[p._id]: p}));
     var day = 0;
-    let table = {
-      header: players,
-      turns: game.history.map(t => ({
+    const table = {
+      players: players,
+      fellows: ['Lover', 'Rival'].flatMap (ff => (game.fellows[ff.toLowerCase()]||[]).map (f => ({type: `${ff}s`, names: (() => {
+        players.forEach (p => {p.col = {...col0}});
+        for (p of f) {
+          playerMap[p._id].col.name = p.name;
+        }
+        return players.map(p=>p.col);
+      })()}))),
+      turns: game.history.map (t => ({
         turn: (t.phase == "night") ? {class: 'night-row', name: `Night ${++day}`}
                                    : {class:   'day-row', name: {"lynch": "Lynch", "vigilante": "Vigilante"}[t.phase] || t.phase},
         players: (() => {
-          const rowClass = (t.phase == "night" ? 'night-row' : 'day-row');
-          let cols = Array(players.length) . fill(null) . map(c => ({class:rowClass, name:""}));
+          players.forEach (p => {p.col = {name:"", class: (!p.alive ? "zombie" : t.phase == "night" ? 'night-row' : 'day-row') }});
           if (t.phase == "lynch") {
             for (p of t.players) {
+              let m = playerMap[p._id];
+              if (p.casualty) m.alive = false;
               if (p.cause == 'lover') {
-                if (p.casualty)
-                  cols[playerMap[p._id].index].class =  "dead-suicide";
+                if (p.casualty) m.col.class = "dead-suicide";
               } else {
-                cols[playerMap[p._id].index].class = p.casualty ? "dead" : "alive";
+                m.col.class = p.casualty ? "dead" : "alive";
                 for (pid of p.lynch) {
-                  cols[playerMap[pid].index].name = "Lynch";
+                  playerMap[pid].col.name = m.name;
                 }
                 for (pid of p.spare) {
-                  cols[playerMap[pid].index].name = "--";
+                  playerMap[pid].col.name = "–";
                 }
               }
             }
           } else  if (t.phase == "vigilante") {
             for (p of t.players) {
+              let m = playerMap[p._id];
+              if (p.casualty) m.alive = false;
               if (p.cause == 'lover') {
-                if (p.casualty)
-                  cols[playerMap[p._id].index].class =  "dead-suicide";
+                if (p.casualty) m.col.class =  "dead-suicide";
               } else {
-                cols[playerMap[p._id].index].class = p.casualty ? "dead" : "alive";
+                m.col.class = p.casualty ? "dead" : "alive";
                 for (pid of p.attackers) {
-                  cols[playerMap[pid].index].name = "TWANG!";
+                  playerMap[pid].col.name = "TWANG!";
                 }
               }
             }
           } else  if (t.phase == "night") {
             for (p of t.players) {
-              let i = playerMap[p._id].index;
+              let m = playerMap[p._id];
               if (p.casualty >= 2) {
-                cols[i].class = (p.cause == "lover" ? "dead-suicide" : "dead");
+                m.alive = false;
+                m.col.class = (p.cause == "lover" ? "dead-suicide" : "dead");
               } else if (p.casualty == 1) {
-                cols[i].class = (p.cause == "trapper" ? "injured-trapper" : "injured");
+                m.col.class = (p.cause == "trapper" ? "injured-trapper" : "injured");
               }
-              if (roleInfo(playerMap[p._id].role).active == "night")
-                cols[i].name = (playerMap[p.vote]||{}).name;
+              if (playerMap[p._id].role.active == "night" && p.vote) {
+                m.col.name = (playerMap[p.vote]||{}).name;
+              }
             }
           }
-          return cols;
+          return players.map(p=>p.col);
         })()
-      }))
+      })),
     };
+    if (debug >= 2) console.log ('table = ', table);
     return table;
   },
 });

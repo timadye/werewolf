@@ -191,53 +191,62 @@
       </p>
     {{else}}
       <p>
-      {{#each role in allRoles}}
-        {{role}}.<br>
-      {{/each}}
-      </p>
-      {{#let history=history}}
-      {{#if history.turns.length}}
-      <p>
       <table class="table table-bordered table-sm">
+        {{#let history=history}}
           <thead>
           <tr>
             <th scope="col">Turn</th>
-            {{#each head in history.header}}
-              <th scope="col" class="player-head">{{head.name}}</th>
+            {{#each p in history.players}}
+              <th scope="col" class="player-head">{{p.name}}</th>
             {{/each}}
           </tr>
+          <tr>
+            <th scope="row" class="night-row">Role</th>
+            {{#each p in history.players}}
+              <td scope="col" class="night-row">{{p.role.name}}</td>
+            {{/each}}
+          </tr>
+          {{#each f in history.fellows}}
+          <tr>
+            <th scope="row" class="night-row">{{f.type}}</th>
+            {{#each c in f.names}}
+              <td scope="col" class="night-row">{{c.name}}</td>
+            {{/each}}
+          </tr>
+          {{/each}}
           </thead>
           <tbody>
           {{#each turn in history.turns}}
             <tr>
               <th scope="row" class="{{turn.turn.class}}">{{turn.turn.name}}</th>
-              {{#each player in turn.players}}
-                <td class="{{player.class}}">{{player.name}}</td>
+              {{#each p in turn.players}}
+                <td class="{{p.class}}">{{p.name}}</td>
               {{/each}}
             </tr>
           {{/each}}
           </tbody>
+        {{/let}}
       </table>
-      </p><p>
+      </p>
+      <p>
       <table class="table table-bordered table-sm key">
-        <caption>Key</caption>
         <thead>
+          <tr><th colspan="2" scope="col" class="player-head">Key</th></tr>
           <tr>
-            <th scope="col">Turn: action</th>
-            <th scope="col">Player result</th>
+            <th scope="col" class="player-head">Turn: assignment / action</th>
+            <th scope="col" class="player-head">Player result</th>
           </tr>
         </thead>
         <tbody>
-          <tr><td class="night-row">Night: selected player</td> <td class="alive">Alive</td></tr>
-          <tr><td class="day-row">Lynch: vote</td>              <td class="dead">Dead</td></tr>
-          <tr><td class="day-row">Vigilante: TWANG!</td>        <td class="dead-suicide">Lover&#39;s suicide</td></tr>
-          <tr><td rowspan="0"></td>                             <td class="injured">Injured</td></tr>
-          <tr>                                                  <td class="injured-trapper">Trapper injury</td></tr>
+          <tr><td class="night-row">Role: assigned role</td>    <td class="alive">Alive</td></tr>
+          <tr><td class="night-row">Lovers</td>                 <td class="dead">Dead</td></tr>
+          <tr><td class="night-row">Rivals</td>                 <td class="dead-suicide">Lover&#39;s suicide</td></tr>
+          <tr><td class="night-row">Night #: player visited</td><td class="injured">Injured</td></tr>
+          <tr><td class="day-row">Lynch: vote</td>              <td class="injured-trapper">Trapper injury</td></tr>
+          <tr><td class="day-row">Vigilante: TWANG!</td>        <td class="zombie">Zombie</td></tr>
         </tbody>
       </table>
       </p>
-      {{/if}}
-      {{/let}}
     {{/if}}
   {{/if}}
 </template>

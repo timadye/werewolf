@@ -269,6 +269,10 @@ input[type="checkbox"] {
   background-color: #900;
 }
 
+.zombie {
+  background-color: #ccc;
+}
+
 .dead-suicide {
   color: white;
   background-color: #c0c;
