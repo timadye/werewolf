@@ -192,7 +192,7 @@ function readyToStart() {
   var types = { werewolf:0, cultist:0 };
   var decks = { roles:0,    lovers:0  };
   var ndark=  { [false]:0, [true]:0   };
-  for (name of game.roles) {
+  for (const name of game.roles) {
     role = allRoles[name];
     const n = role.number || 1;
     types[role.type] += n;
@@ -230,8 +230,14 @@ function leaveVillage() {
 };
 
 function leaveGame() {
-  Session.set('turnMessage', null);
-  Session.set('errorMessage', null);
+  const player = getCurrentPlayer();
+  if (player && player.alive) {
+    Session.set('turnMessage', null);
+    Session.set('errorMessage', null);
+    Players.update(player._id, {$set: {alive: false}});
+  } else {
+    leaveVillage();
+  }
 };
 
 function resetGame() {
@@ -518,8 +524,8 @@ Template.roleInfo.helpers({
     const game = getCurrentGame();
     if (!game) return null;
     var msg = Object.entries (game.playerRoles) . map (([playerID, role]) => `${playerName(playerID)} is the ${roleInfo(role).name}`);
-    for (fellow of ['lover', 'rival']) {
-      for (fellows of game.fellows[fellow]) {
+    for (const fellow of ['lover', 'rival']) {
+      for (const fellows of game.fellows[fellow]) {
         msg.push (fellows.map(p => p.name).join(" and ") + ` are ${fellow}s`);
       }
     }
@@ -529,18 +535,19 @@ Template.roleInfo.helpers({
   history: () => {
     const game = getCurrentGame();
     if (!game) return null;
-    if (debug >= 2) console.log ('history = ', game.history);
+    if (debug >= 2) console.log ('history = ', game.history, 'fellows = ', game.fellows);
     const col0 = {Class:"", name:""};
-    const players = allPlayers (game._id, 1) . map (p => ({...p, role: roleInfo(game.playerRoles[p._id]), col: {...col0}, alive:true}));
+    const players = allPlayers (game._id, 2, {name:1, role:1}) . map (p => ({...p, role: roleInfo(p.role), alive:true})) . filter (p=>!p.role.zombie);
     if (debug >= 2) console.log ('players = ', players);
     const playerMap = objectMap (players, p => ({[p._id]: p}));
     var day = 0;
     const table = {
       players: players,
-      fellows: ['Lover', 'Rival'].flatMap (ff => (game.fellows[ff.toLowerCase()]||[]).map (f => ({type: `${ff}s`, names: (() => {
+      fellows: ['Lover', 'Rival'].flatMap (ff => ((game.fellows||{})[ff.toLowerCase()]||[]).map (f => ({type: `${ff}s`, names: (() => {
         players.forEach (p => {p.col = {...col0}});
-        for (p of f) {
-          playerMap[p._id].col.name = p.name;
+        for (const p of f) {
+          if (p._id in playerMap)
+            playerMap[p._id].col.name = p.name;
         }
         return players.map(p=>p.col);
       })()}))),
@@ -548,50 +555,55 @@ Template.roleInfo.helpers({
         turn: (t.phase == "night") ? {Class: 'night-row', name: `Night${nbsp}${++day}`}
                                    : {Class:   'day-row', name: {"lynch": "Lynch", "vigilante": "Vigilante"}[t.phase] || t.phase},
         players: (() => {
-          players.forEach (p => {p.col = {name:"", Class: (!p.alive ? "zombie" : t.phase == "night" ? 'night-row' : 'day-row') }});
-          if (t.phase == "lynch") {
-            for (p of t.players) {
-              let m = playerMap[p._id];
-              if (p.casualty) m.alive = false;
+          const defClass = (t.phase == "night" ? 'night-row' : 'day-row');
+          players.forEach (p => {p.col = {name:"", Class: (t.phase == "vigilante" && p.alive ? defClass : "zombie")}});
+          for (const p of t.players) {
+            const m = playerMap[p._id];
+            if (!m) continue;
+            if (t.phase == "lynch") {
               if (p.cause == 'lover') {
-                if (p.casualty) m.col.Class = "dead-suicide";
+                m.col.Class = p.casualty ? "dead-suicide" : defClass;
               } else {
                 m.col.Class = p.casualty ? "dead" : "alive";
-                for (pid of p.lynch) {
-                  playerMap[pid].col.name = m.name;
+                for (const pid of p.lynch) {
+                  const c = playerMap[pid].col;
+                  if (!c) continue;
+                  c.name = m.name;
+                  if (c.Class == "zombie") c.Class = defClass;
                 }
-                for (pid of p.spare) {
-                  playerMap[pid].col.name = dash;
+                for (const pid of p.spare) {
+                  const c = playerMap[pid].col;
+                  if (!c) continue;
+                  c.name = dash;
+                  if (c.Class == "zombie") c.Class = defClass;
                 }
               }
-            }
-          } else  if (t.phase == "vigilante") {
-            for (p of t.players) {
-              let m = playerMap[p._id];
-              if (p.casualty) m.alive = false;
+            } else  if (t.phase == "vigilante") {
               if (p.cause == 'lover') {
                 if (p.casualty) m.col.Class =  "dead-suicide";
               } else {
                 m.col.Class = p.casualty ? "dead" : "alive";
-                for (pid of p.attackers) {
-                  playerMap[pid].col.name = "TWANG!";
+                for (const pid of p.attackers) {
+                  const c = playerMap[pid].col;
+                  if (!c) continue;
+                  c.name = "TWANG!";
+                  if (c.Class == "zombie") c.Class = defClass;
                 }
               }
-            }
-          } else  if (t.phase == "night") {
-            for (p of t.players) {
-              let m = playerMap[p._id];
+            } else  if (t.phase == "night") {
               if (p.casualty >= 2) {
-                m.alive = false;
                 m.col.Class = (p.cause == "lover" ? "dead-suicide" : "dead");
               } else if (p.casualty == 1) {
                 m.col.Class = (p.cause == "trapper" ? "injured-trapper" : "injured");
+              } else {
+                m.col.Class = defClass;
               }
-              if (playerMap[p._id].role.active == "night" && p.vote) {
+              if (m.role.active == "night" && p.vote) {
                 m.col.name = (playerMap[p.vote]||{}).name;
               }
             }
           }
+          players.forEach (p => {if (p.col.Class == "zombie") p.alive = false});
           return players.map(p=>p.col);
         })()
       })),
@@ -605,7 +617,7 @@ Template.roleInfo.helpers({
     const night = {nightView: true, dayView: false}[view];
     if (night === undefined) return null;
     const field = night ? "vote" : "lynch";
-    const players = allPlayers (null, 1, {name:1, [field]: 1, alive:1});
+    const players = allPlayers (null, 2, {name:1, alive:1, role:1, [field]: 1}) . filter(p=>p.role);
     if (debug >= 2) console.log ('players = ', players);
     let playerMap = objectMap (players, p => ({[p._id]: p.name}));
     if (night) {

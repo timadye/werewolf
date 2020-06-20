@@ -210,5 +210,6 @@ roleInfo = function (name) {
     type: 'zombie',
     dark: false,
     deck: 'roles',
+    zombie: true,
   };
 }
