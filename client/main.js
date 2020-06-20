@@ -1,7 +1,7 @@
 import '../imports/roles.js';
 import '../imports/utils.js';
 
-const debug = 2;
+var debug = 0;   // overridden by server setting if higher
 const dash = "\u2013";
 const nbsp = "\u00A0"
 
@@ -326,6 +326,12 @@ Template.main.helpers({
 //======================================================================
 
 Template.startMenu.rendered = function() {
+  Meteor.call ('debugLevel', (error, result) => {
+    if (!error && result > debug) {
+      debug = result;
+      if (debug >= 1) console.log (`debug = ${debug}`);
+    }
+  });
   resetUserState();
   Session.set('allGamesSubscribed',false);
   // subscription allGames might not be published by server, but show all games if so.
@@ -357,6 +363,7 @@ Template.startMenu.events({
     Meteor.call ('villageExists', villageName, (error, result) => {
       if (error || result<0) {
         event.target.villageName.value = "";
+        if (!error) console.log ("reset all games");
         return false;
       }
       if (!result) createGame (villageName);
@@ -531,7 +538,8 @@ Template.roleInfo.helpers({
   history: () => {
     const game = getCurrentGame();
     if (!game) return null;
-    if (debug >= 2) console.log ('history = ', game.history, 'fellows = ', game.fellows);
+    if (debug >= 2) console.log ('history = ', game.history);
+    if (debug >= 3) console.log ('fellows = ', game.fellows);
     const col0 = {Class:"", name:""};
     const players = allPlayers (game._id, 2, {name:1, role:1}) . map (p => ({...p, role: roleInfo(p.role), alive:true})) . filter (p=>!p.role.zombie);
     if (debug >= 2) console.log ('players = ', players);

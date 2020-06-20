@@ -4,7 +4,7 @@ import '../imports/utils.js';
 
 const showAllVillages = !Number(process.env.WEREWOLF_HIDE);
 const debug            = Number(process.env.WEREWOLF_DEBUG || 1);
-const resetCmd         = process.env.WEREWOLF_RESET;
+const resetCmd         = process.env.WEREWOLF_RESET || "reset";
 
 Meteor.startup(() => {
   console.log(`Start Werewolf server: showAllVillages=${showAllVillages}, debug=${debug}`);
@@ -36,7 +36,10 @@ Meteor.methods({
   },
   resetAllGames: () => {
     if (showAllVillages) resetAllGames();
-  }
+  },
+  debugLevel: () => {
+    return debug;
+  },
 });
 
 function resetAllGames() {
