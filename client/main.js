@@ -33,7 +33,7 @@ function createGame(name) {
   const gameID = Games.insert({
     name: name,
     // default roles
-    roles: ["werewolf_1", "werewolf_2", "wolfsbane", "trapper"],
+    roles: ["werewolf_1", "werewolf_2", "wolfsbane_1", "trapper_1"],
     ... initialGame()
   });
   if (debug>=1) console.log(`New village '${name}' (${gameID})`)
@@ -74,7 +74,7 @@ function joinGame(name) {
   Meteor.subscribe('games', name, function onReady() {
     var game = Games.findOne({name: name});
     if (!game) {
-      leaveGame();
+      leaveVillage();
       reportError(`no village '${name}'`);
       return false;
     }
@@ -223,8 +223,13 @@ function startClock (start=true) {
   }
 }
 
-function leaveGame() {
+function leaveVillage() {
   Session.set('currentView', 'startMenu');
+  Session.set('turnMessage', null);
+  Session.set('errorMessage', null);
+};
+
+function leaveGame() {
   Session.set('turnMessage', null);
   Session.set('errorMessage', null);
 };
@@ -375,8 +380,8 @@ Template.lobby.rendered = function(event) {
 
 Template.lobby.helpers({
   players: () => allPlayers (null, 2),
-  playerClass: function() {
-    const player= Players.findOne(this._id);
+  playerClass: (id) => {
+    const player= Players.findOne(id);
     if (!player) {
       return null;
     } else if (player.session == Meteor.default_connection._lastSessionId) {
@@ -388,23 +393,21 @@ Template.lobby.helpers({
     }
   },
   roleKeys: () => {
-    var roleKeys = [];
-    for (key in allRoles) {
-      roleKeys.push({ key : key, name : allRoles[key].name });
-    }
-    return roleKeys;
+    const nplayersFind = allPlayersFind (null, 2);
+    if (!nplayersFind) return null;
+    const nplayers = nplayersFind.count();
+    return Object.entries(allRoles) . flatMap (([k,r]) => (!r.display || nplayers >= r.display) ? [{ key:k, role:r }] : []);
   },
-  roleClass: function() {
+  roleClass: function(key) {
     const game= getCurrentGame();
-    return (game && game.roles.includes(this.key)) ? "selected-role" : null;
+    return (game && game.roles.includes(key)) ? "selected-role" : null;
   },
-  roles: allRoles,
   startButtonDisabled: () => readyToStart() ? null : "disabled",
   errorMessage: () => Session.get('errorMessage'),
 })
 
 Template.lobby.events({
-  'click .btn-leave': leaveGame,
+  'click .btn-leave': leaveVillage,
   'click .btn-start': () => {
     const gameID = Session.get('gameID');
     if (gameID) Games.update(gameID, {$set: {state: 'settingUp'}});
@@ -597,8 +600,10 @@ Template.roleInfo.helpers({
     return table;
   },
 
-  today: (view) => {
-    const night = (view == "nightView");
+  today: (view=null) => {
+    if (!view) view = Session.get('currentView');
+    const night = {nightView: true, dayView: false}[view];
+    if (night === undefined) return null;
     const field = night ? "vote" : "lynch";
     const players = allPlayers (null, 1, {name:1, [field]: 1, alive:1});
     if (debug >= 2) console.log ('players = ', players);
@@ -624,8 +629,8 @@ Template.roleInfo.helpers({
 
 Template.nightView.helpers({
   players: () => [ ... allPlayers(), { _id: '0', name: 'none' } ],
-  playerClass: function() {
-    const player= Players.findOne(this._id);
+  playerClass: (id) => {
+    const player= Players.findOne(id);
     if (!player) {
       return null;
     } else if (player.vote) {
@@ -650,9 +655,9 @@ Template.dayView.helpers({
     return lynching==1;
   },
   players: allPlayers,
-  playerClass: function() {
-    const ncalls= Players.find({call: this._id}) . count();
-    const loaded= Players.find({_id: this._id, crossbow: true}) . count();
+  playerClass: (id) => {
+    const ncalls= Players.find({call: id}) . count();
+    const loaded= Players.find({_id: id, crossbow: true}) . count();
     let cl = [];
     if (loaded) cl.push ("crossbow-loaded");
     if        (ncalls >= 2) {

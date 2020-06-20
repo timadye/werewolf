@@ -59,10 +59,10 @@
 
   <form id="lobby-player-form">
     <div id="lobby-player-list">
-    {{#each players}}
-      <div class="checkbox {{ playerClass }}">
+    {{#each player in players}}
+      <div class="checkbox {{ playerClass player._id }}">
         <label class="player-checkbox">
-          <input type="checkbox" id="{{ _id }}" class="toggle-player"/>{{ name }}<br>
+          <input type="checkbox" id="{{ player._id }}" class="toggle-player"/>{{ player.name }}<br>
         </label>
       </div>
     {{/each}}
@@ -79,10 +79,10 @@
 
   <form id="choose-roles-form">
     <div id="choose-roles-list">
-      {{#each roleKeys}}
-        <div class="checkbox {{ roleClass }}">
+      {{#each role in roleKeys}}
+        <div class="checkbox {{ roleClass role.key }}">
           <label class="role-checkbox">
-            <input type="checkbox" id="{{ key }}" class="toggle-role"/>{{ name }}<br>
+            <input type="checkbox" id="{{ role.key }}" class="toggle-role"/>{{ role.role.name }}<br>
           </label>
         </div>
       {{/each}}
@@ -105,14 +105,14 @@
 
   <form id="player-form">
     <div id="player-list">
-    {{#each players}}
-      <div class="checkbox {{ playerClass }}">
+    {{#each player in players}}
+      <div class="checkbox {{ playerClass player._id }}">
         <label class="player-checkbox">
           {{#if alive}}
-            <input type="checkbox" id="{{ _id }}" class="toggle-player"/>{{ name }}<br>
+            <input type="checkbox" id="{{ player._id }}" class="toggle-player"/>{{ player.name }}<br>
           {{else}}
-            <input type="checkbox" id="{{ _id }}"/>{{ name }}<br>
-          {{/if}}
+            <input type="checkbox"/>{{ player.name }}<br>
+          {{/if}} 
         </label>
       </div>
     {{/each}}
@@ -147,14 +147,14 @@
 
   <form id="player-form">
     <div id="player-list">
-      {{#each players}}
-        <div class="checkbox {{ playerClass }}">
+      {{#each player in players}}
+        <div class="checkbox {{ playerClass player._id }}">
           <label class="player-checkbox">
             {{#if alive}}
-              <input type="checkbox" id="{{ _id }}" class="toggle-player"/>{{ name }}<br>
+              <input type="checkbox" id="{{ player._id }}" class="toggle-player"/>{{ player.name }}<br>
             {{else}}
-              <input type="checkbox" id="{{ _id }}"/>{{ name }}<br>
-            {{/if}}
+              <input type="checkbox"/>{{ player.name }}<br>
+            {{/if}} 
           </label>
         </div>
       {{/each}}
@@ -174,14 +174,22 @@
   {{> gameFooter}}
 </template>
 
+<template name="endGame">
+  {{> gameHeader}}
+  <h2>{{gameName}} village</h2>
+  {{> roleInfo view="endGame"}}
+  {{> gameFooter}}
+</template>
+
+
 
 
 
 <template name="roleInfo">
   {{#if hiddenRole}}
-    <button class="btn btn-secondary btn-md btn-show">Show Role{{#unless alive}}s{{/unless}}</button>
+    <button class="btn btn-secondary btn-md btn-show">Show {{#if alive}}Role{{else}}Fate&#39;s Secrets{{/if}}</button>
   {{else}}
-    <button class="btn btn-secondary btn-md btn-hide">Hide Role{{#unless alive}}s{{/unless}}</button><br>
+    <button class="btn btn-secondary btn-md btn-hide">Hide {{#if alive}}Role{{else}}Fate&#39;s Secrets{{/if}}</button><br>
     {{#if alive}}
       <p>
       You are the {{ roleName }}.<br>
@@ -224,14 +232,14 @@
               {{/each}}
             </tr>
             {{/each}}
+            {{#with today view}}
             <tr>
-              {{#with today view}}
               <th scope="row" class="{{Class}}">{{name}}</th>
               {{#each p in players}}
                 <td class="{{p.Class}}">{{p.name}}</td>
               {{/each}}
-              {{/with}}
             </tr>
+            {{/with}}
           </tbody>
         {{/let}}
       </table>
@@ -248,7 +256,7 @@
         <tbody>
           <tr><td class="night-row">Role: assigned role</td>    <td class="alive">Alive</td></tr>
           <tr><td class="night-row">Lovers</td>                 <td class="dead">Dead</td></tr>
-          <tr><td class="night-row">Rivals</td>                 <td class="dead-suicide">Lover&#39;s suicide</td></tr>
+          <tr><td class="night-row">Rivals</td>                 <td class="dead-suicide">Broken-hearted lover</td></tr>
           <tr><td class="night-row">Night #: player visited</td><td class="injured">Injured</td></tr>
           <tr><td class="day-row">Lynch: vote</td>              <td class="injured-trapper">Trapper injury</td></tr>
           <tr><td class="day-row">Vigilante: TWANG!</td>        <td class="zombie">Zombie</td></tr>

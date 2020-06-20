@@ -26,6 +26,17 @@ allRoles = {
     deck: 'roles',
     fellows: 'werewolf',
     active: 'night',
+    display: 6,
+  },
+  werewolf_4 : {
+    name: 'Werewolf',
+    type: 'werewolf',
+    index: 3,
+    dark: true,
+    deck: 'roles',
+    fellows: 'werewolf',
+    active: 'night',
+    display: 7,
   },
   werewolf_vigilante : {
     name: 'Werewolf Vigilante',
@@ -45,19 +56,39 @@ allRoles = {
     fellows: 'werewolf',
     active: null,
   },
-  wolfsbane : {
+  wolfsbane_1 : {
     name: 'Wolfsbane',
     type: 'wolfsbane',
+    index: 0,
     dark: false,
     deck: 'roles',
     active: 'night',
   },
-  trapper : {
-    name: 'Trapper',
-    type: 'trapper',
+  wolfsbane_2 : {
+    name: 'Wolfsbane',
+    type: 'wolfsbane',
+    index: 1,
     dark: false,
     deck: 'roles',
     active: 'night',
+    display: 7,
+  },
+  trapper_1 : {
+    name: 'Trapper',
+    type: 'trapper',
+    index: 0,
+    dark: false,
+    deck: 'roles',
+    active: 'night',
+  },
+  trapper_2 : {
+    name: 'Trapper',
+    type: 'trapper',
+    index: 1,
+    dark: false,
+    deck: 'roles',
+    active: 'night',
+    display: 7,
   },
   seer : {
     name: 'Seer',
@@ -67,6 +98,7 @@ allRoles = {
     deck: 'roles',
     unreliable: false,
     active: 'night',
+    display: 99,   // Seer not supported
   },
   seer_unreliable: {
     name: 'Unreliable Seer',
@@ -76,6 +108,7 @@ allRoles = {
     deck: 'roles',
     unreliable: true,
     active: 'night',
+    display: 99,   // Seer not supported
   },
   vigilante : {
     name: 'Vigilante',
@@ -129,6 +162,7 @@ allRoles = {
     deck: 'roles',
     fellows: 'cultist',
     active: null,
+    display: 7,
   },
 // lovers deck
   lovers_1 : {
@@ -146,6 +180,7 @@ allRoles = {
     deck: 'lovers',
     number: 2,
     fellows: 'lover',
+    display: 7,
   },
   lovers_triad : {
     name: 'Lover Triad',
