@@ -1,5 +1,5 @@
 <p align=right>
-Last updated 20th June 2020 with minor changes from
+Last updated 20th June 2020 with minor changes to<br>
 <a href="https://www.dropbox.com/s/e0xdm855tednfho/Werewolf.doc" title="original copy of Werewolf rules from Whitney">the original of Wednesday, 9th October, 2013</a>
 </p>
 

@@ -6,4 +6,4 @@ The code here is an attempt to capture that experience online, or perhaps to all
 
 _Oxford Werewolf_ is still a little rough around the edges, but should be basically playable. It relies on the players to detect the end-game (this can be a good role for dead players).
 
-This code is currently running at https://oxford-werewolf.herokuapp.com, though the free service there only allows ~35 minutes of play before restarting the game (looks like a (bug)[https://stackoverflow.com/questions/62439688/heroku-free-dyno-idling-mid-test-what-killed-it]).
+This code is currently running at https://oxford-werewolf.herokuapp.com, though the free service there only allows ~35 minutes of play before restarting the game (looks like a [bug](https://stackoverflow.com/questions/62439688/heroku-free-dyno-idling-mid-test-what-killed-it)).
