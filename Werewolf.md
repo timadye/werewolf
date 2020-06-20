@@ -1,5 +1,6 @@
 <p align=right>
-<a href="https://www.dropbox.com/s/e0xdm855tednfho/Werewolf.doc" title="original copy of Werewolf rules from Whitney">Wednesday, 9th October, 2013</a>
+Last updated 20th June 2020 with minor changes from
+<a href="https://www.dropbox.com/s/e0xdm855tednfho/Werewolf.doc" title="original copy of Werewolf rules from Whitney">the original of Wednesday, 9th October, 2013</a>
 </p>
 
 # Werewolf
@@ -59,6 +60,8 @@ During each night phase, Fate will call on you to open your eyes and select a pl
 **Trapper:** If you draw one of the black Queens, you are a trapper.
 
 During each night phase, Fate will call on you to open your eyes and select a local resident to trap. You can select any player, including yourself. At dusk, you sneak out of your own house and set a bear trap just outside the door of your selected house. If a werewolf attacks the player you have trapped, that player will still be harmed by the attack (unless ze has also been wolfsbaned) but the werewolf will also sustain a telltale injury from stepping in the bear trap and setting it off. A player who has been protected by a wolfsbane _cannot_ be attacked by a werewolf during the same night phase, but _can_ still suffer a trap injury.
+
+If multiple werewolves attack a trapped player, only one will be injured, as chosen by Fate. On the other hand, a werewolf who suffers a werewolf and tapper injury at the same time (eg. trapped self-harming werewolf) will die.
 
 **Villager Vigilante:** If you draw the Ace of Spades, you are the villager vigilante.
 

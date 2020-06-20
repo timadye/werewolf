@@ -19,6 +19,7 @@ function initialPlayer() {
     role: null,
     vote: null, // id that this player selects at night
     call: null, // id that this player selects in the day
+    lastvote: null,
     lynch: null, // 'lynch' or 'spare'
     alive: true,
     crossbow: false, // crossbow loaded
@@ -593,7 +594,7 @@ Template.roleInfo.helpers({
 });
 
 Template.nightView.helpers({
-  players: () => [ ... allPlayers(), { _id: 0, name: 'none' } ],
+  players: () => [ ... allPlayers(), { _id: '0', name: 'none' } ],
   playerClass: function() {
     const player= Players.findOne(this._id);
     if (!player) {
@@ -648,7 +649,17 @@ Template.dayView.helpers({
 Template.nightView.events({
   'click .toggle-player': (event) => {
     const player = getCurrentPlayer();
-    if (player) Players.update (player._id, {$set: {vote: event.target.id}});
+    if (player) {
+      let vote = event.target.id;
+      if (debug >= 3) console.log ('player =', player);
+      if (roleInfo(player.role).type == "wolfsbane" && player.lastvote == player._id && vote == player._id) {
+        if (debug >= 1) console.log (`${player.name} (${player.role}, ${player._id}) protected themself last night, so ignore self-protection tonight.`);
+        vote = '0';    // ignore 2nd wolfbane protection for themself
+      } else {
+        if (debug >= 1) console.log (`${player.name} (${player.role}, ${player._id}) voted for ${vote} (last vote ${player.lastvote}).`);
+      }
+      Players.update (player._id, {$set: {vote: vote}});
+    }
   },
   'click .btn-show': () => hideRole(false),
   'click .btn-hide': () => hideRole(true),

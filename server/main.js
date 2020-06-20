@@ -127,7 +127,7 @@ Players.find({'vote': {$ne: null}}).observeChanges({
     }
     if (game.state == "nightTime") {
       dawn (game, players);
-      Players.update({gameID: gameID, session: {$ne: null}}, {$set: {vote: null}}, {multi: true});
+      Players.update({gameID: gameID, session: {$ne: null}}, {$rename: {vote: "lastvote"}}, {multi: true});
     }
   }
 });
@@ -167,7 +167,9 @@ function dawn (game, playersFound) {
 
   for (let player of players) {
     if (player.act.trapper) {
-      for (w of player.attackers) {
+      const a = player.attackers;
+      const w = a[Math.floor(Math.random() * a.length)];
+      if (w) {
         const t = playerMap[w];
         if (t.casualty <= 1) t.cause = 'trapper';
         t.casualty ++;
