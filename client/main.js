@@ -352,20 +352,16 @@ Template.startMenu.events({
     FlowRouter.go(`/${villageName}`);
   },
   'submit #start-menu': (event) => {
-
     const villageName = event.target.villageName.value;
-    if (!villageName) {
-      return false;
-    }
-
-    Meteor.call('villageExists', villageName, (error,result) => {
-      if (error) return false;
-      if (!result) {
-        createGame(villageName);
+    if (!villageName) return false;
+    Meteor.call ('villageExists', villageName, (error, result) => {
+      if (error || result<0) {
+        event.target.villageName.value = "";
+        return false;
       }
+      if (!result) createGame (villageName);
       FlowRouter.go(`/${villageName}`);
     });
-
     return false;
   },
 });

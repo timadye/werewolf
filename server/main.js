@@ -4,6 +4,7 @@ import '../imports/utils.js';
 
 const showAllVillages = !Number(process.env.WEREWOLF_HIDE);
 const debug            = Number(process.env.WEREWOLF_DEBUG || 1);
+const resetCmd         = process.env.WEREWOLF_RESET;
 
 Meteor.startup(() => {
   console.log(`Start Werewolf server: showAllVillages=${showAllVillages}, debug=${debug}`);
@@ -11,35 +12,41 @@ Meteor.startup(() => {
   Players.remove({});
 });
 
-Meteor.publish('games', function(villageName) {
+Meteor.publish('games', (villageName) => {
   return Games.find({"name": villageName});
 });
 
-Meteor.publish('players', function(gameID) {
+Meteor.publish('players', (gameID) => {
   return Players.find({"gameID": gameID});
 });
 
 if (showAllVillages) {
-  Meteor.publish('allGames', function() {
+  Meteor.publish('allGames', () => {
     return Games.find({}, { fields: {name: 1}, sort: {createdAt: 1} });
   });
 }
 
 Meteor.methods({
-  villageExists: function(villageName) {
-    return Games.find( {name: villageName} ).count() > 0;
-  },
-  resetAllGames: function() {
-    if (showAllVillages) {
-      if (debug>=1) console.log("reset all games");
-      Games.remove({});
-      Players.remove({});
+  villageExists: (villageName) => {
+    if (resetCmd && villageName == resetCmd) {
+      resetAllGames();
+      return -1;
     }
+    return Games.find( {name: villageName} ).count() > 0 ? 1 : 0;
+  },
+  resetAllGames: () => {
+    if (showAllVillages) resetAllGames();
   }
 });
 
+function resetAllGames() {
+  if (debug>=1) console.log("reset all games");
+  Games.remove({});
+  Players.remove({});
+}
+
 Games.find({'state': 'settingUp'}).observeChanges({
-  added: function(id, game) {
+  added: (id, game) => {
     if (debug>=1) console.log (`Start game '${game.name}' (${id})`);
     const players = Players.find({ gameID: id, session: {$ne: null} }, { fields: {_id:1, name:1} }).fetch();
     assignRoles(id, players, game.roles);
@@ -105,7 +112,7 @@ function assignRoles(gameID, players, roleNames) {
 }
 
 Players.find({'vote': {$ne: null}}).observeChanges({
-  added: function(newID, newPlayer) {
+  added: (newID, newPlayer) => {
     const gameID = newPlayer.gameID;
     if (debug>=3) console.log(`Player ${newPlayer.name} (${newID}) initially voted for ${newPlayer.vote}`);
     const players = Players.find({ gameID: gameID, session: {$ne: null}, alive: true }, { fields: {name:1, vote:1} }).fetch();
@@ -139,7 +146,7 @@ function dawn (game, playersFound) {
   const playerMap = objectMap (players, p => ({[p._id]: p}));
   if (debug >= 3) console.log ('initial players =', players);
   var nwerewolves = 0;
-  for (let player of players) {
+  for (const player of players) {
     const roleName = game.playerRoles[player._id];
     const role = roleInfo(roleName);
     if (role.type == "werewolf") nwerewolves ++;
@@ -157,7 +164,7 @@ function dawn (game, playersFound) {
     }
   }
 
-  for (let player of players) {
+  for (const player of players) {
     const act = player.act;
     if (act.werewolf && !act.wolfsbane) {
       player.casualty += (nwerewolves <= 1 ? 2 : act.werewolf);
@@ -165,7 +172,7 @@ function dawn (game, playersFound) {
     }
   }
 
-  for (let player of players) {
+  for (const player of players) {
     if (player.act.trapper) {
       const a = player.attackers;
       const w = a[Math.floor(Math.random() * a.length)];
@@ -177,14 +184,14 @@ function dawn (game, playersFound) {
     }
   }
 
-  for (let player of players) {
+  for (const player of players) {
     if (player.casualty >= 2) {
       loverSuicide (game.fellows.lover, playerMap, player);
     }
   }
 
   const deaths=[], injuries=[];
-  for (let player of players) {
+  for (const player of players) {
     if (player.casualty > 2) player.casualty = 2;
     if (player.casualty >= 2) {
       deaths.push(player.name);
@@ -201,7 +208,7 @@ function dawn (game, playersFound) {
 }
 
 Players.find({'lynch': {$ne: null}}).observeChanges({
-  added: function(newID, newPlayer) {
+  added: (newID, newPlayer) => {
     const gameID = newPlayer.gameID;
     if (debug>=3) console.log(`Player ${newPlayer.name} (${newID}) initially voted to ${newPlayer.lynch}`);
     const players = Players.find({ gameID: gameID, session: {$ne: null}, alive: true }, { fields: {name:1, call:1, lynch:1} }).fetch();
@@ -225,7 +232,7 @@ function lynch (game, players) {
   if (!victimPlayer) return;
 
   let votes = {lynch:[], spare:[]};
-  for (player of players) {
+  for (const player of players) {
     const role = roleInfo (game.playerRoles[player._id]);
     const n = ('votes' in role) ? role.votes : 1;
     const vote = player.lynch;
@@ -267,7 +274,7 @@ function lynchCall (players) {
 }
 
 Players.find({'twang': {$ne: null}}).observeChanges({
-  added: function(newID, newPlayer) {
+  added: (newID, newPlayer) => {
     const gameID = newPlayer.gameID;
     if (debug>=3) console.log(`Player ${newPlayer.name} (${newID}) shot ${newPlayer.twang}`);
     if (!newPlayer.twang) return;
@@ -296,7 +303,7 @@ function killPlayer (cause, game, players, victim) {
   const history = [victim].concat (loverSuicide (game.fellows.lover, playerMap, victim));
 
   let deaths=[];
-  for (let player of history) {
+  for (const player of history) {
     if (player.casualty >= 2) {
       deaths.push (player.name);
       Players.update (player._id, {$set: {alive: false}});
@@ -311,9 +318,9 @@ function loverSuicide (allLovers, playerMap, player) {
   playerMap[player._id] = player;
   if (debug >= 3) console.log ('loverSuicide: lovers =', allLovers, ', playerMap =', playerMap, ', player =', player);
   var deaths = [], suicides = [];
-  for (let lovers of allLovers) {
+  for (const lovers of allLovers) {
     if (lovers.some (p => p._id == player._id)) {
-      for (let lover of lovers) {
+      for (const lover of lovers) {
         if (lover._id != player._id) {
           const suicide = playerMap[lover._id];
           if (suicide && (!suicide.casualty || suicide.casualty <= 1)) {
@@ -329,7 +336,7 @@ function loverSuicide (allLovers, playerMap, player) {
   var deaths = suicides.slice();
 
   // Suicide lovers of lovers (is this a thing?)
-  for (let suicide of suicides) {
+  for (const suicide of suicides) {
     deaths.push (... loverSuicide (allLovers, playerMap, suicide));
   }
   return deaths;
