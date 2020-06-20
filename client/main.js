@@ -1,7 +1,9 @@
 import '../imports/roles.js';
 import '../imports/utils.js';
 
-const debug = 1;
+const debug = 2;
+const dash = "\u2013";
+const nbsp = "\u00A0"
 
 function initialGame() {
   return {
@@ -167,17 +169,20 @@ function allGames() {
   return ret ? ret.map((game) => game.name) : ret;
 }
 
-function allPlayersFind (gameID=null, includeInactive=0) {
+function allPlayersFind (gameID=null, includeInactive=0, fields={name:1}) {
   // includeInactive: 0=active and alive, 1=active, 2=all
   if (!gameID) {
     gameID = Session.get('gameID');
     if (!gameID) return null;
   }
-  return Players.find( { gameID: gameID, ...includeInactive<2 && {session: {$ne: null}, ...includeInactive<1 && {alive: true}} }, {fields: {name: 1}});
+  return Players.find( { gameID: gameID,
+                         ...includeInactive<2 && {session: {$ne: null},
+                         ...includeInactive<1 && {alive: true}} },
+                       {fields: fields});
 }
 
-function allPlayers (gameID=null, includeInactive=0) {
-  const ret = allPlayersFind (gameID, includeInactive);
+function allPlayers (gameID=null, includeInactive=0, fields={name:1}) {
+  const ret = allPlayersFind (gameID, includeInactive, fields);
   return ret ? ret.fetch() : [];
 }
 
@@ -522,7 +527,7 @@ Template.roleInfo.helpers({
     const game = getCurrentGame();
     if (!game) return null;
     if (debug >= 2) console.log ('history = ', game.history);
-    const col0 = {class:"", name:""};
+    const col0 = {Class:"", name:""};
     const players = allPlayers (game._id, 1) . map (p => ({...p, role: roleInfo(game.playerRoles[p._id]), col: {...col0}, alive:true}));
     if (debug >= 2) console.log ('players = ', players);
     const playerMap = objectMap (players, p => ({[p._id]: p}));
@@ -537,23 +542,23 @@ Template.roleInfo.helpers({
         return players.map(p=>p.col);
       })()}))),
       turns: game.history.map (t => ({
-        turn: (t.phase == "night") ? {class: 'night-row', name: `Night ${++day}`}
-                                   : {class:   'day-row', name: {"lynch": "Lynch", "vigilante": "Vigilante"}[t.phase] || t.phase},
+        turn: (t.phase == "night") ? {Class: 'night-row', name: `Night${nbsp}${++day}`}
+                                   : {Class:   'day-row', name: {"lynch": "Lynch", "vigilante": "Vigilante"}[t.phase] || t.phase},
         players: (() => {
-          players.forEach (p => {p.col = {name:"", class: (!p.alive ? "zombie" : t.phase == "night" ? 'night-row' : 'day-row') }});
+          players.forEach (p => {p.col = {name:"", Class: (!p.alive ? "zombie" : t.phase == "night" ? 'night-row' : 'day-row') }});
           if (t.phase == "lynch") {
             for (p of t.players) {
               let m = playerMap[p._id];
               if (p.casualty) m.alive = false;
               if (p.cause == 'lover') {
-                if (p.casualty) m.col.class = "dead-suicide";
+                if (p.casualty) m.col.Class = "dead-suicide";
               } else {
-                m.col.class = p.casualty ? "dead" : "alive";
+                m.col.Class = p.casualty ? "dead" : "alive";
                 for (pid of p.lynch) {
                   playerMap[pid].col.name = m.name;
                 }
                 for (pid of p.spare) {
-                  playerMap[pid].col.name = "–";
+                  playerMap[pid].col.name = dash;
                 }
               }
             }
@@ -562,9 +567,9 @@ Template.roleInfo.helpers({
               let m = playerMap[p._id];
               if (p.casualty) m.alive = false;
               if (p.cause == 'lover') {
-                if (p.casualty) m.col.class =  "dead-suicide";
+                if (p.casualty) m.col.Class =  "dead-suicide";
               } else {
-                m.col.class = p.casualty ? "dead" : "alive";
+                m.col.Class = p.casualty ? "dead" : "alive";
                 for (pid of p.attackers) {
                   playerMap[pid].col.name = "TWANG!";
                 }
@@ -575,9 +580,9 @@ Template.roleInfo.helpers({
               let m = playerMap[p._id];
               if (p.casualty >= 2) {
                 m.alive = false;
-                m.col.class = (p.cause == "lover" ? "dead-suicide" : "dead");
+                m.col.Class = (p.cause == "lover" ? "dead-suicide" : "dead");
               } else if (p.casualty == 1) {
-                m.col.class = (p.cause == "trapper" ? "injured-trapper" : "injured");
+                m.col.Class = (p.cause == "trapper" ? "injured-trapper" : "injured");
               }
               if (playerMap[p._id].role.active == "night" && p.vote) {
                 m.col.name = (playerMap[p.vote]||{}).name;
@@ -590,6 +595,30 @@ Template.roleInfo.helpers({
     };
     if (debug >= 2) console.log ('table = ', table);
     return table;
+  },
+
+  today: (view) => {
+    const night = (view == "nightView");
+    const field = night ? "vote" : "lynch";
+    const players = allPlayers (null, 1, {name:1, [field]: 1, alive:1});
+    if (debug >= 2) console.log ('players = ', players);
+    let playerMap = objectMap (players, p => ({[p._id]: p.name}));
+    if (night) {
+      playerMap["0"] = "none";
+    } else {
+      playerMap["lynch"] = "Lynch";
+      playerMap["spare"] = "Spare";
+    }
+    const row = {
+      name:  (night ? "Tonight" : "Today"),
+      Class: (night ? "night-row" : "day-row"),
+      players: players . map(p => ({
+        Class: (p.alive ? "" : "zombie"),
+        name:  playerMap[p[field]],
+      })),
+    };
+    if (debug >= 2) console.log ('row = ', row);
+    return row;
   },
 });
 
