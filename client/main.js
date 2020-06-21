@@ -251,9 +251,10 @@ function resetGame() {
 }
 
 function endGame() {
-  resetGame();
   Session.set('errorMessage', null);
   Session.set('turnMessage', null);
+  const gameID = Session.get('gameID');
+  if (gameID) Games.update(gameID, {$set: {state: 'endGame', deaths: [], injuries: []}});
 }
 
 function lynchVote(vote) {
@@ -305,6 +306,8 @@ function trackGameState() {
     Session.set('currentView', 'nightView');
   } else if (game.state === 'dayTime') {
     Session.set('currentView', 'dayView');
+  } else if (game.state === 'endGame') {
+    Session.set('currentView', 'endGame');
   }
 }
 
@@ -772,6 +775,15 @@ Template.gameFooter.events({
   'click .btn-end': () => {
     confirm ("End Game", "End game?", "This will end the game for all players", true, () => {
     endGame();
+    });
+  },
+});
+
+Template.endGame.events({
+  'click .btn-leave-village': leaveVillage,
+  'click .btn-new': () => {
+    confirm ("New Game", "New game?", "This will delete the game summary for everyone", true, () => {
+    resetGame();
     });
   },
 });

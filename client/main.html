@@ -119,7 +119,7 @@
     </div>
   </form>
 
-  {{> roleInfo view="nightView"}}
+  {{> roleMenu view="nightView"}}
   {{> gameFooter}}
 </template>
 
@@ -170,22 +170,23 @@
   {{/if}}
   <br><br>
 
-  {{> roleInfo view="dayView"}}
+  {{> roleMenu view="dayView"}}
   {{> gameFooter}}
 </template>
 
 <template name="endGame">
-  {{> gameHeader}}
   <h2>{{gameName}} village</h2>
   {{> roleInfo view="endGame"}}
-  {{> gameFooter}}
+  <br><br><br>
+  <button class="btn btn-secondary btn-md btn-new">New Game</button>
+  <button class="btn btn-secondary btn-md btn-leave-village">Leave Village</button>
 </template>
 
 
 
 
 
-<template name="roleInfo">
+<template name="roleMenu">
   {{#if hiddenRole}}
     <button class="btn btn-secondary btn-md btn-show">Show {{#if alive}}Role{{else}}Fate&#39;s Secrets{{/if}}</button>
   {{else}}
@@ -198,73 +199,77 @@
       {{/each}}
       </p>
     {{else}}
-      <p>
-      <table class="table table-bordered table-sm">
-        {{#let history=history}}
-          <thead>
-          <tr>
-            <th scope="col">Turn</th>
-            {{#each p in history.players}}
-              <th scope="col" class="player-head">{{p.name}}</th>
-            {{/each}}
-          </tr>
-          <tr>
-            <th scope="row" class="night-row">Role</th>
-            {{#each p in history.players}}
-              <td scope="col" class="night-row">{{p.role.name}}</td>
-            {{/each}}
-          </tr>
-          {{#each f in history.fellows}}
-          <tr>
-            <th scope="row" class="night-row">{{f.type}}</th>
-            {{#each c in f.names}}
-              <td scope="col" class="night-row">{{c.name}}</td>
-            {{/each}}
-          </tr>
-          {{/each}}
-          </thead>
-          <tbody>
-          {{#each turn in history.turns}}
-            <tr>
-              <th scope="row" class="{{turn.turn.Class}}">{{turn.turn.name}}</th>
-              {{#each p in turn.players}}
-                <td class="{{p.Class}}">{{p.name}}</td>
-              {{/each}}
-            </tr>
-            {{/each}}
-            {{#with today view}}
-            <tr>
-              <th scope="row" class="{{Class}}">{{name}}</th>
-              {{#each p in players}}
-                <td class="{{p.Class}}">{{p.name}}</td>
-              {{/each}}
-            </tr>
-            {{/with}}
-          </tbody>
-        {{/let}}
-      </table>
-      </p>
-      <p>
-      <table class="table table-bordered table-sm key">
-        <thead>
-          <tr><th colspan="2" scope="col" class="player-head">Key</th></tr>
-          <tr>
-            <th scope="col" class="player-head">Turn: assignment / action</th>
-            <th scope="col" class="player-head">Player result</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td class="night-row">Role: assigned role</td>    <td class="alive">Alive</td></tr>
-          <tr><td class="night-row">Lovers</td>                 <td class="dead">Dead</td></tr>
-          <tr><td class="night-row">Rivals</td>                 <td class="dead-suicide">Broken-hearted lover</td></tr>
-          <tr><td class="night-row">Night #: player visited</td><td class="injured">Injured</td></tr>
-          <tr><td class="day-row">Lynch: vote</td>              <td class="injured-trapper">Trapper injury</td></tr>
-          <tr><td class="day-row">Vigilante: TWANG!</td>        <td class="zombie">Zombie</td></tr>
-        </tbody>
-      </table>
-      </p>
+      {{> roleInfo view=view}}
     {{/if}}
   {{/if}}
+</template>
+
+<template name="roleInfo">
+  <p>
+  <table class="table table-bordered table-sm">
+    {{#let history=history}}
+      <thead>
+      <tr>
+        <th scope="col">Turn</th>
+        {{#each p in history.players}}
+          <th scope="col" class="player-head">{{p.name}}</th>
+        {{/each}}
+      </tr>
+      <tr>
+        <th scope="row" class="night-row">Role</th>
+        {{#each p in history.players}}
+          <td scope="col" class="night-row">{{p.role.name}}</td>
+        {{/each}}
+      </tr>
+      {{#each f in history.fellows}}
+      <tr>
+        <th scope="row" class="night-row">{{f.type}}</th>
+        {{#each c in f.names}}
+          <td scope="col" class="night-row">{{c.name}}</td>
+        {{/each}}
+      </tr>
+      {{/each}}
+      </thead>
+      <tbody>
+      {{#each turn in history.turns}}
+        <tr>
+          <th scope="row" class="{{turn.turn.Class}}">{{turn.turn.name}}</th>
+          {{#each p in turn.players}}
+            <td class="{{p.Class}}">{{p.name}}</td>
+          {{/each}}
+        </tr>
+        {{/each}}
+        {{#with today view}}
+        <tr>
+          <th scope="row" class="{{Class}}">{{name}}</th>
+          {{#each p in players}}
+            <td class="{{p.Class}}">{{p.name}}</td>
+          {{/each}}
+        </tr>
+        {{/with}}
+      </tbody>
+    {{/let}}
+  </table>
+  </p>
+  <p>
+  <table class="table table-bordered table-sm key">
+    <thead>
+      <tr><th colspan="2" scope="col" class="player-head">Key</th></tr>
+      <tr>
+        <th scope="col" class="player-head">Turn: assignment / action</th>
+        <th scope="col" class="player-head">Player result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="night-row">Role: assigned role</td>    <td class="alive">Alive</td></tr>
+      <tr><td class="night-row">Lovers</td>                 <td class="dead">Dead</td></tr>
+      <tr><td class="night-row">Rivals</td>                 <td class="dead-suicide">Broken-hearted lover</td></tr>
+      <tr><td class="night-row">Night #: player visited</td><td class="injured">Injured</td></tr>
+      <tr><td class="day-row">Lynch: vote</td>              <td class="injured-trapper">Trapper injury</td></tr>
+      <tr><td class="day-row">Vigilante: TWANG!</td>        <td class="zombie">Zombie</td></tr>
+    </tbody>
+  </table>
+  </p>
 </template>
 
 
