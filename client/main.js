@@ -267,7 +267,7 @@ function hideRole (hide=true) {
 
 function alive() {
   const player = getCurrentPlayer();
-  return (player && player.alive);
+  return player ? player.alive : false;
 }
 
 //======================================================================
@@ -305,6 +305,23 @@ function trackGameState() {
     Session.set('currentView', 'nightView');
   } else if (game.state === 'dayTime') {
     Session.set('currentView', 'dayView');
+  }
+}
+
+function confirm (button="OK", title="Confirm?", text="", doConfirm=true, ok) {
+  if (doConfirm) {
+    sweetAlert({
+      title: title,
+      text: text,
+      type: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#DD6B55",
+      confirmButtonText: button,
+      closeOnConfirm: true,
+      html: false
+    }, ok);
+  } else {
+    ok();
   }
 }
 
@@ -746,6 +763,15 @@ Template.dayView.events({
 });
 
 Template.gameFooter.events({
-  'click .btn-leave': leaveGame,
-  'click .btn-end': endGame,
+  'click .btn-leave': () => {
+    confirm ("Leave Game", "Leave game?", "If you leave the game, you could tip the balance of power in the village!", true, () => {
+      leaveGame();
+    });
+  },
+  'click .btn-leave-village': leaveVillage,
+  'click .btn-end': () => {
+    confirm ("End Game", "End game?", "This will end the game for all players", true, () => {
+    endGame();
+    });
+  },
 });

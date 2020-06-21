@@ -16,3 +16,4 @@ kadira:flow-router      # FlowRouter is a very simple router for Meteor
 kadira:blaze-layout     # Layout manager for blaze (works well with FlowRouter)
 
 session
+kevohagan:sweetalert

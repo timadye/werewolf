@@ -276,5 +276,9 @@
 <template name="gameFooter">
   <br><br><br>
   <button class="btn btn-secondary btn-md btn-end">End Game</button>
+  {{#if alive}}
   <button class="btn btn-secondary btn-md btn-leave">Leave Game</button>
+  {{else}}
+  <button class="btn btn-secondary btn-md btn-leave-village">Leave Village</button>
+  {{/if}}
 </template>
