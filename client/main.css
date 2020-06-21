@@ -151,6 +151,16 @@ li {
   background-color: #090;
 }
 
+#lobby-player-list .missing-player {
+  color: white;
+  background-color: darkorange;
+}
+
+#lobby-player-list .missing-player:hover {
+  color: white;
+  background-color: orange;
+}
+
 .player-checkbox {
   width: 100%;
   padding: 5px 0;

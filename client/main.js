@@ -256,7 +256,6 @@ function resetGame() {
 function endGame() {
   Session.set('errorMessage', null);
   Session.set('turnMessage', null);
-  hideRole(false);
   const gameID = Session.get('gameID');
   if (gameID) Games.update(gameID, {$set: {state: 'endGame', deaths: [], injuries: []}});
 }
@@ -412,6 +411,7 @@ Template.lobby.rendered = function(event) {
       joinGame(villageName);
     }
   }
+  hideRole();
   this.find("input").focus();
 };
 
@@ -489,6 +489,7 @@ Template.lateLobby.rendered = function(event) {
   if (Session.get('gameID')) return;
   const villageName = Session.get('urlVillage');
   if (villageName) joinGame(villageName);
+  hideRole();
 };
 
 Template.lateLobby.helpers({
@@ -500,7 +501,7 @@ Template.lateLobby.helpers({
     } else {
       const player= Players.findOne(id);
       if (player && player.alive) {
-        return "active-player";
+        return (player.session === true) ? "missing-player" : "active-player";
       } else {
         return null;
       }
@@ -516,7 +517,7 @@ Template.lateLobby.events({
     if (joinPlayer) {
       const player= Players.findOne(joinPlayer);
       if (player) {
-        confirm ("Join Game", `Replace ${player.name}?`, `Are you sure you want to replace ${player.name} in the ${gameName()} game`, player.alive, () => {
+        confirm ("Join Game", `Replace ${player.name}?`, `Are you sure you want to replace ${player.name} in the ${gameName()} game`, player.alive && player.session !== true, () => {
           if (debug >= 1) console.log (`Late join game ${gameName()} as ${player.name}`);
           Players.update(joinPlayer, {$set: {session: Meteor.default_connection._lastSessionId}});
           Session.set ('currentView', 'lobby');
