@@ -93,6 +93,31 @@
   <button class="btn btn-secondary btn-lg btn-leave">Leave Village</button>
 </template>
 
+<template name="lateLobby">
+  <h2>{{gameName}} village</h2>
+  <h3>Lobby</h3>
+
+  {{#if errorMessage}}
+    <h5>{{ errorMessage }}</h5>
+  {{/if}}
+
+  <form id="lobby-player-form">
+    <div id="lobby-player-list">
+    {{#each player in players}}
+      <div class="checkbox {{ playerClass player._id }}">
+        <label class="player-checkbox">
+          <input type="checkbox" id="{{ player._id }}" class="toggle-player"/>{{ player.name }}<br>
+        </label>
+      </div>
+    {{/each}}
+    </div>
+  </form>
+
+  <button class="btn btn-primary btn-lg btn-join">Join Game</button>
+  <button class="btn btn-secondary btn-lg btn-leave">Leave Village</button>
+  <button class="btn btn-secondary btn-lg btn-end">End Game</button>
+</template>
+
 <template name="nightView">
   {{> gameHeader}}
   <h3>Nighttime for {{ playerName }}</h3>
@@ -178,8 +203,8 @@
   <h2>{{gameName}} village</h2>
   {{> roleInfo view="endGame"}}
   <br><br><br>
-  <button class="btn btn-secondary btn-md btn-new">New Game</button>
   <button class="btn btn-secondary btn-md btn-leave-village">Leave Village</button>
+  <button class="btn btn-secondary btn-md btn-new">New Game</button>
 </template>
 
 
@@ -280,10 +305,9 @@
 
 <template name="gameFooter">
   <br><br><br>
-  <button class="btn btn-secondary btn-md btn-end">End Game</button>
+  <button class="btn btn-secondary btn-md btn-rejoin">Rejoin</button>
   {{#if alive}}
-  <button class="btn btn-secondary btn-md btn-leave">Leave Game</button>
-  {{else}}
-  <button class="btn btn-secondary btn-md btn-leave-village">Leave Village</button>
+  <button class="btn btn-secondary btn-md btn-suicide">Kill Myself</button>
   {{/if}}
+  <button class="btn btn-secondary btn-md btn-end">End Game</button>
 </template>

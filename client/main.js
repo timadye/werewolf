@@ -158,6 +158,7 @@ function reportError(msg) {
 function resetUserState() {
   setCurrentGame(null);
   setCurrentPlayer(null);
+  hideRole();
 }
 
 function allGamesFetch() {
@@ -227,6 +228,8 @@ function leaveVillage() {
   Session.set('currentView', 'startMenu');
   Session.set('turnMessage', null);
   Session.set('errorMessage', null);
+  Session.set('joinPlayer', null);
+  resetUserState();
 };
 
 function leaveGame() {
@@ -253,6 +256,7 @@ function resetGame() {
 function endGame() {
   Session.set('errorMessage', null);
   Session.set('turnMessage', null);
+  hideRole(false);
   const gameID = Session.get('gameID');
   if (gameID) Games.update(gameID, {$set: {state: 'endGame', deaths: [], injuries: []}});
 }
@@ -290,27 +294,6 @@ function registerHelper(helpers, helper) {
   }
 }
 
-/* sets the state of the game (which template to render) */
-/* types of game state:
-    waitingForPlayers (lobby)
-    settingUp (loading)
-    nightTime
-    dayTime
- */
-function trackGameState() {
-  const game = getCurrentGame();
-  if (!game) return;
-  if (game.state === 'waitingForPlayers') {
-    Session.set('currentView', 'lobby');
-  } else if (game.state === 'nightTime') {
-    Session.set('currentView', 'nightView');
-  } else if (game.state === 'dayTime') {
-    Session.set('currentView', 'dayView');
-  } else if (game.state === 'endGame') {
-    Session.set('currentView', 'endGame');
-  }
-}
-
 function confirm (button="OK", title="Confirm?", text="", doConfirm=true, ok) {
   if (doConfirm) {
     sweetAlert({
@@ -326,6 +309,31 @@ function confirm (button="OK", title="Confirm?", text="", doConfirm=true, ok) {
   } else {
     ok();
   }
+}
+
+// sets the state of the game (which template to render)
+function trackGameState() {
+  const game = getCurrentGame();
+  if (!game) {
+    if (debug >= 2) console.log (`trackGameState ${Meteor.default_connection._lastSessionId}: currentView = ${Session.get('currentView')}`);
+    return;
+  }
+  const currentView = Session.get('currentView');
+  if (game.state === 'waitingForPlayers') {
+    Session.set('currentView', 'lobby');
+  } else if (game.state === 'endGame') {
+    Session.set('currentView', 'endGame');
+
+  } else if (currentView == 'lateLobby') {
+    if (debug >= 2) console.log (`trackGameState ${Meteor.default_connection._lastSessionId}: game.state = ${game.state}, currentView: ${currentView}`);
+    return;
+
+  } else if (game.state === 'nightTime') {
+    Session.set('currentView', 'nightView');
+  } else if (game.state === 'dayTime') {
+    Session.set('currentView', 'dayView');
+  }
+  if (debug >= 2) console.log (`trackGameState ${Meteor.default_connection._lastSessionId}: game.state = ${game.state}, currentView: ${currentView} -> ${Session.get('currentView')}`);
 }
 
 Tracker.autorun(trackGameState);
@@ -433,7 +441,7 @@ Template.lobby.helpers({
   },
   startButtonDisabled: () => readyToStart() ? null : "disabled",
   errorMessage: () => Session.get('errorMessage'),
-})
+});
 
 Template.lobby.events({
   'click .btn-leave': leaveVillage,
@@ -470,6 +478,66 @@ Template.lobby.events({
       game.roles.push(role);
     }
     Games.update(game._id, {$set: {roles: game.roles}});
+  },
+});
+
+//======================================================================
+// lateLobby template
+//======================================================================
+
+Template.lateLobby.rendered = function(event) {
+  if (Session.get('gameID')) return;
+  const villageName = Session.get('urlVillage');
+  if (villageName) joinGame(villageName);
+};
+
+Template.lateLobby.helpers({
+  players: () => allPlayers (null, 1),
+  playerClass: (id) => {
+    const joinPlayer = Session.get ("joinPlayer");
+    if (joinPlayer && joinPlayer == id) {
+      return "current-player";
+    } else {
+      const player= Players.findOne(id);
+      if (player && player.alive) {
+        return "active-player";
+      } else {
+        return null;
+      }
+    }
+  },
+  errorMessage: () => Session.get('errorMessage'),
+});
+
+Template.lateLobby.events({
+  'click .btn-leave': leaveVillage,
+  'click .btn-join': () => {
+    const joinPlayer = Session.get ("joinPlayer");
+    if (joinPlayer) {
+      const player= Players.findOne(joinPlayer);
+      if (player) {
+        confirm ("Join Game", `Replace ${player.name}?`, `Are you sure you want to replace ${player.name} in the ${gameName()} game`, player.alive, () => {
+          if (debug >= 1) console.log (`Late join game ${gameName()} as ${player.name}`);
+          Players.update(joinPlayer, {$set: {session: Meteor.default_connection._lastSessionId}});
+          Session.set ('currentView', 'lobby');
+          Session.set ("joinPlayer", null);
+        });
+        return;
+      }
+    }
+    if (debug >= 1) console.log (`Late join game ${gameName()}`);
+    Session.set ('currentView', 'lobby');
+    Session.set ("joinPlayer", null);
+  },
+  'click .toggle-player': (event) => {
+    const joinPlayer = Session.get ("joinPlayer");
+    Session.set ("joinPlayer", (joinPlayer && joinPlayer == event.target.id) ? null : event.target.id);
+  },
+  'click .btn-end': () => {
+    confirm ("End Game", "End game?", "This will end the game for all players", true, () => {
+      resetGame();
+      Session.set ("joinPlayer", null);
+    });
   },
 });
 
@@ -520,7 +588,7 @@ Template.gameHeader.helpers({
   },
 });
 
-Template.roleInfo.helpers({
+Template.roleMenu.helpers({
   hiddenRole: () => Session.get("hiddenRole"),
 
   roleName: () => {
@@ -554,7 +622,10 @@ Template.roleInfo.helpers({
     }
     return msg;
   },
+});
 
+
+Template.roleInfo.helpers({
   history: () => {
     const game = getCurrentGame();
     if (!game) return null;
@@ -766,15 +837,22 @@ Template.dayView.events({
 });
 
 Template.gameFooter.events({
-  'click .btn-leave': () => {
-    confirm ("Leave Game", "Leave game?", "If you leave the game, you could tip the balance of power in the village!", true, () => {
+  'click .btn-suicide': () => {
+    confirm ("Kill Myself", "Leave game?", "If you kill yourself, you could tip the balance of power in the village!", true, () => {
       leaveGame();
     });
   },
-  'click .btn-leave-village': leaveVillage,
+  'click .btn-rejoin': () => {
+    const player = Players.findOne({session: Meteor.default_connection._lastSessionId});
+    if (player) {
+      Session.set ("joinPlayer", player._id);
+      Players.update(player._id, {$set: {session: true}});
+    }
+    Session.set('currentView', 'lateLobby');
+  },
   'click .btn-end': () => {
     confirm ("End Game", "End game?", "This will end the game for all players", true, () => {
-    endGame();
+      endGame();
     });
   },
 });
