@@ -22,7 +22,7 @@ function initialPlayer() {
     vote: null, // id that this player selects at night
     call: null, // id that this player selects in the day
     lastvote: null,
-    lynch: null, // 'lynch' or 'spare'
+    guillotine: null, // 'guillotine' or 'spare'
     alive: true,
     crossbow: false, // crossbow loaded
     twang: null // id of crossbow victim
@@ -260,9 +260,9 @@ function endGame() {
   if (gameID) Games.update(gameID, {$set: {state: 'endGame', deaths: [], injuries: []}});
 }
 
-function lynchVote(vote) {
+function guillotineVote(vote) {
   const player = getCurrentPlayer();
-  if (player) Players.update (player._id, {$set: {lynch: vote}});
+  if (player) Players.update (player._id, {$set: {guillotine: vote}});
 }
 
 function hideRole (hide=true) {
@@ -649,19 +649,19 @@ Template.roleInfo.helpers({
       })()}))),
       turns: game.history.map (t => ({
         turn: (t.phase == "night") ? {Class: 'night-row', name: `Night${nbsp}${++day}`}
-                                   : {Class:   'day-row', name: {"lynch": "Lynch", "vigilante": "Vigilante"}[t.phase] || t.phase},
+                                   : {Class:   'day-row', name: {"guillotine": "Guillotine", "vigilante": "Vigilante"}[t.phase] || t.phase},
         players: (() => {
           const defClass = (t.phase == "night" ? 'night-row' : 'day-row');
           players.forEach (p => {p.col = {name:"", Class: (t.phase == "vigilante" && p.alive ? defClass : "zombie")}});
           for (const p of t.players) {
             const m = playerMap[p._id];
             if (!m) continue;
-            if (t.phase == "lynch") {
+            if (t.phase == "guillotine") {
               if (p.cause == 'lover') {
                 m.col.Class = p.casualty ? "dead-suicide" : defClass;
               } else {
                 m.col.Class = p.casualty ? "dead" : "alive";
-                for (const pid of p.lynch) {
+                for (const pid of p.guillotine) {
                   const c = playerMap[pid].col;
                   if (!c) continue;
                   c.name = m.name;
@@ -712,14 +712,14 @@ Template.roleInfo.helpers({
     if (!view) view = Session.get('currentView');
     const night = {nightView: true, dayView: false}[view];
     if (night === undefined) return null;
-    const field = night ? "vote" : "lynch";
+    const field = night ? "vote" : "guillotine";
     const players = allPlayers (null, 2, {name:1, alive:1, role:1, [field]: 1}) . filter(p=>p.role);
     if (debug >= 2) console.log ('players = ', players);
     let playerMap = objectMap (players, p => ({[p._id]: p.name}));
     if (night) {
       playerMap["0"] = "none";
     } else {
-      playerMap["lynch"] = "Lynch";
+      playerMap["guillotine"] = "Guillotine";
       playerMap["spare"] = "Spare";
     }
     const row = {
@@ -752,15 +752,15 @@ Template.nightView.helpers({
 Template.dayView.helpers({
   haveVigilante: () => getCurrentGame().roles.some (r => roleInfo(r).vigilante),
   voting: () => {
-    let calls = {}, lynching = 0;
+    let calls = {}, guillotine = 0;
     for (const {call} of Players.find({call: {$ne: null}}, {fields: {call:1} }) . fetch()) {
       if (call in calls) {
-        if (++calls[call] == 2) lynching++;
+        if (++calls[call] == 2) guillotine++;
       } else {
         calls[call] = 1;
       }
     }
-    return lynching==1;
+    return guillotine==1;
   },
   players: allPlayers,
   playerClass: (id) => {
@@ -769,7 +769,7 @@ Template.dayView.helpers({
     let cl = [];
     if (loaded) cl.push ("crossbow-loaded");
     if        (ncalls >= 2) {
-      cl.push ("lynch-player");
+      cl.push ("guillotine-player");
     } else if (ncalls >= 1) {
       cl.push ("voted-player");
     }
@@ -831,8 +831,8 @@ Template.dayView.events({
     const gameID = Session.get('gameID');
     if (gameID) Games.update(gameID, {$set: {state: 'nightTime', deaths: [], injuries: []}});
   },
-  'click .btn-lynch': () => lynchVote("lynch"),
-  'click .btn-spare': () => lynchVote("spare"),
+  'click .btn-guillotine': () => guillotineVote("guillotine"),
+  'click .btn-spare':      () => guillotineVote("spare"),
   'click .btn-show': () => hideRole(false),
   'click .btn-hide': () => hideRole(true),
 });

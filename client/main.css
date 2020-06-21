@@ -255,12 +255,12 @@ input[type="checkbox"] {
   background-color: #090;
 }
 
-#player-list .lynch-player {
+#player-list .guillotine-player {
   color: white;
   background-color: #900;
 }
 
-#player-list .lynch-player:hover {
+#player-list .guillotine-player:hover {
   color: white;
   background-color: #b00;
 }

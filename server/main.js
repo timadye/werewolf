@@ -210,66 +210,66 @@ function dawn (game, playersFound) {
                           $push: { history: {phase: 'night', players: players} }});
 }
 
-Players.find({'lynch': {$ne: null}}).observeChanges({
+Players.find({'guillotine': {$ne: null}}).observeChanges({
   added: (newID, newPlayer) => {
     const gameID = newPlayer.gameID;
-    if (debug>=3) console.log(`Player ${newPlayer.name} (${newID}) initially voted to ${newPlayer.lynch}`);
-    const players = Players.find({ gameID: gameID, session: {$ne: null}, alive: true }, { fields: {name:1, call:1, lynch:1} }).fetch();
-    if (players.some (p => !p.lynch)) return null;
+    if (debug>=3) console.log(`Player ${newPlayer.name} (${newID}) initially voted to ${newPlayer.guillotine}`);
+    const players = Players.find({ gameID: gameID, session: {$ne: null}, alive: true }, { fields: {name:1, call:1, guillotine:1} }).fetch();
+    if (players.some (p => !p.guillotine)) return null;
     const game = Games.findOne(gameID);
     if (debug>=1) {
       console.log(`Game ${game.name} ${game.state}: all ${players.length} players voted`);
       for (const player of players) {
-        console.log(`  Player ${player.name} (${player._id}) voted to ${player.lynch}`, player.call ? `(lynch call on ${player.call})` : "");
+        console.log(`  Player ${player.name} (${player._id}) voted to ${player.guillotine}`, player.call ? `(guillotine call on ${player.call})` : "");
       }
     }
     if (game.state == "dayTime") {
-      lynch (game, players);
-      Players.update({gameID: gameID, session: {$ne: null}}, {$set: {call: null, lynch: null}}, {multi: true});
+      guillotine (game, players);
+      Players.update({gameID: gameID, session: {$ne: null}}, {$set: {call: null, guillotine: null}}, {multi: true});
     }
   }
 });
 
-function lynch (game, players) {
-  const victimPlayer = lynchCall (players);
+function guillotine (game, players) {
+  const victimPlayer = guillotineCall (players);
   if (!victimPlayer) return;
 
-  let votes = {lynch:[], spare:[]};
+  let votes = {guillotine:[], spare:[]};
   for (const player of players) {
     const role = roleInfo (game.playerRoles[player._id]);
     const n = ('votes' in role) ? role.votes : 1;
-    const vote = player.lynch;
+    const vote = player.guillotine;
     (votes[vote] || (votes[vote]=[])) . push (... Array.from({length:n}, x=>player._id));
   }
   const calls = players.flatMap (p => (p.call == victimPlayer._id ? [p._id] : []));
-  const dead = (votes.lynch.length > votes.spare.length);
-  const victim = { _id: victimPlayer._id, name: victimPlayer.name, ... votes, attackers: calls, casualty: dead?2:0, cause: 'lynch' };
-  if (debug >= 1) console.log (`Player ${victim.name} (${victim._id}) was ${dead?"lynched":"spared"} by ${votes.lynch.length} to ${votes.spare.length}`);
+  const dead = (votes.guillotine.length > votes.spare.length);
+  const victim = { _id: victimPlayer._id, name: victimPlayer.name, ... votes, attackers: calls, casualty: dead?2:0, cause: 'guillotine' };
+  if (debug >= 1) console.log (`Player ${victim.name} (${victim._id}) was ${dead?"guillotined":"spared"} by ${votes.guillotine.length} to ${votes.spare.length}`);
 
-  const [history, deaths] = killPlayer ("Lynching", game, players, victim);
+  const [history, deaths] = killPlayer ("Guillotine", game, players, victim);
 
-  Games.update(game._id, {$push: { history: {phase: 'lynch', players: history}, ... dead && {deaths: { $each: deaths }} }});
+  Games.update(game._id, {$push: { history: {phase: 'guillotine', players: history}, ... dead && {deaths: { $each: deaths }} }});
 }
 
-function lynchCall (players) {
+function guillotineCall (players) {
   if (debug >= 3) console.log('players =', players);
-  let calls = {}, lynching = [];
+  let calls = {}, guillotine = [];
   for (const player of players) {
     if (player.call && player.call in calls) {
       if (++calls[player.call] == 2)
-        lynching.push (players.find (p => p._id == player.call));
+        guillotine.push (players.find (p => p._id == player.call));
     } else {
       calls[player.call] = 1;
     }
   }
-  if (lynching.length == 1) {
-    return lynching[0];
+  if (guillotine.length == 1) {
+    return guillotine[0];
   } else {
     if (debug >= 0) {
-      if (lynching.length == 0) {
+      if (guillotine.length == 0) {
         console.log (`Ignore vote on call which was not seconded on ${Object(calls).keys().join(" and ")}`);
       }  else {
-        console.log (`Ignore vote on multiple calls on ${lynching.join(" and ")}`);
+        console.log (`Ignore vote on multiple calls on ${guillotine.join(" and ")}`);
       }
     }
     return null;
