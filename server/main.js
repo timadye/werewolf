@@ -5,11 +5,31 @@ import '../imports/utils.js';
 const showAllVillages = !Number(process.env.WEREWOLF_HIDE);
 const debug            = Number(process.env.WEREWOLF_DEBUG || 1);
 const resetCmd         = process.env.WEREWOLF_RESET || "reset";
+const resetOnStart     = !!Number(process.env.WEREWOLF_RESET_ON_START);
 
 Meteor.startup(() => {
-  console.log(`Start Werewolf server: showAllVillages=${showAllVillages}, debug=${debug}`);
-  Games.remove({});
-  Players.remove({});
+  if (debug >= 0) {
+    console.log(`Start Werewolf server: showAllVillages=${showAllVillages}, debug=${debug}, resetOnStart=${resetOnStart}`);
+  }
+  if (resetOnStart) {
+    Games.remove({});
+    Players.remove({});
+  } else if (debug >= 1) {
+    let games = Games.find({}, { fields: {name: 1, state: 1, createdAt: 1}, sort: {createdAt: 1} });
+    games = games ? games.fetch() : [];
+    let players = Players.find({}, { fields: {name: 1, gameID: 1}, sort: {createdAt: 1} });
+    players = players ? players.fetch() : [];
+    for (const game of games) {
+      let ps = players.filter (p => p.gameID = game._id) . map (p => p.name) . join(', ');
+      ps = ps ? `players ${ps}` : 'no players';
+      ds = new Date(game.createdAt).toISOString();
+      console.log (`Resume game '${game.name}' (${game.state}, created ${ds}) with ${ps}`);
+    }
+    let ps = players.filter (p => !games.some (g => g._id == p.gameID)) . map (p => p.name) . join (', ');
+    if (ps) {
+      console.log (`Resume with unattached players ${ps}`);
+    }
+  }
 });
 
 Meteor.publish('games', (villageName) => {
