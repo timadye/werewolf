@@ -195,6 +195,16 @@ li {
   background-color: #aaa;
 }
 
+#choose-roles-list .role-header {
+  color: black;
+  background-color: white;
+}
+
+#choose-roles-list .role-header-text {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
 #choose-roles-list .selected-role {
   color: white;
   background-color: #070;

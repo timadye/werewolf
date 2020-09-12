@@ -430,14 +430,22 @@ Template.lobby.helpers({
     }
   },
   roleKeys: () => {
-    const nplayersFind = allPlayersFind (null, 2);
+    const game= getCurrentGame();
+    if (!game) return null;
+    const nplayersFind = allPlayersFind (game._id, 2);
     if (!nplayersFind) return null;
     const nplayers = nplayersFind.count();
-    return Object.entries(allRoles) . flatMap (([k,r]) => (!r.display || nplayers >= r.display) ? [{ key:k, role:r }] : []);
-  },
-  roleClass: function(key) {
-    const game= getCurrentGame();
-    return (game && game.roles.includes(key)) ? "selected-role" : null;
+    let last = "";
+    return Object.entries(allRoles)
+      . filter (([k,r]) => !r.display || nplayers >= r.display)
+      . map    (([k,r]) => {
+        const head = (last == ""         && r.type == "werewolf") ? "Werewolves"    :
+                     (last == "werewolf" && r.type != "werewolf") ? "Villagers"     :
+                     (last != "lovers"   && r.type == "lovers")   ? "Relationships" : "";
+        last = r.type;
+        const cls = game.roles.includes(k) ? "selected-role" : null;
+        return { key:k, role:r, header:head, roleClass:cls };
+      });
   },
   startButtonDisabled: () => readyToStart() ? null : "disabled",
   errorMessage: () => Session.get('errorMessage'),

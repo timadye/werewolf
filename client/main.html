@@ -80,7 +80,14 @@
   <form id="choose-roles-form">
     <div id="choose-roles-list">
       {{#each role in roleKeys}}
-        <div class="checkbox {{ roleClass role.key }}">
+        {{#if role.header}}
+          <div class="checkbox role-header">
+          <label class="role-checkbox">
+            <span class="role-header-text">{{ role.header }}</span>
+          </label>
+          </div>
+        {{/if}}
+        <div class="checkbox {{ role.roleClass }}">
           <label class="role-checkbox">
             <input type="checkbox" id="{{ role.key }}" class="toggle-role"/>{{ role.role.name }}<br>
           </label>
@@ -137,7 +144,7 @@
             <input type="checkbox" id="{{ player._id }}" class="toggle-player"/>{{ player.name }}<br>
           {{else}}
             <input type="checkbox"/>{{ player.name }}<br>
-          {{/if}} 
+          {{/if}}
         </label>
       </div>
     {{/each}}
@@ -179,7 +186,7 @@
               <input type="checkbox" id="{{ player._id }}" class="toggle-player"/>{{ player.name }}<br>
             {{else}}
               <input type="checkbox"/>{{ player.name }}<br>
-            {{/if}} 
+            {{/if}}
           </label>
         </div>
       {{/each}}

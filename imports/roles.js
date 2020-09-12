@@ -1,7 +1,7 @@
 allRoles = {
 // roles deck
   werewolf_1 : {
-    name: 'Werewolf',
+    name: 'Romulus',
     type: 'werewolf',
     index: 0,
     dark: true,
@@ -10,7 +10,7 @@ allRoles = {
     active: 'night',
   },
   werewolf_2 : {
-    name: 'Werewolf',
+    name: 'Remus',
     type: 'werewolf',
     index: 1,
     dark: true,
@@ -19,7 +19,7 @@ allRoles = {
     active: 'night',
   },
   werewolf_3 : {
-    name: 'Werewolf',
+    name: 'Lupin',
     type: 'werewolf',
     index: 2,
     dark: true,
@@ -29,7 +29,7 @@ allRoles = {
     display: 6,
   },
   werewolf_4 : {
-    name: 'Werewolf',
+    name: 'Greyback',
     type: 'werewolf',
     index: 3,
     dark: true,
@@ -39,7 +39,7 @@ allRoles = {
     display: 7,
   },
   werewolf_vigilante : {
-    name: 'Werewolf Vigilante',
+    name: 'Vigilante Oz',
     type: 'werewolf',
     index: 3,
     dark: true,
