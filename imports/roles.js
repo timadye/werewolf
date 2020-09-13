@@ -2,6 +2,7 @@ allRoles = {
 // roles deck
   werewolf_1 : {
     name: 'Romulus',
+    properName: 'Romulus',
     type: 'werewolf',
     index: 0,
     dark: true,
@@ -11,6 +12,7 @@ allRoles = {
   },
   werewolf_2 : {
     name: 'Remus',
+    properName: 'Remus',
     type: 'werewolf',
     index: 1,
     dark: true,
@@ -20,6 +22,7 @@ allRoles = {
   },
   werewolf_3 : {
     name: 'Lupin',
+    properName: 'Lupin',
     type: 'werewolf',
     index: 2,
     dark: true,
@@ -30,6 +33,7 @@ allRoles = {
   },
   werewolf_4 : {
     name: 'Greyback',
+    properName: 'Greyback',
     type: 'werewolf',
     index: 3,
     dark: true,
@@ -40,6 +44,7 @@ allRoles = {
   },
   werewolf_vigilante : {
     name: 'Vigilante Oz',
+    properName: 'Vigilante Oz',
     type: 'werewolf',
     index: 3,
     dark: true,
@@ -129,6 +134,7 @@ allRoles = {
   },
   cultist_1 : {
     name: 'Cultist',
+    properName: 'a cultist',
     type: 'cultist',
     index: 0,
     dark: false,
@@ -138,6 +144,7 @@ allRoles = {
   },
   cultist_2 : {
     name: 'Cultist',
+    properName: 'a cultist',
     type: 'cultist',
     index: 1,
     dark: false,
@@ -147,6 +154,7 @@ allRoles = {
   },
   cultist_3 : {
     name: 'Cultist',
+    properName: 'a cultist',
     type: 'cultist',
     index: 2,
     dark: false,
@@ -156,6 +164,7 @@ allRoles = {
   },
   cultist_4 : {
     name: 'Cultist',
+    properName: 'a cultist',
     type: 'cultist',
     index: 3,
     dark: false,
@@ -202,11 +211,13 @@ allRoles = {
 roleInfo = function (name) {
   return name ? (allRoles[name] || {
     name: 'Ordinary Villager',
+    properName: 'an ordinary villager',
     type: 'villager',
     dark: false,
     deck: 'roles',
   }) : {
     name: 'Zombie',
+    properName: 'a zombie',
     type: 'zombie',
     dark: false,
     deck: 'roles',

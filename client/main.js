@@ -602,7 +602,8 @@ Template.roleMenu.helpers({
 
   roleName: () => {
     const player = getCurrentPlayer();
-    return roleInfo (player ? player.role : null) . name;
+    const role = roleInfo (player ? player.role : null);
+    return role.properName ? role.properName : `the ${role.name}`;
   },
 
   allFellows: () => {
