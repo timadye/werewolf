@@ -5,8 +5,10 @@
     "start": "meteor run"
   },
   "dependencies": {
-    "@babel/runtime": "^7.10.2",
+    "@babel/runtime": "^7.11.2",
     "jquery": "^3.5.1",
-    "meteor-node-stubs": "^1.0.0"
+    "meteor-node-stubs": "^1.0.1",
+    "regenerator-runtime": "^0.13.7",
+    "rimraf": "^3.0.2"
   }
 }

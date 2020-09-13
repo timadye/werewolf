@@ -15,5 +15,5 @@ ecmascript@0.14.3              # Enable ECMAScript2015+ syntax in app code
 kadira:flow-router      # FlowRouter is a very simple router for Meteor
 kadira:blaze-layout     # Layout manager for blaze (works well with FlowRouter)
 
-session
+session@1.2.0
 kevohagan:sweetalert
