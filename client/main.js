@@ -762,7 +762,7 @@ Template.dayView.helpers({
   haveVigilante: () => getCurrentGame().roles.some (r => roleInfo(r).vigilante),
   voting: () => {
     let calls = {}, guillotine = 0;
-    for (const {call} of Players.find({call: {$ne: null}}, {fields: {call:1} }) . fetch()) {
+    for (const {call} of Players.find ({call: {$ne: null}, alive: {$eq: true}}, {fields: {call:1} }) . fetch()) {
       if (call in calls) {
         if (++calls[call] == 2) guillotine++;
       } else {
@@ -773,7 +773,7 @@ Template.dayView.helpers({
   },
   players: allPlayers,
   playerClass: (id) => {
-    const ncalls= Players.find({call: id}) . count();
+    const ncalls= Players.find({call: id, alive: {$eq: true}}) . count();
     const loaded= Players.find({_id: id, crossbow: true}) . count();
     let cl = [];
     if (loaded) cl.push ("crossbow-loaded");

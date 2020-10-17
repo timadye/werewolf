@@ -275,11 +275,13 @@ function guillotineCall (players) {
   if (debug >= 3) console.log('players =', players);
   let calls = {}, guillotine = [];
   for (const player of players) {
-    if (player.call && player.call in calls) {
-      if (++calls[player.call] == 2)
-        guillotine.push (players.find (p => p._id == player.call));
-    } else {
-      calls[player.call] = 1;
+    if (player.call) {
+      if (player.call in calls) {
+        if (++calls[player.call] == 2)
+          guillotine.push (players.find (p => p._id == player.call));
+      } else {
+        calls[player.call] = 1;
+      }
     }
   }
   if (guillotine.length == 1) {
@@ -287,9 +289,9 @@ function guillotineCall (players) {
   } else {
     if (debug >= 0) {
       if (guillotine.length == 0) {
-        console.log (`Ignore vote on call which was not seconded on ${Object(calls).keys().join(" and ")}`);
+        console.log (`Ignore vote on call which was not seconded on ${Object.keys(calls).join(" and ")} - why was this requested by the client?`);
       }  else {
-        console.log (`Ignore vote on multiple calls on ${guillotine.join(" and ")}`);
+        console.log (`Ignore vote on multiple calls on ${guillotine.join(" and ")} - why was this requested by the client?`);
       }
     }
     return null;
