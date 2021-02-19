@@ -838,6 +838,12 @@ Template.dayView.events({
   'click .btn-sleep': (event) => {
     const gameID = Session.get('gameID');
     if (gameID) Games.update(gameID, {$set: {state: 'nightTime'}});
+    // "Not permitted. Untrusted code may only update documents by ID.":
+    // Players.update({gameID: gameID}, {$set: {call: null, guillotine: null, crossbow: null, twang: null}}, {multi: true});
+    let _id = {}
+    for (const {_id} of allPlayers (null, 2, {_id:1})) {
+      Players.update(_id, {$set: {call: null, guillotine: null, crossbow: null, twang: null}});
+    }
   },
   'click .btn-guillotine': () => guillotineVote("guillotine"),
   'click .btn-spare':      () => guillotineVote("spare"),
