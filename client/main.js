@@ -10,8 +10,7 @@ function initialGame() {
     playerRoles: [],
     lovers: [],
     state: 'waitingForPlayers',
-    deaths: [],
-    injuries: [],
+    voiceOfFate: [],
     history: []
   };
 }
@@ -257,7 +256,7 @@ function endGame() {
   Session.set('errorMessage', null);
   Session.set('turnMessage', null);
   const gameID = Session.get('gameID');
-  if (gameID) Games.update(gameID, {$set: {state: 'endGame', deaths: [], injuries: []}});
+  if (gameID) Games.update(gameID, {$set: {state: 'endGame'}});
 }
 
 function guillotineVote(vote) {
@@ -773,10 +772,15 @@ Template.dayView.helpers({
   },
   players: allPlayers,
   playerClass: (id) => {
+    const caller= Players.find({_id: id, call: {$ne: null}, alive: {$eq: true}}) . count();
     const ncalls= Players.find({call: id, alive: {$eq: true}}) . count();
     const loaded= Players.find({_id: id, crossbow: true}) . count();
     let cl = [];
-    if (loaded) cl.push ("crossbow-loaded");
+    if        (loaded) {
+      cl.push ("crossbow-loaded");
+    } else if (caller) {
+      cl.push ("guillotine-caller");
+    }
     if        (ncalls >= 2) {
       cl.push ("guillotine-player");
     } else if (ncalls >= 1) {
@@ -784,15 +788,10 @@ Template.dayView.helpers({
     }
     return cl.join(" ");
   },
-  allCasualties: () => {
+  voiceOfFate: () => {
     const game= getCurrentGame();
     if (!game) return null;
-    let msg = [];
-    if (game.deaths.length)
-      msg.push (game.deaths.join(" and ") + (game.deaths.length >= 2 ? " are" : " is") + " dead");
-    if (game.injuries.length)
-      msg.push (game.injuries.join(" and ") + (game.injuries.length >= 2 ? " are" : " is") + " injured");
-    return msg;
+    return game.voiceOfFate;
   },
 });
 
@@ -838,7 +837,7 @@ Template.dayView.events({
   },
   'click .btn-sleep': (event) => {
     const gameID = Session.get('gameID');
-    if (gameID) Games.update(gameID, {$set: {state: 'nightTime', deaths: [], injuries: []}});
+    if (gameID) Games.update(gameID, {$set: {state: 'nightTime'}});
   },
   'click .btn-guillotine': () => guillotineVote("guillotine"),
   'click .btn-spare':      () => guillotineVote("spare"),

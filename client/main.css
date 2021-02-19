@@ -279,6 +279,10 @@ input[type="checkbox"] {
   border-color: #c0c;
 }
 
+#player-list .guillotine-caller {
+  border-color: #00c;
+}
+
 .dead-player {
   background-color: var(--current-fg-color);
   color: var(--current-bg-color);
