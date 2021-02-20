@@ -235,11 +235,11 @@ function dawn (game, playersFound) {
 
   let voiceOfFate = [];
   if (deaths.length)
-    voiceOfFate.push (deaths  .join(" and ") + (deaths  .length >= 2 ? " are" : " is") + " dead.");
+    voiceOfFate.push (deaths  .join(" and ") + " died in the night.");
   if (suicides.length)
     voiceOfFate.push (suicides.join(" and ") + " also died of a broken heart.");
   if (injuries.length)
-    voiceOfFate.push (injuries.join(" and ") + (injuries.length >= 2 ? " are" : " is") + " injured.");
+    voiceOfFate.push (injuries.join(" and ") + (injuries.length >= 2 ? " were" : " was") + " injured in the night.");
   if (!voiceOfFate.length)
     voiceOfFate.push ("There were no injuries in the night.");
   Games.update(game._id, {$set: {voiceOfFate: voiceOfFate, state: 'dayTime'},
