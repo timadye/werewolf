@@ -283,8 +283,11 @@ function guillotine (game, players) {
   if (debug >= 1) console.log (`Player ${victim.name} (${victim._id}) was ${dead?"guillotined":"spared"} by ${votes.guillotine.length} to ${votes.spare.length}`);
 
   const [history, voiceOfFate] = killPlayer ("Guillotine", game, players, victim);
+  if (!dead) {
+    voiceOfFate.push (victim.name + " was spared.");
+  }
 
-  Games.update(game._id, {$push: { history: {phase: 'guillotine', players: history}, ... dead && {voiceOfFate: { $each: voiceOfFate }} }});
+  Games.update(game._id, {$push: { history: {phase: 'guillotine', players: history}, voiceOfFate: { $each: voiceOfFate } }});
 }
 
 function guillotineCall (players) {
