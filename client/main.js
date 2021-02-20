@@ -841,7 +841,7 @@ Template.dayView.events({
     // "Not permitted. Untrusted code may only update documents by ID.":
     // Players.update({gameID: gameID}, {$set: {call: null, guillotine: null, crossbow: null, twang: null}}, {multi: true});
     for (const {_id: playerID} of allPlayers (null, 2, {_id:1})) {
-      Players.update (playerID, {$set: {call: null, guillotine: null, crossbow: null, twang: null}});
+      Players.update (playerID, {$set: {call: null, guillotine: null, crossbow: null}});
     }
   },
   'click .btn-guillotine': () => guillotineVote("guillotine"),
