@@ -118,14 +118,14 @@ function gameName(gameID) {
 function playerName(playerID) {
   const player = Players.findOne(
     (playerID !== undefined) ? playerID
-                             : {session: Meteor.default_connection._lastSessionId},
+                             : {session: Meteor.connection._lastSessionId},
     { fields: { name: 1 } }
   );
   return player ? player.name : null;
 }
 
 function getCurrentPlayer() {
-  return Players.findOne({session: Meteor.default_connection._lastSessionId});
+  return Players.findOne({session: Meteor.connection._lastSessionId});
 }
 
 function setCurrentPlayer (newID, toggle=false) {
@@ -143,7 +143,7 @@ function setCurrentPlayer (newID, toggle=false) {
     }
   }
   if (newID) {
-    Players.update(newID, {$set: {session: Meteor.default_connection._lastSessionId}});
+    Players.update(newID, {$set: {session: Meteor.connection._lastSessionId}});
     return newID;
   }
   return null;
@@ -313,7 +313,7 @@ function confirm (button="OK", title="Confirm?", text="", doConfirm=true, ok) {
 function trackGameState() {
   const game = getCurrentGame();
   if (!game) {
-    if (debug >= 2) console.log (`trackGameState ${Meteor.default_connection._lastSessionId}: currentView = ${Session.get('currentView')}`);
+    if (debug >= 2) console.log (`trackGameState ${Meteor.connection._lastSessionId}: currentView = ${Session.get('currentView')}`);
     return;
   }
   const currentView = Session.get('currentView');
@@ -323,7 +323,7 @@ function trackGameState() {
     Session.set('currentView', 'endGame');
 
   } else if (currentView == 'lateLobby') {
-    if (debug >= 2) console.log (`trackGameState ${Meteor.default_connection._lastSessionId}: game.state = ${game.state}, currentView: ${currentView}`);
+    if (debug >= 2) console.log (`trackGameState ${Meteor.connection._lastSessionId}: game.state = ${game.state}, currentView: ${currentView}`);
     return;
 
   } else if (game.state === 'nightTime') {
@@ -331,7 +331,7 @@ function trackGameState() {
   } else if (game.state === 'dayTime') {
     Session.set('currentView', 'dayView');
   }
-  if (debug >= 2) console.log (`trackGameState ${Meteor.default_connection._lastSessionId}: game.state = ${game.state}, currentView: ${currentView} -> ${Session.get('currentView')}`);
+  if (debug >= 2) console.log (`trackGameState ${Meteor.connection._lastSessionId}: game.state = ${game.state}, currentView: ${currentView} -> ${Session.get('currentView')}`);
 }
 
 Tracker.autorun(trackGameState);
@@ -420,7 +420,7 @@ Template.lobby.helpers({
     const player= Players.findOne(id);
     if (!player) {
       return null;
-    } else if (player.session == Meteor.default_connection._lastSessionId) {
+    } else if (player.session == Meteor.connection._lastSessionId) {
       return "current-player";
     } else if (player.session) {
       return "active-player";
@@ -526,7 +526,7 @@ Template.lateLobby.events({
       if (player) {
         confirm ("Join Game", `Replace ${player.name}?`, `Are you sure you want to replace ${player.name} in the ${gameName()} game`, player.alive && player.session !== true, () => {
           if (debug >= 1) console.log (`Late join game ${gameName()} as ${player.name}`);
-          Players.update(joinPlayer, {$set: {session: Meteor.default_connection._lastSessionId}});
+          Players.update(joinPlayer, {$set: {session: Meteor.connection._lastSessionId}});
           Session.set ('currentView', 'lobby');
           Session.set ("joinPlayer", null);
         });
@@ -857,7 +857,7 @@ Template.gameFooter.events({
     });
   },
   'click .btn-rejoin': () => {
-    const player = Players.findOne({session: Meteor.default_connection._lastSessionId});
+    const player = Players.findOne({session: Meteor.connection._lastSessionId});
     if (player) {
       Session.set ("joinPlayer", player._id);
       Players.update(player._id, {$set: {session: true}});
