@@ -1,15 +1,7 @@
-@font-face {
-  font-family: HKGroteskRegular;
-  src: url('/fonts/hk-grotesk/HKGrotesk-Regular.otf');
-}
-
-@font-face {
-  font-family: HKGroteskBold;
-  src: url('/fonts/hk-grotesk/HKGrotesk-Bold.otf');
-}
+@import url("https://fonts.googleapis.com/css?family=Hanken%20Grotesk");
 
 * {
-  font-family: 'HKGroteskRegular', inherit;
+  font-family: 'Hanken Grotesk', inherit;
 }
 
 html {
