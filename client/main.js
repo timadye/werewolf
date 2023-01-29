@@ -80,8 +80,23 @@ function joinGame(name) {
     if (debug>=1) console.log(`Join village '${name}', id=${game._id}`);
     Meteor.subscribe('players', game._id);
     Session.set('gameID', game._id);
+    setTitle (name);
   });
   return false;
+}
+
+function setTitle(name) {
+  if (name == undefined) {
+    name = playerName();
+    if (!name) {
+      name = gameName();
+      if (!name) {
+        document.title = "Werewolf";
+        return;
+      }
+    }
+  }
+  document.title = name + " - Werewolf";
 }
 
 function setCurrentGame(game) {
@@ -134,6 +149,7 @@ function setCurrentPlayer (newID, toggle=false) {
     if (newID == player._id) {
       if (toggle) {
         Players.update(player._id, {$set: {session: null}});
+        setTitle();
         return null;
       } else {
         return player._id;
@@ -144,6 +160,7 @@ function setCurrentPlayer (newID, toggle=false) {
   }
   if (newID) {
     Players.update(newID, {$set: {session: Meteor.connection._lastSessionId}});
+    setTitle();
     return newID;
   }
   return null;
@@ -158,6 +175,7 @@ function resetUserState() {
   setCurrentGame(null);
   setCurrentPlayer(null);
   hideRole();
+  setTitle();
 }
 
 function allGamesFetch() {
@@ -314,6 +332,7 @@ function trackGameState() {
   const game = getCurrentGame();
   if (!game) {
     if (debug >= 2) console.log (`trackGameState ${Meteor.connection._lastSessionId}: currentView = ${Session.get('currentView')}`);
+    Session.set('currentView', 'startMenu');
     return;
   }
   const currentView = Session.get('currentView');
@@ -455,6 +474,7 @@ Template.lobby.events({
   'click .btn-start': () => {
     const gameID = Session.get('gameID');
     if (gameID) Games.update(gameID, {$set: {state: 'settingUp'}});
+    setTitle();
   },
   'click .toggle-player': (event) => {
     setCurrentPlayer (event.target.id, true);
@@ -529,6 +549,7 @@ Template.lateLobby.events({
           Players.update(joinPlayer, {$set: {session: Meteor.connection._lastSessionId}});
           Session.set ('currentView', 'lobby');
           Session.set ("joinPlayer", null);
+          setTitle (player.name);
         });
         return;
       }
@@ -539,7 +560,9 @@ Template.lateLobby.events({
   },
   'click .toggle-player': (event) => {
     const joinPlayer = Session.get ("joinPlayer");
-    Session.set ("joinPlayer", (joinPlayer && joinPlayer == event.target.id) ? null : event.target.id);
+    newPlayer = (joinPlayer && joinPlayer == event.target.id) ? null : event.target.id;
+    Session.set ("joinPlayer", newPlayer);
+    setTitle (newPlayer ? playerName(newPlayer) : null);
   },
   'click .btn-end': () => {
     confirm ("End Game", "End game?", "This will end the game for all players", true, () => {

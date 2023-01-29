@@ -335,7 +335,7 @@ caption {
   right: 0;
   border: solid 0.1em;
   border-color: var(--current-fg-color);
-  display: inline-block;
+  display: block;
   text-align: right;
   margin: 50px 2px 2px 2px;
   float: right;
