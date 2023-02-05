@@ -2,7 +2,7 @@
 
 What exactly is _Werewolf?_ It's a game. It's another one of those [University of Oxford](http://www.ox.ac.uk/) experiences. As far as I can tell, Werewolf is the most purposefully complicated psychological thriller role-playing game ever invented. You may have played variations of it, or similar games like _Mafia_ elsewhere, but I assure you the Oxford version is different. The [roles and rules](Werewolf.md) have been developing over at least the past fifty years. There are rumours that this version hatched from a cosmic egg laid by [_Helliconia_](https://en.wikipedia.org/wiki/Helliconia) author [Brian Aldiss](https://en.wikipedia.org/wiki/Brian_Aldiss). I can neither confirm nor deny that. Anyway, it is complicated, but worth it for the feeling of smug self-satisfaction you get when you do well at a difficult game developed by generations of Oxonian geniuses.
 
-The code here is an attempt to capture that experience online. It is implemented in [Meteor](https://github.com/meteor/meteor), now completely rewritten from [code](https://github.com/timadye/werewolf/tree/1n-werewolf) for [_One Night Ultimate Werewolf_](http://ultimatewerewolf.herokuapp.com) by [Katie Jiang](https://github.com/katiejiang/).
+The code here is an attempt to capture that experience online. It is implemented in [Meteor](https://github.com/meteor/meteor)-[Blaze](https://github.com/meteor/blaze), inspired by [code for _One Night Ultimate Werewolf_](https://github.com/timadye/werewolf/tree/1n-werewolf) by [Katie Jiang](https://github.com/katiejiang/).
 
 _Oxford Werewolf_ is a little rough around the edges, but we have found from many games that it works well in both face-to-face play and over Zoom.
 
