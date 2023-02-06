@@ -66,6 +66,17 @@ function removePlayer(game, name) {
   if (player) {
     console.log (`Remove player '${player.name}' (${player._id}) from game '${game.name}'`);
     Players.remove(player._id);
+    // Remove roles that are no longer available
+    unavailable = {};
+    for (const [k,r] of availableRoles(game, true)) {
+      unavailable[k] = r;
+    };
+    const available = game.roles.filter (r => !(r in unavailable));
+    if (available.length < game.roles.length) {
+      remove = game.roles.filter (r => r in unavailable);
+      console.log (`Roles no longer available: ${remove}`);
+      Games.update(game._id, {$set: {roles: available}});
+    }
   }
 }
 
@@ -291,6 +302,29 @@ function alive() {
   return player ? player.alive : false;
 }
 
+function voting() {
+  let calls = {}, guillotine = 0, called = null;
+  for (const {call} of Players.find ({call: {$ne: null}, alive: {$eq: true}}, {fields: {call:1} }) . fetch()) {
+    if (call in calls) {
+      if (++calls[call] == 2) {
+        guillotine++;
+        called = call;
+      }
+    } else {
+      calls[call] = 1;
+    }
+  }
+  return guillotine==1 ? playerName(called) : "";
+}
+
+function availableRoles(game, unavailable=false) {
+  const nplayersFind = allPlayersFind (game._id, 2);
+  if (!nplayersFind) return [];
+  const nplayers = nplayersFind.count();
+  return Object.entries(allRoles)
+    . filter (([k,r]) => (unavailable != (!r.display || nplayers >= r.display)));
+}
+
 //======================================================================
 // Session
 //======================================================================
@@ -331,7 +365,7 @@ function confirm (button="OK", title="Confirm?", text="", doConfirm=true, ok) {
 function trackGameState() {
   const game = getCurrentGame();
   if (!game) {
-    if (debug >= 2) console.log (`trackGameState ${Meteor.connection._lastSessionId}: currentView = ${Session.get('currentView')}`);
+    if (debug >= 2) console.log (`trackGameState ${Meteor.connection._lastSessionId}`); // stops working with: Session.get('currentView')
     Session.set('currentView', 'startMenu');
     return;
   }
@@ -450,12 +484,8 @@ Template.lobby.helpers({
   roleKeys: () => {
     const game= getCurrentGame();
     if (!game) return null;
-    const nplayersFind = allPlayersFind (game._id, 2);
-    if (!nplayersFind) return null;
-    const nplayers = nplayersFind.count();
     let last = "";
-    return Object.entries(allRoles)
-      . filter (([k,r]) => !r.display || nplayers >= r.display)
+    return availableRoles(game)
       . map    (([k,r]) => {
         const head = (last == ""         && r.type == "werewolf") ? "Werewolves"    :
                      (last == "werewolf" && r.type != "werewolf") ? "Villagers"     :
@@ -782,32 +812,31 @@ Template.nightView.helpers({
 
 Template.dayView.helpers({
   haveVigilante: () => getCurrentGame().roles.some (r => roleInfo(r).vigilante),
-  voting: () => {
-    let calls = {}, guillotine = 0;
-    for (const {call} of Players.find ({call: {$ne: null}, alive: {$eq: true}}, {fields: {call:1} }) . fetch()) {
-      if (call in calls) {
-        if (++calls[call] == 2) guillotine++;
-      } else {
-        calls[call] = 1;
-      }
-    }
-    return guillotine==1;
-  },
+  voting: voting,
   players: allPlayers,
   playerClass: (id) => {
-    const caller= Players.find({_id: id, call: {$ne: null}, alive: {$eq: true}}) . count();
-    const ncalls= Players.find({call: id, alive: {$eq: true}}) . count();
-    const loaded= Players.find({_id: id, crossbow: true}) . count();
     let cl = [];
-    if        (loaded) {
+    const loaded= Players.find({_id: id, crossbow: true}) . count();
+    if (loaded) {
       cl.push ("crossbow-loaded");
-    } else if (caller) {
-      cl.push ("guillotine-caller");
+    } else {
+      const caller= Players.find({_id: id, call: {$ne: null}, alive: {$eq: true}}) . count();
+      if (caller) {
+        cl.push ("guillotine-caller");
+      }
     }
-    if        (ncalls >= 2) {
-      cl.push ("guillotine-player");
-    } else if (ncalls >= 1) {
-      cl.push ("voted-player");
+    if (voting()) {
+      const voted= Players.find({_id: id, guillotine: {$ne: null}, alive: {$eq: true}}) . count();
+      if (voted) {
+        cl.push ("voted-player");
+      }
+    } else {
+      const ncalls= Players.find({call: id, alive: {$eq: true}}) . count();
+      if        (ncalls >= 2) {
+        cl.push ("guillotine-player");
+      } else if (ncalls >= 1) {
+        cl.push ("voted-player");
+      }
     }
     return cl.join(" ");
   },
@@ -847,8 +876,10 @@ Template.dayView.events({
         Players.update (player._id, {$set: {crossbow: false, ...victimID && {twang: victimID} }} );
       } else {
         let call = event.target.id;
-        if (player.call == call) call = null;
-        Players.update (player._id, {$set: {call: call}});
+        if (player.call == call || !voting()) {
+          if (player.call == call) call = null;
+          Players.update (player._id, {$set: {call: call}});
+        }
       }
     }
   },
@@ -856,7 +887,7 @@ Template.dayView.events({
     // allow anyone to load a crossbow, but only vigilante can fire.
     const player = getCurrentPlayer();
     if (player)
-      Players.update (player._id, {$set: {call: null, crossbow: !player.crossbow}});
+      Players.update (player._id, {$set: {crossbow: !player.crossbow}});
   },
   'click .btn-sleep': (event) => {
     const gameID = Session.get('gameID');
