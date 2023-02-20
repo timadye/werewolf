@@ -7,10 +7,12 @@ const nbsp = "\u00A0"
 
 function initialGame() {
   return {
+    active: true,
     playerRoles: [],
     lovers: [],
     state: 'waitingForPlayers',
     voiceOfFate: [],
+    date: Date.now(),
     history: []
   };
 }
@@ -28,14 +30,14 @@ function initialPlayer() {
   };
 }
 
-function createGame(name) {
+function createGame(name, roles=["werewolf_1", "werewolf_2", "wolfsbane_1", "trapper_1"]) {
   const gameID = Games.insert({
     name: name,
     // default roles
-    roles: ["werewolf_1", "werewolf_2", "wolfsbane_1", "trapper_1"],
+    roles: roles,
     ... initialGame()
   });
-  if (debug>=1) console.log(`New village '${name}' (${gameID})`)
+  if (debug>=1) console.log(`New game in village '${name}' (${gameID})`)
   return Games.findOne(gameID);
 }
 
@@ -82,7 +84,7 @@ function removePlayer(game, name) {
 
 function joinGame(name) {
   Meteor.subscribe('games', name, function onReady() {
-    var game = Games.findOne({name: name});
+    var game = Games.findOne({name: name, active: true});
     if (!game) {
       leaveVillage();
       reportError(`no village '${name}'`);
@@ -190,7 +192,7 @@ function resetUserState() {
 }
 
 function allGamesFetch() {
-  return Session.get('allGamesSubscribed') ? Games.find ({}, {fields: {name: 1}}).fetch() : [];
+  return Session.get('allGamesSubscribed') ? Games.find ({active: true}, {fields: {name: 1}}).fetch() : [];
 }
 
 function allGames() {
@@ -272,12 +274,16 @@ function leaveGame() {
 };
 
 function resetGame() {
-  const gameID = Session.get('gameID');
-  if (gameID) {
-    Games.update(gameID, { $set: initialGame() });
-    for (const player of allPlayers (gameID, 2)) {
-      Players.update(player._id, { $set: initialPlayer() });
+  const oldGameID = Session.get('gameID');
+  if (oldGameID) {
+    oldGame = Games.findOne(oldGameID);
+    players = allPlayers (oldGameID, 2);
+    newGame = createGame (oldGame.name, oldGame.roles);
+    for (const player of players) {
+      Players.update(player._id, { $set: {gameID: newGame._id, ... initialPlayer()}});
     }
+    Games.update(oldGameID, { $set: { active: false } });
+    Session.set('gameID', newGame._id);
   }
 }
 
@@ -323,6 +329,91 @@ function availableRoles(game, unavailable=false) {
   const nplayers = nplayersFind.count();
   return Object.entries(allRoles)
     . filter (([k,r]) => (unavailable != (!r.display || nplayers >= r.display)));
+}
+
+function showHistory() {
+  if (Session.get('lobbyView') == 'historyEntry') {
+    game = Games.findOne(Session.get('historyEntry'));
+  } else {
+    game = getCurrentGame();
+  }
+  if (!game) return null;
+  if (debug >= 2) console.log ('history = ', game.history);
+  if (debug >= 3) console.log ('fellows = ', game.fellows);
+  const col0 = {Class:"", name:""};
+  const players = allPlayers (game._id, 2, {name:1, role:1}) . map (p => ({...p, role: roleInfo(p.role), alive:true})) . filter (p=>!p.role.zombie);
+  if (debug >= 2) console.log ('players = ', players);
+  const playerMap = objectMap (players, p => ({[p._id]: p}));
+  var day = 0;
+  const table = {
+    players: players,
+    fellows: ['Lover', 'Rival'].flatMap (ff => ((game.fellows||{})[ff.toLowerCase()]||[]).map (f => ({type: `${ff}s`, names: (() => {
+      players.forEach (p => {p.col = {...col0}});
+      for (const p of f) {
+        if (p._id in playerMap)
+          playerMap[p._id].col.name = p.name;
+      }
+      return players.map(p=>p.col);
+    })()}))),
+    turns: game.history.map (t => ({
+      turn: (t.phase == "night") ? {Class: 'night-row', name: `Night${nbsp}${++day}`}
+                                 : {Class:   'day-row', name: {"guillotine": "Guillotine", "vigilante": "Vigilante"}[t.phase] || t.phase},
+      players: (() => {
+        const defClass = (t.phase == "night" ? 'night-row' : 'day-row');
+        players.forEach (p => {p.col = {name:"", Class: (t.phase == "vigilante" && p.alive ? defClass : "zombie")}});
+        for (const p of t.players) {
+          const m = playerMap[p._id];
+          if (!m) continue;
+          if (t.phase == "guillotine") {
+            if (p.cause == 'lover') {
+              m.col.Class = p.casualty ? "dead-suicide" : defClass;
+            } else {
+              m.col.Class = p.casualty ? "dead" : "alive";
+              for (const pid of p.guillotine) {
+                const c = playerMap[pid].col;
+                if (!c) continue;
+                c.name = m.name;
+                if (c.Class == "zombie") c.Class = defClass;
+              }
+              for (const pid of p.spare) {
+                const c = playerMap[pid].col;
+                if (!c) continue;
+                c.name = dash;
+                if (c.Class == "zombie") c.Class = defClass;
+              }
+            }
+          } else  if (t.phase == "vigilante") {
+            if (p.cause == 'lover') {
+              if (p.casualty) m.col.Class =  "dead-suicide";
+            } else {
+              m.col.Class = p.casualty ? "dead" : "alive";
+              for (const pid of p.attackers) {
+                const c = playerMap[pid].col;
+                if (!c) continue;
+                c.name = "TWANG!";
+                if (c.Class == "zombie") c.Class = defClass;
+              }
+            }
+          } else  if (t.phase == "night") {
+            if (p.casualty >= 2) {
+              m.col.Class = (p.cause == "lover" ? "dead-suicide" : "dead");
+            } else if (p.casualty == 1) {
+              m.col.Class = (p.cause == "trapper" ? "injured-trapper" : "injured");
+            } else {
+              m.col.Class = defClass;
+            }
+            if (m.role.active == "night" && p.vote) {
+              m.col.name = (playerMap[p.vote]||{}).name;
+            }
+          }
+        }
+        players.forEach (p => {if (p.col.Class == "zombie") p.alive = false});
+        return players.map(p=>p.col);
+      })()
+    })),
+  };
+  if (debug >= 2) console.log ('table = ', table);
+  return table;
 }
 
 //======================================================================
@@ -396,7 +487,13 @@ Session.set('currentView', 'startMenu');
 
 Template.main.helpers({
   whichView: () => {
-    return Session.get('currentView');
+    currentView = Session.get('currentView');
+    if (currentView != 'lobby') {
+      Session.set('lobbyView', '');
+      return currentView;
+    }
+    lobbyView = Session.get('lobbyView');
+    return lobbyView ? lobbyView : currentView;
   }
 });
 
@@ -506,6 +603,9 @@ Template.lobby.events({
     if (gameID) Games.update(gameID, {$set: {state: 'settingUp'}});
     setTitle();
   },
+  'click .btn-old': () => {
+    Session.set('lobbyView', 'historyIndex');
+  },
   'click .toggle-player': (event) => {
     setCurrentPlayer (event.target.id, true);
   },
@@ -537,6 +637,51 @@ Template.lobby.events({
     Games.update(game._id, {$set: {roles: game.roles}});
   },
 });
+
+//======================================================================
+// historyIndex template
+//======================================================================
+
+Template.historyIndex.helpers({
+  games: () => {
+    games = Games.find({name: gameName(), active: false}, {fields: {date: 1}}).fetch();
+    // games = Games.find({}, {fields: {name: 1, date: 1}}).fetch();
+    console.log(games);
+    return games.map(game => ({_id: game._id, name: game.name, date: new Date(game.date).toLocaleString()}));
+  },
+});
+
+Template.historyIndex.events({
+  'click .btn-leave-village': leaveVillage,
+  'click .btn-new': () => {
+    Session.set('lobbyView', '');
+  },
+  'click .btn-show': (event) => {
+    Session.set('historyEntry', event.target.id);
+    Session.set('lobbyView', 'historyEntry');
+  },
+});
+
+//======================================================================
+// historyEntry template
+//======================================================================
+
+Template.historyEntry.helpers({
+  history: () => {
+    showHistory(Session.get('historyEntry'));
+  },
+});
+
+Template.historyEntry.events({
+  'click .btn-leave-village': leaveVillage,
+  'click .btn-new': () => {
+    Session.set('lobbyView', '');
+  },
+  'click .btn-old': () => {
+    Session.set('lobbyView', 'historyIndex');
+  },
+});
+
 
 //======================================================================
 // lateLobby template
@@ -689,86 +834,7 @@ Template.roleMenu.helpers({
 
 
 Template.roleInfo.helpers({
-  history: () => {
-    const game = getCurrentGame();
-    if (!game) return null;
-    if (debug >= 2) console.log ('history = ', game.history);
-    if (debug >= 3) console.log ('fellows = ', game.fellows);
-    const col0 = {Class:"", name:""};
-    const players = allPlayers (game._id, 2, {name:1, role:1}) . map (p => ({...p, role: roleInfo(p.role), alive:true})) . filter (p=>!p.role.zombie);
-    if (debug >= 2) console.log ('players = ', players);
-    const playerMap = objectMap (players, p => ({[p._id]: p}));
-    var day = 0;
-    const table = {
-      players: players,
-      fellows: ['Lover', 'Rival'].flatMap (ff => ((game.fellows||{})[ff.toLowerCase()]||[]).map (f => ({type: `${ff}s`, names: (() => {
-        players.forEach (p => {p.col = {...col0}});
-        for (const p of f) {
-          if (p._id in playerMap)
-            playerMap[p._id].col.name = p.name;
-        }
-        return players.map(p=>p.col);
-      })()}))),
-      turns: game.history.map (t => ({
-        turn: (t.phase == "night") ? {Class: 'night-row', name: `Night${nbsp}${++day}`}
-                                   : {Class:   'day-row', name: {"guillotine": "Guillotine", "vigilante": "Vigilante"}[t.phase] || t.phase},
-        players: (() => {
-          const defClass = (t.phase == "night" ? 'night-row' : 'day-row');
-          players.forEach (p => {p.col = {name:"", Class: (t.phase == "vigilante" && p.alive ? defClass : "zombie")}});
-          for (const p of t.players) {
-            const m = playerMap[p._id];
-            if (!m) continue;
-            if (t.phase == "guillotine") {
-              if (p.cause == 'lover') {
-                m.col.Class = p.casualty ? "dead-suicide" : defClass;
-              } else {
-                m.col.Class = p.casualty ? "dead" : "alive";
-                for (const pid of p.guillotine) {
-                  const c = playerMap[pid].col;
-                  if (!c) continue;
-                  c.name = m.name;
-                  if (c.Class == "zombie") c.Class = defClass;
-                }
-                for (const pid of p.spare) {
-                  const c = playerMap[pid].col;
-                  if (!c) continue;
-                  c.name = dash;
-                  if (c.Class == "zombie") c.Class = defClass;
-                }
-              }
-            } else  if (t.phase == "vigilante") {
-              if (p.cause == 'lover') {
-                if (p.casualty) m.col.Class =  "dead-suicide";
-              } else {
-                m.col.Class = p.casualty ? "dead" : "alive";
-                for (const pid of p.attackers) {
-                  const c = playerMap[pid].col;
-                  if (!c) continue;
-                  c.name = "TWANG!";
-                  if (c.Class == "zombie") c.Class = defClass;
-                }
-              }
-            } else  if (t.phase == "night") {
-              if (p.casualty >= 2) {
-                m.col.Class = (p.cause == "lover" ? "dead-suicide" : "dead");
-              } else if (p.casualty == 1) {
-                m.col.Class = (p.cause == "trapper" ? "injured-trapper" : "injured");
-              } else {
-                m.col.Class = defClass;
-              }
-              if (m.role.active == "night" && p.vote) {
-                m.col.name = (playerMap[p.vote]||{}).name;
-              }
-            }
-          }
-          players.forEach (p => {if (p.col.Class == "zombie") p.alive = false});
-          return players.map(p=>p.col);
-        })()
-      })),
-    };
-    if (debug >= 2) console.log ('table = ', table);
-    return table;
-  },
+  history: showHistory,
 
   today: (view=null) => {
     if (!view) view = Session.get('currentView');
@@ -929,7 +995,7 @@ Template.gameFooter.events({
 Template.endGame.events({
   'click .btn-leave-village': leaveVillage,
   'click .btn-new': () => {
-    confirm ("New Game", "New game?", "This will delete the game summary for everyone", true, () => {
+    confirm ("New Game", "New game?", "This will remove the game summary for everyone", true, () => {
     resetGame();
     });
   },

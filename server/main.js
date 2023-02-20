@@ -15,7 +15,7 @@ Meteor.startup(() => {
     Games.remove({});
     Players.remove({});
   } else if (debug >= 1) {
-    let games = Games.find({}, { fields: {name: 1, state: 1, createdAt: 1}, sort: {createdAt: 1} });
+    let games = Games.find({active: true}, { fields: {name: 1, state: 1, createdAt: 1}, sort: {createdAt: 1} });
     games = games ? games.fetch() : [];
     let players = Players.find({}, { fields: {name: 1, gameID: 1}, sort: {createdAt: 1} });
     players = players ? players.fetch() : [];
@@ -33,16 +33,16 @@ Meteor.startup(() => {
 });
 
 Meteor.publish('games', (villageName) => {
-  return Games.find({"name": villageName});
+  return Games.find({name: villageName});
 });
 
 Meteor.publish('players', (gameID) => {
-  return Players.find({"gameID": gameID});
+  return Players.find({gameID: gameID});
 });
 
 if (showAllVillages) {
   Meteor.publish('allGames', () => {
-    return Games.find({}, { fields: {name: 1}, sort: {createdAt: 1} });
+    return Games.find({active: true}, { fields: {name: 1}, sort: {createdAt: 1} });
   });
 }
 
@@ -52,7 +52,7 @@ Meteor.methods({
       resetAllGames();
       return -1;
     }
-    return Games.find( {name: villageName} ).count() > 0 ? 1 : 0;
+    return Games.find( {name: villageName, active: true} ).count() > 0 ? 1 : 0;
   },
   resetAllGames: () => {
     if (showAllVillages) resetAllGames();
@@ -68,12 +68,12 @@ function resetAllGames() {
   Players.remove({});
 }
 
-Games.find({'state': 'settingUp'}).observeChanges({
+Games.find({active: true, state: 'settingUp'}).observeChanges({
   added: (id, game) => {
     if (debug>=1) console.log (`Start game '${game.name}' (${id})`);
     const players = Players.find({ gameID: id, session: {$ne: null} }, { fields: {_id:1, name:1} }).fetch();
     assignRoles(id, players, game.roles);
-    Games.update(id, {$set: {state: 'nightTime'}});
+    Games.update(id, {$set: {state: 'nightTime', date: Date.now()}});
   }
 });
 
