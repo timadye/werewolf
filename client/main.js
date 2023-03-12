@@ -633,6 +633,7 @@ registerHelper ({
   game: getCurrentGame,
   gameName: gameName,
   playerName: () => (playerName() || "a lurker"),
+  lurker: () => (!playerName()),
   alive: alive,
 });
 
