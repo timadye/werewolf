@@ -1,6 +1,3 @@
-import '../imports/roles.js';
-import '../imports/utils.js';
-
 var debug = 0;   // overridden by server setting if higher
 const dash = "\u2013";
 const nbsp = "\u00A0"

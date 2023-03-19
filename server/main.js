@@ -1,6 +1,4 @@
 import { Meteor } from 'meteor/meteor';
-import '../imports/roles.js';
-import '../imports/utils.js';
 
 const showAllVillages = !Number(process.env.WEREWOLF_HIDE);
 const debug            = Number(process.env.WEREWOLF_DEBUG || 1);
