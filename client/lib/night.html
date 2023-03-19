@@ -1,0 +1,31 @@
+<template name="nightView">
+  {{> gameHeader}}
+  <h3>Nighttime for {{ playerName }}</h3>
+
+  {{#if alive}}
+  <h4>Select a player</h4>
+  {{else if lurker}}
+    <h4 class="dead-player">You are not playing.</h4>
+  {{else}}
+    <h4 class="dead-player">You are dead.</h4>
+  {{/if}}
+
+  <form id="player-form">
+    <div id="player-list">
+    {{#each player in players}}
+      <div class="checkbox {{ playerClass player._id }}">
+        <label class="player-checkbox">
+          {{#if alive}}
+            <input type="checkbox" id="{{ player._id }}" class="toggle-player"/>{{ player.name }}<br>
+          {{else}}
+            <input type="checkbox"/>{{ player.name }}<br>
+          {{/if}}
+        </label>
+      </div>
+    {{/each}}
+    </div>
+  </form>
+
+  {{> roleMenu view="nightView"}}
+  {{> gameFooter}}
+</template>

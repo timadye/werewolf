@@ -1,0 +1,27 @@
+<template name="startMenu">
+  <h3>Oxford Werewolf</h3>
+
+  {{#if errorMessage}}
+    <h5>{{ errorMessage }}</h5>
+  {{/if}}
+
+  <form id="start-menu">
+    <div id="start-menu-list">
+    {{#each allGamesButtons}}
+      <div class="btn btn-primary btn-lg checkbox village-btn allGames-removed">
+        <label class="village-checkbox">
+          <input type="checkbox" id="{{ name }}" class="join-village"/>{{ name }}<br>
+        </label>
+      </div>
+    {{/each}}
+    </div>
+    <div class="form-group">
+      <input type="text" class="form-control" id="village-name" name="villageName" placeholder="Enter village name" autocorrect="off" autocapitalize="off" autofocus>
+    </div>
+    <input type="submit" class="btn btn-primary btn-lg" value="Enter Village">
+  </form>
+
+  <br/>
+  <button class="btn btn-primary btn-lg btn-reset allGames-removed">Reset all games</button>
+
+</template>

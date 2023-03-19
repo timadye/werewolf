@@ -1,0 +1,33 @@
+<template name="historyIndex">
+  <h2>{{gameName}} village</h2>
+  <h3>Old games</h3>
+  <br>
+  <table class="table table-bordered table-sm">
+    <thead>
+    <tr>
+      <th scope="col">Date</th>
+    </tr>
+    </thead>
+    <tbody>
+    {{#each game in games}}
+      <tr>
+        <td><button name="player-remove" id="{{game._id}}" class="btn btn-md btn-show">{{game.date}}</button></td>
+      </tr>
+    {{/each}}
+    </tbody>
+  </table>
+  <button class="btn btn-primary btn-lg btn-new">New Game</button>
+  <button class="btn btn-secondary btn-lg btn-leave-village">Leave Village</button>
+  <br><br>
+</template>
+
+<template name="historyEntry">
+  <h2>{{gameName}} village</h2>
+  <h3>Old game</h3>
+  <br>
+  <button class="btn btn-primary btn-lg btn-new">New Game</button>
+  <button class="btn btn-primary btn-lg btn-old">Old Games</button>
+  <button class="btn btn-secondary btn-lg btn-leave-village">Leave Village</button>
+  <br><br>
+  {{> roleInfo view="historyEntry"}}
+</template>

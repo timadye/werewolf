@@ -1,0 +1,76 @@
+<template name="lobby">
+  <h2>{{gameName}} village</h2>
+  <h3>Set up game</h3>
+
+  {{#if errorMessage}}
+    <h5>{{ errorMessage }}</h5>
+  {{/if}}
+
+  <form id="lobby-player-form">
+    <div id="lobby-player-list">
+    {{#each player in players}}
+      <div class="checkbox {{ playerClass player._id }}">
+        <label class="player-checkbox">
+          <input type="checkbox" id="{{ player._id }}" class="toggle-player"/>{{ player.name }}<br>
+        </label>
+      </div>
+    {{/each}}
+    </div>
+  </form>
+
+  <form id="lobby-add">
+    <div id="player-group" class="form-group">
+      <input type="text" class="form-control" id="player-name" name="playerName" placeholder="Your name" autofocus>
+      <button name="player-add" class="btn btn-primary btn-md btn-add">Add</button>
+      <button name="player-remove" class="btn btn-primary btn-md btn-remove">Remove</button>
+    </div>
+  </form>
+
+  <form id="choose-roles-form">
+    <div id="choose-roles-list">
+      {{#each role in roleKeys}}
+        {{#if role.header}}
+          <div class="checkbox role-header">
+          <label class="role-checkbox">
+            <span class="role-header-text">{{ role.header }}</span>
+          </label>
+          </div>
+        {{/if}}
+        <div class="checkbox {{ role.roleClass }}">
+          <label class="role-checkbox">
+            <input type="checkbox" id="{{ role.key }}" class="toggle-role"/>{{ role.role.name }}<br>
+          </label>
+        </div>
+      {{/each}}
+    </div>
+  </form>
+
+  <button class="btn btn-primary btn-lg btn-start" {{ startButtonDisabled }}>Start Game</button>
+  <button class="btn btn-secondary btn-lg btn-leave">Leave Village</button>
+  <button class="btn btn-secondary btn-lg btn-old">Old Games</button>
+</template>
+
+<template name="lateLobby">
+  <h2>{{gameName}} village</h2>
+  <h3>Lobby</h3>
+
+  {{#if errorMessage}}
+    <h5>{{ errorMessage }}</h5>
+  {{/if}}
+
+  <form id="lobby-player-form">
+    <div id="lobby-player-list">
+    {{#each player in players}}
+      <div class="checkbox {{ playerClass player._id }}">
+        <label class="player-checkbox">
+          <input type="checkbox" id="{{ player._id }}" class="toggle-player"/>{{ player.name }}<br>
+        </label>
+      </div>
+    {{/each}}
+    </div>
+  </form>
+
+  <button class="btn btn-primary btn-lg btn-join">Join Game</button>
+  <button class="btn btn-secondary btn-lg btn-leave">Leave Village</button>
+  <button class="btn btn-secondary btn-lg btn-end">End Game</button>
+</template>
