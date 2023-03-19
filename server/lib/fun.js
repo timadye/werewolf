@@ -1,10 +1,10 @@
-function resetAllGames() {
+resetAllGames = function() {
   if (debug>=1) console.log("reset all games");
   Games.remove({});
   Players.remove({});
 }
 
-function assignRoles(gameID, players, roleNames) {
+assignRoles = function(gameID, players, roleNames) {
   if (debug>=3) console.log('roles =', roleNames);
 
   const allFellows = keyArrayFromEntries (Object.entries(allRoles) . map (([k,v]) => [v.fellows, k]));
@@ -61,7 +61,7 @@ function assignRoles(gameID, players, roleNames) {
   Games.update(gameID, {$set: {playerRoles: playerRoles, fellows: fellows}});
 }
 
-function dawn (game, playersFound) {
+dawn = function (game, playersFound) {
   if (debug >= 3) console.log ('Dawn: playerRoles =', game.playerRoles);
 
   const players = playersFound.map (p => ({ ... p, act: {}, attackers: [], casualty: 0, cause: null }));
@@ -145,7 +145,7 @@ function dawn (game, playersFound) {
                           $push: { history: {phase: 'night', players: players} }});
 }
 
-function guillotine (game, players) {
+guillotine = function (game, players) {
   const victimPlayer = guillotineCall (players);
   if (!victimPlayer) return;
 
@@ -169,7 +169,7 @@ function guillotine (game, players) {
   Games.update(game._id, {$push: { history: {phase: 'guillotine', players: history}, voiceOfFate: { $each: voiceOfFate } }});
 }
 
-function guillotineCall (players) {
+guillotineCall = function (players) {
   if (debug >= 3) console.log('players =', players);
   let calls = {}, guillotine = [];
   for (const player of players) {
@@ -194,4 +194,78 @@ function guillotineCall (players) {
     }
     return null;
   }
+}
+
+twang = function (game, players, vigilanteID, vigilante) {
+  const victimPlayer = players.find (p => p._id == vigilante.twang);
+  if (!victimPlayer) return;
+  const victim = { _id: victimPlayer._id, name: victimPlayer.name, attackers: [vigilanteID], casualty: 2, cause: 'crossbow' };
+  if (debug >= 1) console.log (`Player ${victim.name} (${victim._id}) was shot by ${vigilante.name} (${vigilanteID})`);
+
+  const [history, voiceOfFate] = killPlayer ("Vigilante", game, players, victim);
+
+  Games.update(game._id, {$push: { history: {phase: 'vigilante', players: history}, voiceOfFate: { $each: voiceOfFate }}});
+}
+
+killPlayer = function (cause, game, players, victim) {
+  if (victim.casualty < 2) return [[victim], [], []];
+  let playerMap = objectMap (players, p => ({[p._id]: Object.assign({},p)}));
+  const history = [victim].concat (loverSuicide (game.fellows.lover, playerMap, victim));
+
+  let deaths=[], suicides=[];
+  for (const player of history) {
+    if (player.casualty >= 2) {
+      if (player.casualty == 3) {
+        suicides.push(player.name);
+      } else {
+        deaths.push(player.name);
+      }
+      Players.update (player._id, {$set: {alive: false}});
+    }
+  }
+  if      (debug == 1) console.log (`${cause}: deaths = ${deaths}, suicides = ${suicides}`);
+  else if (debug >= 2) console.log (`${cause}: deaths = ${deaths}, suicides = ${suicides}, details =`, history);
+
+  let voiceOfFate = [];
+  if (deaths.length) {
+    if        (cause == "Guillotine") {
+      voiceOfFate.push (deaths.join(" and ") + (deaths.length >= 2 ? " were" : " was") + " executed.");
+    } else if (cause == "Vigilante") {
+      voiceOfFate.push (deaths.join(" and ") + (deaths.length >= 2 ? " were" : " was") + " shot dead by " + victim.attackers.map(p=>playerMap[p].name).join(" and ") + ".");
+    } else {
+      voiceOfFate.push (deaths.join(" and ") + (deaths.length >= 2 ? " are" : " is") + " dead.");
+    }
+  }
+  if (suicides.length)
+    voiceOfFate.push (suicides.join(" and ") + " also died of a broken heart.");
+
+  return [history, voiceOfFate];
+}
+
+loverSuicide = function (allLovers, playerMap, player) {
+  playerMap[player._id] = player;
+  if (debug >= 3) console.log ('loverSuicide: lovers =', allLovers, ', playerMap =', playerMap, ', player =', player);
+  var deaths = [], suicides = [];
+  for (const lovers of allLovers) {
+    if (lovers.some (p => p._id == player._id)) {
+      for (const lover of lovers) {
+        if (lover._id != player._id) {
+          const suicide = playerMap[lover._id];
+          if (suicide && (!suicide.casualty || suicide.casualty <= 1)) {
+            if (debug >= 1) console.log (`Player ${player.name}'s (${player._id}) death by ${player.cause} causes ${suicide.name} (${suicide._id}) to suicide`);
+            suicide.casualty = 3;
+            suicide.cause = 'lover';
+            suicides.push (suicide);
+          }
+        }
+      }
+    }
+  }
+  var deaths = suicides.slice();
+
+  // Suicide lovers of lovers (is this a thing?)
+  for (const suicide of suicides) {
+    deaths.push (... loverSuicide (allLovers, playerMap, suicide));
+  }
+  return deaths;
 }
