@@ -5,7 +5,6 @@ initialGame = function() {
   return {
     active: true,
     playerRoles: [],
-    lovers: [],
     state: 'waitingForPlayers',
     voiceOfFate: [],
     date: Date.now(),
