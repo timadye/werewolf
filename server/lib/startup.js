@@ -10,7 +10,7 @@ server_startup = function() {
       Games.remove({});
       Players.remove({});
     } else if (debug >= 1) {
-      let games = Games.find({active: true}, { fields: {name: 1, state: 1, createdAt: 1}, sort: {createdAt: 1} });
+      let games = Games.find({}, { fields: {name: 1, state: 1, createdAt: 1}, sort: {createdAt: 1} });
       games = games ? games.fetch() : [];
       let players = Players.find({}, { fields: {name: 1, gameID: 1}, sort: {createdAt: 1} });
       players = players ? players.fetch() : [];
@@ -37,7 +37,7 @@ server_startup = function() {
 
   if (showAllVillages) {
     Meteor.publish('allGames', () => {
-      return Games.find({active: true}, { fields: {name: 1}, sort: {createdAt: 1} });
+      return Games.find({}, { fields: {name: 1}, sort: {createdAt: 1} });
     });
   }
 
@@ -47,7 +47,7 @@ server_startup = function() {
         resetAllGames();
         return -1;
       }
-      return Games.find( {name: villageName, active: true} ).count() > 0 ? 1 : 0;
+      return Games.find( {name: villageName} ).count() > 0 ? 1 : 0;
     },
     resetAllGames: () => {
       if (showAllVillages) resetAllGames();

@@ -1,6 +1,6 @@
 observe = function() {
 
-  Games.find({active: true, state: 'settingUp'}).observeChanges({
+  Games.find({state: 'settingUp'}).observeChanges({
     added: (id, game) => {
       if (debug>=1) console.log (`Start game '${game.name}' (${id})`);
       const players = Players.find({ gameID: id, session: {$ne: null} }, { fields: {_id:1, name:1} }).fetch();

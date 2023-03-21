@@ -3,7 +3,6 @@ const nbsp = "\u00A0";
 
 initialGame = function() {
   return {
-    active: true,
     playerRoles: [],
     state: 'waitingForPlayers',
     voiceOfFate: [],
@@ -79,7 +78,7 @@ removePlayer = function(game, name) {
 
 joinGame = function(name) {
   Meteor.subscribe('games', name, function onReady() {
-    var game = Games.findOne({name: name, active: true});
+    var game = Games.findOne({name: name});
     if (!game) {
       leaveVillage();
       reportError(`no village '${name}'`);
@@ -187,7 +186,7 @@ resetUserState = function() {
 }
 
 allGamesFetch = function() {
-  return Session.get('allGamesSubscribed') ? Games.find ({active: true}, {fields: {name: 1}}).fetch() : [];
+  return Session.get('allGamesSubscribed') ? Games.find ({}, {fields: {name: 1}}).fetch() : [];
 }
 
 allGames = function() {
@@ -269,16 +268,12 @@ leaveGame = function() {
 };
 
 resetGame = function() {
-  const oldGameID = Session.get('gameID');
-  if (oldGameID) {
-    oldGame = Games.findOne(oldGameID);
-    players = allPlayers (oldGameID, 2);
-    newGame = createGame (oldGame.name, oldGame.roles);
-    for (const player of players) {
-      Players.update(player._id, { $set: {gameID: newGame._id, ... initialPlayer()}});
+  const gameID = Session.get('gameID');
+  if (gameID) {
+    Games.update(gameID, { $set: initialGame() });
+    for (const player of allPlayers (gameID, 2)) {
+      Players.update(player._id, { $set: initialPlayer() });
     }
-    Games.update(oldGameID, { $set: { active: false } });
-    Session.set('gameID', newGame._id);
   }
 }
 
