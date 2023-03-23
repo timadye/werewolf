@@ -5,7 +5,6 @@ resetOnStart     = !!Number(process.env.WEREWOLF_RESET_ON_START);
 
 function werewolf_server() {
   collections();
-  routes();
   server_startup();
   observe();
 }
