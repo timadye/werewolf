@@ -21,12 +21,7 @@ start_templates = function() {
   //======================================================================
 
   Template.startMenu.rendered = function() {
-    Meteor.call ('debugLevel', (error, result) => {
-      if (!error && result > debug) {
-        debug = result;
-        if (debug >= 1) console.log (`debug = ${debug}`);
-      }
-    });
+    setDebugLevel();
     resetUserState();
     Session.set('allGamesSubscribed',false);
     // subscription allGames might not be published by server, but show all games if so.

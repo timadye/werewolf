@@ -113,6 +113,7 @@ ingame_templates = function() {
         endGame();
       });
     },
+    'click .btn-download': downloadGame,
   });
 
   Template.endGame.events({

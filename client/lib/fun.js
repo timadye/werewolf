@@ -1,6 +1,15 @@
 const dash = "\u2013";
 const nbsp = "\u00A0";
 
+setDebugLevel = function() {
+  Meteor.call ('debugLevel', (error, result) => {
+    if (!error && result > debug) {
+      debug = result;
+      if (debug >= 1) console.log (`debug = ${debug}`);
+    }
+  });
+}
+
 initialGame = function() {
   return {
     playerRoles: [],
@@ -60,7 +69,7 @@ removePlayer = function(game, name) {
     var player = getCurrentPlayer();
   }
   if (player) {
-    console.log (`Remove player '${player.name}' (${player._id}) from game '${game.name}'`);
+    if (debug >= 1) console.log (`Remove player '${player.name}' (${player._id}) from game '${game.name}'`);
     Players.remove(player._id);
     // Remove roles that are no longer available
     unavailable = {};
@@ -70,13 +79,14 @@ removePlayer = function(game, name) {
     const available = game.roles.filter (r => !(r in unavailable));
     if (available.length < game.roles.length) {
       remove = game.roles.filter (r => r in unavailable);
-      console.log (`Roles no longer available: ${remove}`);
+      if (debug >= 1) console.log (`Roles no longer available: ${remove}`);
       Games.update(game._id, {$set: {roles: available}});
     }
   }
 }
 
 joinGame = function(name) {
+  setDebugLevel();
   Meteor.subscribe('games', name, function onReady() {
     var game = Games.findOne({name: name});
     if (!game) {
@@ -86,6 +96,7 @@ joinGame = function(name) {
     }
     if (debug>=1) console.log(`Join village '${name}', id=${game._id}`);
     Meteor.subscribe('players', game._id);
+    Meteor.subscribe('gamesHistory', game._id);
     Session.set('gameID', game._id);
     setTitle (name);
   });
@@ -404,4 +415,31 @@ showHistory = function() {
   };
   if (debug >= 2) console.log ('table = ', table);
   return table;
+}
+
+downloadObject = function(obj, name) {
+  const a = document.createElement('a');
+  const data = JSON.stringify(obj, undefined, 2);
+  a.href = URL.createObjectURL( new Blob([data], { type:'text/json' }) );
+  a.download = name+".json";
+  a.click();
+}
+
+downloadGame = function() {
+  const game = getCurrentGame();
+  if (!game) {
+    reportError("no game to download");
+    return;
+  }
+  p = Players.find({ gameID: game._id});
+  players = p ? p.fetch() : `error finding players.gameID=${game._id}`;
+  h = GamesHistory.find({ gameID: game._id});
+  gamesHistory = h ? h.fetch() : `error finding gamesHistory.gameID=${game._id}`;
+  obj = {
+    game: game,
+    players: players,
+    gamesHistory: gamesHistory,
+  };
+  if (debug >= 1) console.log (`download '${game.name}' as a JSON file`);
+  downloadObject (obj, game.name);
 }

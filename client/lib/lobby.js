@@ -54,6 +54,7 @@ lobby_templates = function() {
       if (gameID) Games.update(gameID, {$set: {state: 'settingUp'}});
       setTitle();
     },
+    'click .btn-download': downloadGame,
     'click .btn-old': () => {
       Session.set('lobbyView', 'historyIndex');
     },
@@ -152,6 +153,7 @@ Template.lateLobby.rendered = function(event) {
         Session.set ("joinPlayer", null);
       });
     },
+    'click .btn-download': downloadGame,
   });
 
 }

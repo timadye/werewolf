@@ -35,6 +35,10 @@ server_startup = function() {
     return Players.find({gameID: gameID});
   });
 
+  Meteor.publish('gamesHistory', (gameID) => {
+    return GamesHistory.find({gameID: gameID});
+  });
+
   if (showAllVillages) {
     Meteor.publish('allGames', () => {
       return Games.find({}, { fields: {name: 1}, sort: {createdAt: 1} });

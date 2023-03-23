@@ -58,7 +58,9 @@ assignRoles = function(gameID, players, roleNames) {
   });
 
   const playerRoles = objectMap (rolePlayers, ([r,p]) => ({[p._id]: r}));
-  Games.update(gameID, {$set: {playerRoles: playerRoles, fellows: fellows}});
+  const gameSettings = {playerRoles: playerRoles, fellows: fellows};
+  Games.update(gameID, {$set: gameSettings});
+  return gameSettings;
 }
 
 dawn = function (game, playersFound) {
