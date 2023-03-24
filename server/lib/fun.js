@@ -133,6 +133,7 @@ dawn = function (game, playersFound) {
   }
   if (debug >= 1) console.log (`Dawn: deaths = ${deaths}, suicides = ${suicides}, injuries = ${injuries}`);
   if (debug >= 2) console.log ('details =', players);
+  TurnsHistory.insert({historyID: game.historyID, phase: 'night', players: players});
 
   let voiceOfFate = [];
   if (deaths.length)
@@ -143,8 +144,7 @@ dawn = function (game, playersFound) {
     voiceOfFate.push (injuries.join(" and ") + (injuries.length >= 2 ? " were" : " was") + " injured in the night.");
   if (!voiceOfFate.length)
     voiceOfFate.push ("There were no injuries in the night.");
-  Games.update(game._id, {$set: {voiceOfFate: voiceOfFate, state: 'dayTime'},
-                          $push: { history: {phase: 'night', players: players} }});
+  Games.update(game._id, {$set: {voiceOfFate: voiceOfFate, state: 'dayTime'}});
 }
 
 guillotine = function (game, players) {
@@ -168,7 +168,8 @@ guillotine = function (game, players) {
     voiceOfFate.push (victim.name + " was spared.");
   }
 
-  Games.update(game._id, {$push: { history: {phase: 'guillotine', players: history}, voiceOfFate: { $each: voiceOfFate } }});
+  Games.update(game._id, {$push: { voiceOfFate: { $each: voiceOfFate } }});
+  TurnsHistory.insert({historyID: game.historyID, phase: 'guillotine', players: history});
 }
 
 guillotineCall = function (players) {
@@ -206,7 +207,8 @@ twang = function (game, players, vigilanteID, vigilante) {
 
   const [history, voiceOfFate] = killPlayer ("Vigilante", game, players, victim);
 
-  Games.update(game._id, {$push: { history: {phase: 'vigilante', players: history}, voiceOfFate: { $each: voiceOfFate }}});
+  Games.update(game._id, {$push: { voiceOfFate: { $each: voiceOfFate }}});
+  TurnsHistory.insert({historyID: game.historyID, phase: 'vigilante', players: history});
 }
 
 killPlayer = function (cause, game, players, victim) {

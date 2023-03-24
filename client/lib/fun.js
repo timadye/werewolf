@@ -16,7 +16,7 @@ initialGame = function() {
     state: 'waitingForPlayers',
     voiceOfFate: [],
     date: Date.now(),
-    history: []
+    historyID: null,
   };
 }
 
@@ -96,7 +96,8 @@ joinGame = function(name) {
     }
     if (debug>=1) console.log(`Join village '${name}', id=${game._id}`);
     Meteor.subscribe('players', game._id);
-    Meteor.subscribe('gamesHistory', game._id);
+    Meteor.subscribe('gamesHistory', name);
+    Meteor.subscribe('turnsHistory', name);
     Session.set('gameID', game._id);
     setTitle (name);
   });
@@ -334,17 +335,23 @@ availableRoles = function(game, unavailable=false) {
 
 showHistory = function() {
   if (Session.get('lobbyView') == 'historyEntry') {
-    game = Games.findOne(Session.get('historyEntry'));
+    historyID = Session.get('historyEntry');
   } else {
     game = getCurrentGame();
+    if (!game) return null;
+    historyID = game.historyID;
   }
-  if (!game) return null;
-  if (debug >= 2) console.log ('history = ', game.history);
-  if (debug >= 3) console.log ('fellows = ', game.fellows);
+  if (!historyID) return null;
+  gameRecord = GamesHistory.findOne(historyID);
+  if (!gameRecord) return null;
   const col0 = {Class:"", name:""};
-  const players = allPlayers (game._id, 2, {name:1, role:1}) . map (p => ({...p, role: roleInfo(p.role), alive:true})) . filter (p=>!p.role.zombie);
+  const players = gameRecord.players.map (p => ({...p, role: roleInfo(gameRecord.playerRoles[p._id]), alive:true})) . filter (p=>!p.role.zombie);
   if (debug >= 2) console.log ('players = ', players);
   const playerMap = objectMap (players, p => ({[p._id]: p}));
+  const h = TurnsHistory.find({historyID: historyID});
+  const history = h ? h.fetch() : [];
+  if (debug >= 2) console.log ('history = ', history);
+  if (debug >= 3) console.log ('fellows = ', gameRecord.fellows);
   var day = 0;
   const table = {
     players: players,
@@ -356,7 +363,7 @@ showHistory = function() {
       }
       return players.map(p=>p.col);
     })()}))),
-    turns: game.history.map (t => ({
+    turns: history.map (t => ({
       turn: (t.phase == "night") ? {Class: 'night-row', name: `Night${nbsp}${++day}`}
                                   : {Class:   'day-row', name: {"guillotine": "Guillotine", "vigilante": "Vigilante"}[t.phase] || t.phase},
       players: (() => {
@@ -433,12 +440,16 @@ downloadGame = function() {
   }
   p = Players.find({ gameID: game._id});
   players = p ? p.fetch() : `error finding players.gameID=${game._id}`;
-  h = GamesHistory.find({ gameID: game._id});
+  h = GamesHistory.find({ name: game.name});
   gamesHistory = h ? h.fetch() : `error finding gamesHistory.gameID=${game._id}`;
+  ids = h ? gamesHistory.map (g => g._id) : [];
+  t = TurnsHistory.find({ historyID: { $in: ids }});
+  turnsHistory = t ? t.fetch() : `error finding turnsHistory->gameID=${game._id}`;
   obj = {
     game: game,
     players: players,
     gamesHistory: gamesHistory,
+    turnsHistory: turnsHistory,
   };
   if (debug >= 1) console.log (`download '${game.name}' as a JSON file`);
   downloadObject (obj, game.name);

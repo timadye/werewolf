@@ -35,8 +35,14 @@ server_startup = function() {
     return Players.find({gameID: gameID});
   });
 
-  Meteor.publish('gamesHistory', (gameID) => {
-    return GamesHistory.find({gameID: gameID});
+  Meteor.publish('gamesHistory', (villageName) => {
+    return GamesHistory.find({name: villageName});
+  });
+
+  Meteor.publish('turnsHistory', (villageName) => {
+    h = GamesHistory.find({name: villageName});
+    ids = h ? h.fetch().map (g => g._id) : [];
+    return TurnsHistory.find({ historyID: { $in: ids }});
   });
 
   if (showAllVillages) {

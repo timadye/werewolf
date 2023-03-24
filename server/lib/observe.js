@@ -5,14 +5,14 @@ observe = function() {
       if (debug>=1) console.log (`Start game '${game.name}' (${id})`);
       const players = Players.find({ gameID: id, session: {$ne: null} }, { fields: {_id:1, name:1} }).fetch();
       const gameSettings = assignRoles(id, players, game.roles);
-      GamesHistory.insert({
+      const historyID = GamesHistory.insert({
         gameID: id,
         name: game.name,
         createdAt: new Date().valueOf(),
         players: players,
         ... gameSettings
       });
-      Games.update(id, {$set: {state: 'nightTime'}});
+      Games.update(id, {$set: {state: 'nightTime', historyID: historyID}});
     }
   });
 

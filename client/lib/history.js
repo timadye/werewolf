@@ -5,10 +5,10 @@ history_templates = function() {
 
   Template.historyIndex.helpers({
     games: () => {
-      games = Games.find({name: gameName()}, {fields: {date: 1}}).fetch();
+      games = GamesHistory.find({name: gameName()}, {fields: {createdAt: 1}}).fetch();
       // games = Games.find({}, {fields: {name: 1, date: 1}}).fetch();
       console.log(games);
-      return games.map(game => ({_id: game._id, name: game.name, date: new Date(game.date).toLocaleString()}));
+      return games.map(game => ({_id: game._id, name: game.name, date: new Date(game.createdAt).toLocaleString()}));
     },
   });
 
