@@ -11,6 +11,43 @@ day_templates = function() {
     startClock(false);
   };
 
+  Template.dayView.helpers({
+    haveVigilante: () => getCurrentGame().roles.some (r => roleInfo(r).vigilante),
+    voting: voting,
+    players: allPlayers,
+    playerClass: (id) => {
+      let cl = [];
+      const loaded= Players.find({_id: id, crossbow: true}) . count();
+      if (loaded) {
+        cl.push ("crossbow-loaded");
+      } else {
+        const caller= Players.find({_id: id, call: {$ne: null}, alive: {$eq: true}}) . count();
+        if (caller) {
+          cl.push ("guillotine-caller");
+        }
+      }
+      if (voting()) {
+        const voted= Players.find({_id: id, guillotine: {$ne: null}, alive: {$eq: true}}) . count();
+        if (voted) {
+          cl.push ("voted-player");
+        }
+      } else {
+        const ncalls= Players.find({call: id, alive: {$eq: true}}) . count();
+        if        (ncalls >= 2) {
+          cl.push ("guillotine-player");
+        } else if (ncalls >= 1) {
+          cl.push ("voted-player");
+        }
+      }
+      return cl.join(" ");
+    },
+    voiceOfFate: () => {
+      const game= getCurrentGame();
+      if (!game) return null;
+      return game.voiceOfFate;
+    },
+  });
+
   Template.dayView.events({
     'click .toggle-player': (event) => {
       const player = getCurrentPlayer();

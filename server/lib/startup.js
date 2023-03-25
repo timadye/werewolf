@@ -35,14 +35,16 @@ server_startup = function() {
     return Players.find({gameID: gameID});
   });
 
-  Meteor.publish('gamesHistory', (villageName) => {
-    return GamesHistory.find({name: villageName});
+  Meteor.publish('gamesHistory', (historyID) => {
+    console.log("publish ",historyID);
+    return [
+      GamesHistory.find({_id: historyID}),
+      TurnsHistory.find({historyID: historyID})
+    ];
   });
 
-  Meteor.publish('turnsHistory', (villageName) => {
-    h = GamesHistory.find({name: villageName});
-    ids = h ? h.fetch().map (g => g._id) : [];
-    return TurnsHistory.find({ historyID: { $in: ids }});
+  Meteor.publish('pastGames', (villageName) => {
+    return GamesHistory.find({name: villageName, fields: {name: 1, createdAt: 1}});
   });
 
   if (showAllVillages) {
@@ -65,6 +67,8 @@ server_startup = function() {
     debugLevel: () => {
       return debug;
     },
+    downloadHistory: downloadHistory,
+    downloadAll: downloadAll,
   });
 
 }

@@ -8,7 +8,7 @@ history_templates = function() {
       games = GamesHistory.find({name: gameName()}, {fields: {createdAt: 1}}).fetch();
       // games = Games.find({}, {fields: {name: 1, date: 1}}).fetch();
       console.log(games);
-      return games.map(game => ({_id: game._id, name: game.name, date: new Date(game.createdAt).toLocaleString()}));
+      return games.map(game => ({_id: game._id, date: new Date(game.createdAt).toLocaleString()}));
     },
   });
 

@@ -96,9 +96,9 @@ joinGame = function(name) {
     }
     if (debug>=1) console.log(`Join village '${name}', id=${game._id}`);
     Meteor.subscribe('players', game._id);
-    Meteor.subscribe('gamesHistory', name);
-    Meteor.subscribe('turnsHistory', name);
+    Meteor.subscribe('pastGames', name);
     Session.set('gameID', game._id);
+    historySubscribe();
     setTitle (name);
   });
   return false;
@@ -333,29 +333,52 @@ availableRoles = function(game, unavailable=false) {
     . filter (([k,r]) => (unavailable != (!r.display || nplayers >= r.display)));
 }
 
-showHistory = function() {
-  if (Session.get('lobbyView') == 'historyEntry') {
-    historyID = Session.get('historyEntry');
+getHistoryID = function() {
+  if (Session.equals('lobbyView', 'historyEntry')) {
+    return Session.get('historyEntry');
   } else {
     game = getCurrentGame();
     if (!game) return null;
-    historyID = game.historyID;
+    return game.historyID;
   }
+}
+
+historySubscribe = function() {
+  historyID = getHistoryID();
+  if (!historyID) return historyID;
+  if (historySubscribe.subscription.historyID != historyID) {
+    if (historySubscribe.subscription.subscription) {
+      if (debug >= 1) console.log (`stop gamesHistory subscription for ${historySubscribe.subscription.historyID}`);
+      historySubscribe.subscription.subscription.stop();
+    }
+    if (debug >= 1) console.log (`start gamesHistory subscription for ${historyID}`);
+    historySubscribe.subscription = {
+      historyID: historyID,
+      subscription: Meteor.subscribe('gamesHistory', historyID)
+    };
+  }
+  return historyID;
+}
+historySubscribe.subscription = {historyID: null, subscription: null};
+
+showHistory = function () {
+  historyID = historySubscribe();  // probably already done
   if (!historyID) return null;
   gameRecord = GamesHistory.findOne(historyID);
+  const h = TurnsHistory.find({historyID: historyID});
+  const history = h ? h.fetch() : [];
+  if (debug >= 2) console.log(`gameRecord ${historyID} = `, gameRecord);
+  if (debug >= 2) console.log ('turnsHistory = ', history);
   if (!gameRecord) return null;
   const col0 = {Class:"", name:""};
   const players = gameRecord.players.map (p => ({...p, role: roleInfo(gameRecord.playerRoles[p._id]), alive:true})) . filter (p=>!p.role.zombie);
   if (debug >= 2) console.log ('players = ', players);
   const playerMap = objectMap (players, p => ({[p._id]: p}));
-  const h = TurnsHistory.find({historyID: historyID});
-  const history = h ? h.fetch() : [];
-  if (debug >= 2) console.log ('history = ', history);
   if (debug >= 3) console.log ('fellows = ', gameRecord.fellows);
   var day = 0;
   const table = {
     players: players,
-    fellows: ['Lover', 'Rival'].flatMap (ff => ((game.fellows||{})[ff.toLowerCase()]||[]).map (f => ({type: `${ff}s`, names: (() => {
+    fellows: ['Lover', 'Rival'].flatMap (ff => ((gameRecord.fellows||{})[ff.toLowerCase()]||[]).map (f => ({type: `${ff}s`, names: (() => {
       players.forEach (p => {p.col = {...col0}});
       for (const p of f) {
         if (p._id in playerMap)
@@ -434,23 +457,20 @@ downloadObject = function(obj, name) {
 
 downloadGame = function() {
   const game = getCurrentGame();
-  if (!game) {
-    reportError("no game to download");
-    return;
-  }
-  p = Players.find({ gameID: game._id});
-  players = p ? p.fetch() : `error finding players.gameID=${game._id}`;
-  h = GamesHistory.find({ name: game.name});
-  gamesHistory = h ? h.fetch() : `error finding gamesHistory.gameID=${game._id}`;
-  ids = h ? gamesHistory.map (g => g._id) : [];
-  t = TurnsHistory.find({ historyID: { $in: ids }});
-  turnsHistory = t ? t.fetch() : `error finding turnsHistory->gameID=${game._id}`;
-  obj = {
-    game: game,
-    players: players,
-    gamesHistory: gamesHistory,
-    turnsHistory: turnsHistory,
-  };
-  if (debug >= 1) console.log (`download '${game.name}' as a JSON file`);
-  downloadObject (obj, game.name);
+  const villageName = game ? game.name : null;
+  Meteor.call ('downloadAll', villageName, (error, obj) => {
+    if (error) {
+      reportError("download failed");
+    } else {
+      if (debug >= 1) {
+        info = Object.entries(obj).flatMap(([k,v])=>(k!="villageName" && Array.isArray(v) ? [`${v.length} ${k}`] : [])).join(", ");
+        if (obj.villageName === null) {
+          console.log (`download everything as a JSON file: ${info}`);
+        } else {
+          console.log (`download '${obj.villageName}' as a JSON file: ${info}`);
+        }
+      }
+      downloadObject (obj, villageName);
+    }
+  });
 }

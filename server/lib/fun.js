@@ -273,3 +273,45 @@ loverSuicide = function (allLovers, playerMap, player) {
   }
   return deaths;
 }
+
+downloadHistory = function (villageName) {
+  h = GamesHistory.find({ name: villageName });
+  gamesHistory = h ? h.fetch() : `error finding gamesHistory.gameID=${game._id}`;
+  ids = h ? gamesHistory.map (g => g._id) : [];
+  t = TurnsHistory.find({ historyID: { $in: ids }});
+  turnsHistory = t ? t.fetch() : `error finding turnsHistory->gameID=${game._id}`;
+  obj = {
+    villageName: villageName,
+    gamesHistory: gamesHistory,
+    turnsHistory: turnsHistory,
+  };
+  if (debug >= 1) {
+    info = Object.entries(obj).flatMap(([k,v])=>(k!="villageName" && Array.isArray(v) ? [`${v.length} ${k}`] : [])).join(", ");
+    console.log (`download history for '${villageName}': ${info}`);
+  }
+  return obj;
+}
+
+downloadAll = function (villageName) {
+  if (!showAllVillages) return downloadHistory (villageName);
+  g = Games.find({});
+  games = g ? g.fetch() : "error reading 'games'";
+  p = Players.find({});
+  players = p ? p.fetch() : "error reading 'players'";
+  h = GamesHistory.find({});
+  gamesHistory = h ? h.fetch() : "error reading 'gamesHistory'";
+  t = TurnsHistory.find({});
+  turnsHistory = t ? t.fetch() : "error reading 'turnsHistory'";
+  obj = {
+    villageName: null,  // all villages
+    games: games,
+    players: players,
+    gamesHistory: gamesHistory,
+    turnsHistory: turnsHistory,
+  };
+  if (debug >= 1) {
+    info = Object.entries(obj).flatMap(([k,v])=>(k!="villageName" && Array.isArray(v) ? [`${v.length} ${k}`] : [])).join(", ");
+    console.log (`download all data: ${info}`);
+  }
+  return obj;
+}
