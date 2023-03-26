@@ -18,3 +18,4 @@ kadira:blaze-layout     # Layout manager for blaze (works well with FlowRouter)
 session@1.2.1
 kevohagan:sweetalert
 twbs:bootstrap
+ccorcos:subs-cache

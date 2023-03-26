@@ -87,21 +87,17 @@ removePlayer = function(game, name) {
 
 joinGame = function(name) {
   setDebugLevel();
-  Meteor.subscribe('games', name, function onReady() {
+  MeteorSubs.subscribe('games', name, function onReady() {
     var game = Games.findOne({name: name});
     if (!game) {
       leaveVillage();
       reportError(`no village '${name}'`);
-      return false;
     }
     if (debug>=1) console.log(`Join village '${name}', id=${game._id}`);
-    Meteor.subscribe('players', game._id);
-    Meteor.subscribe('pastGames', name);
+    MeteorSubs.subscribe('players', game._id);
     Session.set('gameID', game._id);
-    historySubscribe();
     setTitle (name);
   });
-  return false;
 }
 
 setTitle = function(name) {
@@ -191,6 +187,8 @@ reportError = function(msg) {
 }
 
 resetUserState = function() {
+  MeteorSubs.clear();
+  MeteorSubsHistory.clear();
   setCurrentGame(null);
   setCurrentPlayer(null);
   hideRole();
@@ -280,6 +278,7 @@ leaveGame = function() {
 };
 
 resetGame = function() {
+  MeteorSubsHistory.clear();
   const gameID = Session.get('gameID');
   if (gameID) {
     Games.update(gameID, { $set: initialGame() });
@@ -333,52 +332,38 @@ availableRoles = function(game, unavailable=false) {
     . filter (([k,r]) => (unavailable != (!r.display || nplayers >= r.display)));
 }
 
-getHistoryID = function() {
+showHistory = function () {
   if (Session.equals('lobbyView', 'historyEntry')) {
-    return Session.get('historyEntry');
+    historyID = Session.get('historyEntry');
   } else {
     game = getCurrentGame();
     if (!game) return null;
-    return game.historyID;
+    historyID = game.historyID;
   }
-}
-
-historySubscribe = function() {
-  historyID = getHistoryID();
-  if (!historyID) return historyID;
-  if (historySubscribe.subscription.historyID != historyID) {
-    if (historySubscribe.subscription.subscription) {
-      if (debug >= 1) console.log (`stop gamesHistory subscription for ${historySubscribe.subscription.historyID}`);
-      historySubscribe.subscription.subscription.stop();
-    }
-    if (debug >= 1) console.log (`start gamesHistory subscription for ${historyID}`);
-    historySubscribe.subscription = {
-      historyID: historyID,
-      subscription: Meteor.subscribe('gamesHistory', historyID)
-    };
-  }
-  return historyID;
-}
-historySubscribe.subscription = {historyID: null, subscription: null};
-
-showHistory = function () {
-  historyID = historySubscribe();  // probably already done
   if (!historyID) return null;
-  gameRecord = GamesHistory.findOne(historyID);
+  subs = MeteorSubsHistory.subscribe('gamesHistory', historyID);
+  if (!subs.ready()) return null;
+  gameHistory = GamesHistory.findOne(historyID);
   const h = TurnsHistory.find({historyID: historyID});
-  const history = h ? h.fetch() : [];
-  if (debug >= 2) console.log(`gameRecord ${historyID} = `, gameRecord);
-  if (debug >= 2) console.log ('turnsHistory = ', history);
-  if (!gameRecord) return null;
+  const turnsHistory = h ? h.fetch() : [];
+  if (debug >= 2) {
+    console.log (`gamesHistory ${historyID} = `, gameHistory);
+    console.log ('turnsHistory = ', turnsHistory);
+  }
+  if (!gameHistory) return null;
+  return historyTable (gameHistory, turnsHistory);
+}
+
+historyTable = function (game, history) {
   const col0 = {Class:"", name:""};
-  const players = gameRecord.players.map (p => ({...p, role: roleInfo(gameRecord.playerRoles[p._id]), alive:true})) . filter (p=>!p.role.zombie);
+  const players = game.players.map (p => ({...p, role: roleInfo(game.playerRoles[p._id]), alive:true})) . filter (p=>!p.role.zombie);
   if (debug >= 2) console.log ('players = ', players);
   const playerMap = objectMap (players, p => ({[p._id]: p}));
-  if (debug >= 3) console.log ('fellows = ', gameRecord.fellows);
+  if (debug >= 3) console.log ('fellows = ', game.fellows);
   var day = 0;
   const table = {
     players: players,
-    fellows: ['Lover', 'Rival'].flatMap (ff => ((gameRecord.fellows||{})[ff.toLowerCase()]||[]).map (f => ({type: `${ff}s`, names: (() => {
+    fellows: ['Lover', 'Rival'].flatMap (ff => ((game.fellows||{})[ff.toLowerCase()]||[]).map (f => ({type: `${ff}s`, names: (() => {
       players.forEach (p => {p.col = {...col0}});
       for (const p of f) {
         if (p._id in playerMap)

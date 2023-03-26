@@ -3,7 +3,6 @@ night_templates = function() {
   Template.nightView.rendered = () => {
     $('html').addClass("night");
     if (alive()) hideRole();
-    historySubscribe();  // will change on first night
     startClock();
   };
 

@@ -7,9 +7,7 @@ lobby_templates = function() {
   Template.lobby.rendered = function(event) {
     if (!Session.get('gameID')) {
       const villageName = Session.get('urlVillage');
-      if (villageName) {
-        joinGame(villageName);
-      }
+      if (villageName) joinGame(villageName);
     }
     hideRole();
     this.find("input").focus();
@@ -56,6 +54,7 @@ lobby_templates = function() {
     },
     'click .btn-download': downloadGame,
     'click .btn-old': () => {
+      MeteorSubsHistory.subscribe('pastGames', gameName());
       Session.set('lobbyView', 'historyIndex');
     },
     'click .toggle-player': (event) => {

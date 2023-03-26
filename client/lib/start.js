@@ -25,7 +25,7 @@ start_templates = function() {
     resetUserState();
     Session.set('allGamesSubscribed',false);
     // subscription allGames might not be published by server, but show all games if so.
-    Meteor.subscribe('allGames', function onReady() {
+    MeteorSubs.subscribe('allGames', function onReady() {
       Session.set('allGamesSubscribed',true);
       if (debug>=3) console.log(`all games = ${allGames()}`);
       $(".allGames-removed").removeClass("allGames-removed");
