@@ -2,7 +2,7 @@ debug = 0;   // overridden by server setting if higher
 MeteorSubs = new SubsCache();
 MeteorSubsHistory = new SubsCache();
 
-function werewolf_client() {
+(function() {
   collections();
   routes();
   start_templates();
@@ -13,6 +13,4 @@ function werewolf_client() {
   day_templates();
   Tracker.autorun(trackGameState);
   Session.set('currentView', 'startMenu');
-}
-
-werewolf_client();
+})();

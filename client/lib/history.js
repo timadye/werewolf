@@ -26,8 +26,9 @@ history_templates = function() {
   //======================================================================
 
   Template.historyEntry.helpers({
-    history: () => {
-      showHistory(Session.get('historyEntry'));
+    date: () => {
+      game = GamesHistory.findOne({_id: Session.get('historyEntry')}, {fields: {createdAt: 1}});
+      return new Date(game.createdAt).toLocaleString();
     },
   });
 

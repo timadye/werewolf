@@ -1,7 +1,8 @@
 <template name="historyIndex">
   <h2>{{gameName}} village</h2>
-  <h3>Old games</h3>
-  <br>
+  <button class="btn btn-primary btn-lg btn-new">New Game</button>
+  <button class="btn btn-secondary btn-lg btn-leave-village">Leave Village</button>
+  <h3>Previous Games</h3>
   <div id="old-games-list">
     {{#each game in games}}
       <label class="old-games-checkbox">
@@ -10,18 +11,13 @@
     {{/each}}
   </div>
   <br>
-  <button class="btn btn-primary btn-lg btn-new">New Game</button>
-  <button class="btn btn-secondary btn-lg btn-leave-village">Leave Village</button>
-  <br><br>
 </template>
 
 <template name="historyEntry">
   <h2>{{gameName}} village</h2>
-  <h3>Old game</h3>
-  <br>
   <button class="btn btn-primary btn-lg btn-new">New Game</button>
-  <button class="btn btn-primary btn-lg btn-old">Old Games</button>
+  <button class="btn btn-primary btn-lg btn-old">History</button>
   <button class="btn btn-secondary btn-lg btn-leave-village">Leave Village</button>
-  <br><br>
+  <h3>Game started at {{date}}</h3>
   {{> roleInfo view="historyEntry"}}
 </template>

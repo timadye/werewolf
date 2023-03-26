@@ -1,5 +1,5 @@
-const dash = "\u2013";
-const nbsp = "\u00A0";
+dash = "\u2013";
+nbsp = "\u00A0";
 
 setDebugLevel = function() {
   Meteor.call ('debugLevel', (error, result) => {
@@ -332,26 +332,29 @@ availableRoles = function(game, unavailable=false) {
     . filter (([k,r]) => (unavailable != (!r.display || nplayers >= r.display)));
 }
 
+//======================================================================
+// history functions
+//======================================================================
+
 showHistory = function () {
   if (Session.equals('lobbyView', 'historyEntry')) {
     historyID = Session.get('historyEntry');
   } else {
-    game = getCurrentGame();
+    const game = getCurrentGame();
     if (!game) return null;
     historyID = game.historyID;
   }
   if (!historyID) return null;
-  subs = MeteorSubsHistory.subscribe('gamesHistory', historyID);
+  var subs = MeteorSubsHistory.subscribe('gamesHistory', historyID);
   if (!subs.ready()) return null;
-  gameHistory = GamesHistory.findOne(historyID);
-  const h = TurnsHistory.find({historyID: historyID});
-  const turnsHistory = h ? h.fetch() : [];
+  const game = GamesHistory.findOne(historyID);
+  if (!game) return null;
+  const history = TurnsHistory.find({historyID: historyID}).fetch();
   if (debug >= 2) {
-    console.log (`gamesHistory ${historyID} = `, gameHistory);
-    console.log ('turnsHistory = ', turnsHistory);
+    console.log (`showHistory game ${historyID} = `, game);
+    console.log ('history = ', history);
   }
-  if (!gameHistory) return null;
-  return historyTable (gameHistory, turnsHistory);
+  return historyTable (game, history);
 }
 
 historyTable = function (game, history) {
