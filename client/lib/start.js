@@ -21,20 +21,14 @@ start_templates = function() {
   //======================================================================
 
   Template.startMenu.rendered = function() {
-    setDebugLevel();
     resetUserState();
-    Session.set('allGamesSubscribed',false);
-    // subscription allGames might not be published by server, but show all games if so.
-    MeteorSubs.subscribe('allGames', function onReady() {
-      Session.set('allGamesSubscribed',true);
-      if (debug>=3) console.log(`all games = ${allGames()}`);
-      $(".allGames-removed").removeClass("allGames-removed");
-    });
     this.find("input").focus();
   };
 
   Template.startMenu.helpers({
-    allGamesButtons: allGamesFetch,
+    allGames: () => {
+      return Games.find ({}, {fields: {name: 1}, sort: {createdAt: 1}});
+    }
   });
 
   Template.startMenu.events({

@@ -2,6 +2,7 @@ day_templates = function() {
 
   Template.dayView.rendered = () => {
     $('html').addClass("day");
+    initSession();
     if (alive()) hideRole();
     startClock();
   };

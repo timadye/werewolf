@@ -5,6 +5,7 @@ lobby_templates = function() {
 //======================================================================
 
   Template.lobby.rendered = function(event) {
+    initSession();
     if (!Session.get('gameID')) {
       const villageName = Session.get('urlVillage');
       if (villageName) joinGame(villageName);
@@ -52,7 +53,7 @@ lobby_templates = function() {
       if (gameID) Games.update(gameID, {$set: {state: 'settingUp'}});
       setTitle();
     },
-    'click .btn-download': downloadGame,
+    'click .btn-download': downloadAll,
     'click .btn-old': () => {
       MeteorSubsHistory.subscribe('pastGames', gameName());
       Session.set('lobbyView', 'historyIndex');
@@ -94,7 +95,8 @@ lobby_templates = function() {
 // lateLobby template
 //======================================================================
 
-Template.lateLobby.rendered = function(event) {
+  Template.lateLobby.rendered = function(event) {
+    initSession();
     if (Session.get('gameID')) return;
     const villageName = Session.get('urlVillage');
     if (villageName) joinGame(villageName);
@@ -152,7 +154,7 @@ Template.lateLobby.rendered = function(event) {
         Session.set ("joinPlayer", null);
       });
     },
-    'click .btn-download': downloadGame,
+    'click .btn-download': downloadAll,
   });
 
 }

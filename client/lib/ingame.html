@@ -89,7 +89,10 @@
   <h2>{{gameName}} village</h2>
   <br>
   <button class="btn btn-primary btn-lg btn-new">New Game</button>
-  <button class="btn btn-secondary btn-lg btn-leave-village">Leave Village</button>
+  {{#if showAllVillages}}
+    <button class="btn btn-secondary btn-md btn-download">Download</button>
+  {{/if}}
+  <button class="btn btn-secondary btn-md btn-leave-village">Leave Village</button>
   <br><br>
   {{> roleInfo view="endGame"}}
 </template>
@@ -103,7 +106,9 @@
 <template name="gameFooter">
   <br><br><br>
   <button class="btn btn-secondary btn-md btn-rejoin">Rejoin</button>
-  <button class="btn btn-secondary btn-md btn-download">Download</button>
+  {{#if showAllVillages}}
+    <button class="btn btn-secondary btn-md btn-download">Download</button>
+  {{/if}}
   {{#if alive}}
     <button class="btn btn-secondary btn-md btn-suicide">Kill Myself</button>
   {{else}}

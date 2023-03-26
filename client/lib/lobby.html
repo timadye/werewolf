@@ -46,7 +46,9 @@
   </form>
 
   <button class="btn btn-primary btn-lg btn-start" {{ startButtonDisabled }}>Start Game</button>
-  <button class="btn btn-secondary btn-md btn-download">Download</button>
+  {{#if showAllVillages}}
+    <button class="btn btn-secondary btn-md btn-download">Download</button>
+  {{/if}}
   <button class="btn btn-secondary btn-md btn-old">History</button>
   <button class="btn btn-secondary btn-md btn-leave">Leave Village</button>
 </template>
@@ -72,7 +74,9 @@
   </form>
 
   <button class="btn btn-primary btn-lg btn-join">Join Game</button>
-  <button class="btn btn-secondary btn-md btn-download">Download</button>
+  {{#if showAllVillages}}
+    <button class="btn btn-secondary btn-md btn-download">Download</button>
+  {{/if}}
   <button class="btn btn-secondary btn-md btn-leave">Leave Village</button>
   <button class="btn btn-secondary btn-md btn-end">End Game</button>
 </template>

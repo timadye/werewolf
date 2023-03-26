@@ -11,6 +11,7 @@ ingame_templates = function() {
     playerName: () => (playerName() || "a lurker"),
     lurker: () => (!playerName()),
     alive: alive,
+    showAllVillages: () => { return Session.get('showAllVillages'); }
   });
 
 
@@ -113,16 +114,17 @@ ingame_templates = function() {
         endGame();
       });
     },
-    'click .btn-download': downloadGame,
+    'click .btn-download': downloadAll,
   });
 
   Template.endGame.events({
     'click .btn-leave-village': leaveVillage,
     'click .btn-new': () => {
       confirm ("New Game", "New game?", "This will remove the game summary for everyone", true, () => {
-      resetGame();
+        resetGame();
       });
     },
+    'click .btn-download': downloadAll,
   });
 
 }

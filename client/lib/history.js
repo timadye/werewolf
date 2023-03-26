@@ -5,7 +5,7 @@ history_templates = function() {
 
   Template.historyIndex.helpers({
     games: () => {
-      games = GamesHistory.find({name: gameName()}, {fields: {createdAt: 1}}).fetch();
+      games = GamesHistory.find({name: gameName()}, {fields: {createdAt: 1}, sort: {createdAt: -1}}).fetch();
       return games.map(game => ({_id: game._id, date: new Date(game.createdAt).toLocaleString()}));
     },
   });
@@ -15,6 +15,7 @@ history_templates = function() {
     'click .btn-new': () => {
       Session.set('lobbyView', '');
     },
+    'click .btn-download': downloadVillage,
     'click .btn-show': (event) => {
       Session.set('historyEntry', event.target.id);
       Session.set('lobbyView', 'historyEntry');
@@ -27,7 +28,7 @@ history_templates = function() {
 
   Template.historyEntry.helpers({
     date: () => {
-      game = GamesHistory.findOne({_id: Session.get('historyEntry')}, {fields: {createdAt: 1}});
+      game = GamesHistory.findOne(Session.get('historyEntry'), {fields: {createdAt: 1}});
       return new Date(game.createdAt).toLocaleString();
     },
   });
@@ -62,7 +63,7 @@ showHistory = function () {
   if (!subs.ready()) return null;
   const game = GamesHistory.findOne(historyID);
   if (!game) return null;
-  const history = TurnsHistory.find({historyID: historyID}).fetch();
+  const history = TurnsHistory.find({historyID: historyID}, {sort: {createdAt: 1}}).fetch();
   if (debug >= 2) {
     console.log (`showHistory game ${historyID} = `, game);
     console.log ('history = ', history);

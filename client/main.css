@@ -85,10 +85,6 @@ li {
   text-indent: -8px;
 }
 
-.allGames-removed {
-  display: none;
-}
-
 #player-name {
   display: inline;
   margin-left: 0;

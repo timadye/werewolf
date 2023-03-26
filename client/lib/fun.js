@@ -191,16 +191,25 @@ resetUserState = function() {
   MeteorSubsHistory.clear();
   setCurrentGame(null);
   setCurrentPlayer(null);
+  initSession();
   hideRole();
+}
+
+initSession = function() {
+  if (Session.get('showAllVillages') === undefined) {
+    setDebugLevel();
+    Session.set('showAllVillages',false);
+    // subscription allGames might not be published by server, but show all games if so.
+    MeteorSubs.subscribe('allGames', function onReady() {
+      Session.set('showAllVillages',true);
+      if (debug>=3) console.log(`all games = ${allGames()}`);
+    });
+  }
   setTitle();
 }
 
-allGamesFetch = function() {
-  return Session.get('allGamesSubscribed') ? Games.find ({}, {fields: {name: 1}}).fetch() : [];
-}
-
 allGames = function() {
-  const ret = allGamesFetch();
+  const ret = Games.find ({}, {fields: {name: 1}, sort: {createdAt: 1}}).fetch();
   return ret ? ret.map((game) => game.name) : ret;
 }
 
@@ -332,18 +341,24 @@ availableRoles = function(game, unavailable=false) {
     . filter (([k,r]) => (unavailable != (!r.display || nplayers >= r.display)));
 }
 
-downloadObject = function(obj, name) {
+downloadObject = function(obj, name=null) {
   const a = document.createElement('a');
   const data = JSON.stringify(obj, undefined, 2);
   a.href = URL.createObjectURL( new Blob([data], { type:'text/json' }) );
-  a.download = name+".json";
+  a.download = (name||"werewolf")+".json";
   a.click();
 }
 
-downloadGame = function() {
-  const game = getCurrentGame();
-  const villageName = game ? game.name : null;
-  Meteor.call ('downloadAll', villageName, (error, obj) => {
+downloadAll = function() { downloadGame(true); }
+downloadVillage = function() { downloadGame(false); }
+
+downloadGame = function(downloadAll) {
+  var villageName = null;
+  if (!downloadAll) {
+    const game = getCurrentGame();
+    if (game) villageName = game.name;
+  }
+  Meteor.call (downloadAll ? 'downloadAll' : 'downloadHistory', villageName, (error, obj) => {
     if (error) {
       reportError("download failed");
     } else {

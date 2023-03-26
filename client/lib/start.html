@@ -6,15 +6,17 @@
   {{/if}}
 
   <form id="start-menu">
-    <div id="start-menu-list">
-    {{#each allGamesButtons}}
-      <div class="btn btn-primary btn-lg checkbox village-btn allGames-removed">
-        <label class="village-checkbox">
-          <input type="checkbox" id="{{ name }}" class="join-village"/>{{ name }}<br>
-        </label>
+    {{#if showAllVillages}}
+      <div id="start-menu-list">
+      {{#each game in allGames}}
+        <div class="btn btn-primary btn-lg checkbox village-btn">
+          <label class="village-checkbox">
+            <input type="checkbox" id="{{ game.name }}" class="join-village"/>{{ game.name }}<br>
+          </label>
+        </div>
+      {{/each}}
       </div>
-    {{/each}}
-    </div>
+    {{/if}}
     <div class="form-group">
       <input type="text" class="form-control" id="village-name" name="villageName" placeholder="Enter village name" autocorrect="off" autocapitalize="off" autofocus>
     </div>
@@ -22,6 +24,8 @@
   </form>
 
   <br/>
-  <button class="btn btn-primary btn-lg btn-reset allGames-removed">Reset all games</button>
+  {{#if showAllVillages}}
+    <button class="btn btn-primary btn-lg btn-reset">Reset all games</button>
+  {{/if}}
 
 </template>
