@@ -2,20 +2,14 @@
   <h2>{{gameName}} village</h2>
   <h3>Old games</h3>
   <br>
-  <table class="table table-bordered table-sm">
-    <thead>
-    <tr>
-      <th scope="col">Date</th>
-    </tr>
-    </thead>
-    <tbody>
+  <div id="old-games-list">
     {{#each game in games}}
-      <tr>
-        <td><button name="player-remove" id="{{game._id}}" class="btn btn-md btn-show">{{game.date}}</button></td>
-      </tr>
+      <label class="old-games-checkbox">
+        <button name="old-game" id="{{game._id}}" class="btn btn-md btn-show">{{game.date}}</button>
+      </label>
     {{/each}}
-    </tbody>
-  </table>
+  </div>
+  <br>
   <button class="btn btn-primary btn-lg btn-new">New Game</button>
   <button class="btn btn-secondary btn-lg btn-leave-village">Leave Village</button>
   <br><br>

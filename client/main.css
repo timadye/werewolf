@@ -275,6 +275,14 @@ input[type="checkbox"] {
   border-color: #00c;
 }
 
+#old-games-list {
+  column-count: 2;
+}
+
+.old-games-checkbox {
+  padding: 3px 0;
+}
+
 .dead-player {
   background-color: var(--current-fg-color);
   color: var(--current-bg-color);
