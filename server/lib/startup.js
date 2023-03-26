@@ -41,7 +41,7 @@ server_startup = function() {
     if (debug >= 1) console.log("publish gamesHistory", historyID);
     return [
       GamesHistory.find({_id: historyID}),
-      TurnsHistory.find({historyID: historyID})
+      TurnsHistory.find({historyID: historyID}, {sort: {createdAt: 1}} )
     ];
   });
 
