@@ -6,7 +6,7 @@
   {{/if}}
 
   <form id="start-menu">
-    {{#if showAllVillages}}
+    {{#if adminMode}}
       <div id="start-menu-list">
       {{#each game in allGames}}
         <div class="btn btn-primary btn-lg checkbox village-btn">
@@ -24,7 +24,7 @@
   </form>
 
   <br/>
-  {{#if showAllVillages}}
+  {{#if adminMode}}
     <button class="btn btn-primary btn-lg btn-reset">Reset all games</button>
   {{/if}}
 

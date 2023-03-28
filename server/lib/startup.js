@@ -4,7 +4,7 @@ server_startup = function() {
 
   Meteor.startup(() => {
     if (debug >= 0) {
-      console.log(`Start Werewolf server: showAllVillages=${showAllVillages}, debug=${debug}, resetOnStart=${resetOnStart}`);
+      console.log(`Start Werewolf server: adminMode=${adminMode}, debug=${debug}, resetOnStart=${resetOnStart}`);
     }
     if (resetOnStart) {
       Games.remove({});
@@ -50,29 +50,43 @@ server_startup = function() {
     return GamesHistory.find({name: villageName}, {fields: {name: 1, createdAt: 1}});
   });
 
-  if (showAllVillages) {
-    Meteor.publish('allGames', () => {
-      if (debug >= 2) console.log("publish allGames");
+  Meteor.publish('allGames', (pwd) => {
+    if (adminMode || pwd == adminPassword) {
+      if (debug >= 1) console.log("admin mode: publish allGames");
       return Games.find({}, { fields: {name: 1} });
-    });
-  }
+    } else {
+      if (pwd) {
+        if (debug >= 1) console.log("don't publish allGames - authentication failure");
+      } else {
+        if (debug >= 2) console.log("don't publish allGames");
+      }
+      return null;
+    }
+  });
 
   Meteor.methods({
     villageExists: (villageName) => {
-      if (resetCmd && villageName == resetCmd) {
-        resetAllGames();
-        return -1;
-      }
       return Games.find( {name: villageName} ).count() > 0 ? 1 : 0;
     },
-    resetAllGames: () => {
-      if (showAllVillages) resetAllGames();
+    resetAllGames: (pwd) => {
+      if (adminMode || pwd == adminPassword) {
+        resetAllGames();
+        return true;
+      } else {
+        return false;
+      }
     },
     debugLevel: () => {
       return debug;
     },
     downloadHistory: downloadHistory,
-    downloadAll: downloadAll,
+    downloadAll: (pwd) => {
+      if (adminMode || pwd == adminPassword) {
+        return downloadAll();
+      } else {
+        return null;
+      }
+    },
   });
 
 }

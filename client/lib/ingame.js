@@ -11,7 +11,7 @@ ingame_templates = function() {
     playerName: () => (playerName() || "a lurker"),
     lurker: () => (!playerName()),
     alive: alive,
-    showAllVillages: () => { return Session.get('showAllVillages'); }
+    adminMode: () => { return Session.equals('adminMode', true); }
   });
 
 

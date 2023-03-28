@@ -4,6 +4,9 @@ routes = function() {
     action: (params, queryParams) => {
       console.log("route /");
       Session.set('gameID', null);
+      if (queryParams.p) {
+        setPassword(queryParams.p);
+      }
       Session.set("currentView", "startMenu");
       BlazeLayout.render('main');
     }
@@ -12,12 +15,14 @@ routes = function() {
   FlowRouter.route('/:villageName', {
     action: (params, queryParams) => {
       const villageName = params.villageName;
-      if (Object.keys(queryParams) != 0) {
-        q = Object.entries(queryParams).map(([k,v]) => k+(v==""?"":"="+v)).join("&");
-        if (debug >= 1) console.log(`route /${villageName}?${q} -> village '${villageName}'`);
-      } else {
-        if (debug >= 1) console.log(`route /${villageName} -> village '${villageName}'`);
+      if (queryParams.p) {
+        setPassword(queryParams.p);
       }
+      // if (Object.keys(queryParams) != 0) {
+      //   q = Object.entries(queryParams).map(([k,v]) => k+(v==""?"":"="+v)).join("&");
+      //   if (debug >= 1) console.log(`route /${villageName}?${q} -> village '${villageName}'`);
+      // } else
+      if (debug >= 1) console.log(`route /${villageName} -> village '${villageName}'`);
       Session.set("urlVillage", villageName);
       if (Session.get("currentView") != "lobby")
         Session.set("currentView", "lateLobby");

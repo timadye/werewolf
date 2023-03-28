@@ -292,8 +292,7 @@ downloadHistory = function (villageName) {
   return obj;
 }
 
-downloadAll = function (villageName) {
-  if (!showAllVillages) return downloadHistory (villageName);
+downloadAll = function() {
   g = Games.find({});
   games = g ? g.fetch() : "error reading 'games'";
   p = Players.find({});

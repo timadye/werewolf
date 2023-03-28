@@ -187,7 +187,7 @@ reportError = function(msg) {
 }
 
 resetUserState = function() {
-  MeteorSubs.clear();
+  // MeteorSubs.clear();
   MeteorSubsHistory.clear();
   setCurrentGame(null);
   setCurrentPlayer(null);
@@ -195,16 +195,28 @@ resetUserState = function() {
   hideRole();
 }
 
-initSession = function() {
-  if (Session.get('showAllVillages') === undefined) {
-    setDebugLevel();
-    Session.set('showAllVillages',false);
-    // subscription allGames might not be published by server, but show all games if so.
-    MeteorSubs.subscribe('allGames', function onReady() {
-      Session.set('showAllVillages',true);
+setPassword = function(pwd) {
+  if (pwd != Session.get('adminPassword')) {
+    Session.set('adminMode',undefined);
+    Session.set('adminPassword',pwd);
+  }
+}
+
+checkAdminMode = function() {
+  if (Session.get('adminMode') === undefined) {
+    Session.set('adminMode',false);
+    Session.setDefault('adminPassword','');
+    MeteorSubs.subscribe('allGames', Session.get('adminPassword'), function onReady() {
+      if (debug>=1) console.log('Enable admin mode');
+      Session.set('adminMode',true);
       if (debug>=3) console.log(`all games = ${allGames()}`);
     });
   }
+}
+
+initSession = function() {
+  setDebugLevel();
+  checkAdminMode();
   setTitle();
 }
 
@@ -352,13 +364,13 @@ downloadObject = function(obj, name=null) {
 downloadAll = function() { downloadGame(true); }
 downloadVillage = function() { downloadGame(false); }
 
-downloadGame = function(downloadAll) {
+downloadGame = function(all) {
   var villageName = null;
-  if (!downloadAll) {
+  if (!all) {
     const game = getCurrentGame();
     if (game) villageName = game.name;
   }
-  Meteor.call (downloadAll ? 'downloadAll' : 'downloadHistory', villageName, (error, obj) => {
+  const callback = (error, obj) => {
     if (error) {
       reportError("download failed");
     } else {
@@ -372,5 +384,10 @@ downloadGame = function(downloadAll) {
       }
       downloadObject (obj, villageName);
     }
-  });
+  };
+  if (all) {
+    Meteor.call ('downloadAll', Session.get('adminPassword'), callback); 
+  } else {
+    Meteor.call ('downloadHistory', villageName, callback);
+  }
 }

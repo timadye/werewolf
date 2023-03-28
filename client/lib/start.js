@@ -33,9 +33,14 @@ start_templates = function() {
 
   Template.startMenu.events({
     'click .btn-reset': () => {
-      if (debug>=1) console.log(`reset all games`);
       resetUserState();
-      Meteor.call('resetAllGames');
+      ok = Meteor.call('resetAllGames', Session.get('adminPassword'), (error, obj) => {
+        if (error || !obj) {
+          reportError('failed to reset all games')
+        } else {
+          if (debug>=1) console.log(`reset all games`);
+        }
+      });
     },
     'click .join-village': (event) => {
       const villageName = event.target.id;
