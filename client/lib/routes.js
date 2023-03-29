@@ -9,12 +9,12 @@ routes = function() {
     }
   });
 
-  FlowRouter.route('/:villageName/~history', {
-    action: (params, queryParams) => {
-      if (debug >= 1) console.log(`route /${params.villageName}/~history`);
-      routed ('historyIndex', params.villageName);
-    }
-  });
+  // FlowRouter.route('/:villageName/~history', {
+  //   action: (params, queryParams) => {
+  //     if (debug >= 1) console.log(`route /${params.villageName}/~history`);
+  //     routed ('historyIndex', params.villageName);
+  //   }
+  // });
 
   FlowRouter.route('/:villageName/~history/:historyID', {
     action: (params, queryParams) => {
@@ -40,6 +40,17 @@ routes = function() {
       }
       routed (newView, params.villageName);
   }
+  });
+
+  FlowRouter.route('/:villageName/:playerName', {
+    action: (params, queryParams) => {
+      if (debug >= 1) console.log(`route /${params.villageName}/${params.playerName}`);
+      if (params.playerName == "~history") {  // handle ambiguous route
+        routed ('historyIndex', params.villageName);
+        return;
+      }
+      routed ('lobby', params.villageName, params.playerName);  // will move on
+    }
   });
 
 }

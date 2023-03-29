@@ -42,8 +42,9 @@ trackGameState = function() {
   if (debug >= 2) console.log (`trackGameState ${Meteor.connection._lastSessionId}: game.state = ${game.state}, currentView: ${currentView} -> ${Session.get('currentView')}`);
 }
 
-routed = function(view, villageName=null) {
-  Session.set("urlVillage", villageName);
+routed = function(view, villageName=null, playerName=null) {
+  Session.set("gameName", villageName);
+  if (playerName) Session.set('playerName', playerName);  // playerID set on first call to getCurrentPlayer
   Session.set('errorMessage', null);
   Session.set('turnMessage', null);
   hideRole();
@@ -65,7 +66,7 @@ setCurrentGame = function() {
   setTitle();
   hideRole();
   if (!Session.get('gameID')) {
-    const villageName = Session.get('urlVillage');
+    const villageName = Session.get('gameName');
     if (villageName) joinGame(villageName);
   }
 }
@@ -89,6 +90,9 @@ leaveVillage = function () {
   setCurrentPlayer(null);
   Session.set('joinPlayer', null);
   Session.set('gameID', null);
+  Session.set('gameName', null);
+  Session.set('playerID', null);
+  Session.set('playerName', null);
   FlowRouter.go('/');
 };
 

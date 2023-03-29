@@ -204,21 +204,23 @@ removePlayer = function(game, name) {
   }
 }
 
-setCurrentPlayer = function (newID, toggle=false) {
-  const player = getCurrentPlayer();
-  if (player) {
-    if (newID == player._id) {
+setCurrentPlayer = function (newID=null, toggle=false) {
+  const playerID = Session.get('playerID');
+  if (playerID) {
+    if (newID == playerID) {
       if (toggle) {
-        Players.update(player._id, {$set: {session: null}});
+        Players.update(playerID, {$set: {session: null}});
+        Session.set('playerID', null);
         setTitle();
         return null;
       } else {
-        return player._id;
+        return playerID;
       }
     } else {
-      Players.update(player._id, {$set: {session: null}});
+      Players.update(playerID, {$set: {session: null}});
     }
   }
+  Session.set('playerID', newID);
   if (newID) {
     Players.update(newID, {$set: {session: Meteor.connection._lastSessionId}});
     setTitle();
