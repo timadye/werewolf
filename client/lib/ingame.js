@@ -4,17 +4,6 @@ ingame_templates = function() {
 // Game playing templates
 //======================================================================
 
-  registerHelper ({
-    errorMessage: () => Session.get('errorMessage'),
-    game: getCurrentGame,
-    gameName: gameName,
-    playerName: () => (playerName() || "a lurker"),
-    lurker: () => (!playerName()),
-    alive: alive,
-    adminMode: () => { return Session.equals('adminMode', true); }
-  });
-
-
   Template.gameHeader.helpers({
     listAllRoles: () => {
       return getCurrentGame().roles.map (r => roleInfo(r).name) . join(", ");
@@ -127,4 +116,32 @@ ingame_templates = function() {
     'click .btn-download': downloadAll,
   });
 
+}
+
+
+//======================================================================
+// ingame functions
+//======================================================================
+
+var interval = null;
+startClock = function (start=true) {
+  if (interval) Meteor.clearInterval(interval);
+  Session.set('time', 0);
+  if (start) {
+    interval = Meteor.setInterval(() => {
+    const secs = Session.get('time') || 0;
+    Session.set('time', secs+1);
+    }, 1000);
+  } else {
+    interval = null;
+  }
+}
+
+hideRole = function (hide=true) {
+  Session.set ("hiddenRole", hide);
+}
+
+alive = function() {
+  const player = getCurrentPlayer();
+  return player ? player.alive : false;
 }

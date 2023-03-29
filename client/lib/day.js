@@ -87,3 +87,28 @@ day_templates = function() {
   });
 
 }
+
+
+//======================================================================
+// day functions
+//======================================================================
+
+guillotineVote = function(vote) {
+  const player = getCurrentPlayer();
+  if (player) Players.update (player._id, {$set: {guillotine: vote}});
+}
+
+voting = function() {
+  let calls = {}, guillotine = 0, called = null;
+  for (const {call} of Players.find ({call: {$ne: null}, alive: {$eq: true}}, {fields: {call:1} }) . fetch()) {
+    if (call in calls) {
+      if (++calls[call] == 2) {
+        guillotine++;
+        called = call;
+      }
+    } else {
+      calls[call] = 1;
+    }
+  }
+  return guillotine==1 ? playerName(called) : "";
+}

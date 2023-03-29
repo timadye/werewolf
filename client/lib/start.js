@@ -57,3 +57,29 @@ start_templates = function() {
   });
 
 }
+
+
+//======================================================================
+// start functions
+//======================================================================
+
+initialGame = function() {
+  return {
+    playerRoles: [],
+    state: 'waitingForPlayers',
+    voiceOfFate: [],
+    date: Date.now(),
+    historyID: null,
+  };
+}
+
+createGame = function(name, roles=["werewolf_1", "werewolf_2", "wolfsbane_1", "trapper_1"]) {
+  const gameID = Games.insert({
+    name: name,
+    // default roles
+    roles: roles,
+    ... initialGame()
+  });
+  if (debug>=1) console.log(`New game in village '${name}' (${gameID})`)
+  return Games.findOne(gameID);
+}
