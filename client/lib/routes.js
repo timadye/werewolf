@@ -2,53 +2,44 @@ routes = function() {
 
   FlowRouter.route('/', {
     action: (params, queryParams) => {
-      console.log("route /");
+      if (debug >= 1) console.log("route /");
       Session.set('gameID', null);
-      if (queryParams.p) {
-        setPassword(queryParams.p);
-      }
-      newView ("startMenu");
-      BlazeLayout.render('main');
+      setPassword(queryParams.p);
+      routed ("startMenu");
     }
   });
 
   FlowRouter.route('/:villageName/~history', {
     action: (params, queryParams) => {
-      newView ('historyIndex');
-      Session.set("urlVillage", params.villageName);
-      BlazeLayout.render('main');
+      if (debug >= 1) console.log(`route /${params.villageName}/~history`);
+      routed ('historyIndex', params.villageName);
     }
   });
 
   FlowRouter.route('/:villageName/~history/:historyID', {
     action: (params, queryParams) => {
-      newView ('historyEntry');
-      Session.set("urlVillage", params.villageName);
+      if (debug >= 1) console.log(`route /${params.villageName}/~history/${params.historyID}`);
       Session.set('historyEntry', params.historyID);
-      BlazeLayout.render('main');
+      routed ('historyEntry', params.villageName);
     }
   });
 
   FlowRouter.route('/:villageName', {
     action: (params, queryParams) => {
-      const villageName = params.villageName;
-      if (queryParams.p) {
-        setPassword(queryParams.p);
-      }
+      if (debug >= 1) console.log(`route /${params.villageName}`);
       // if (Object.keys(queryParams) != 0) {
       //   q = Object.entries(queryParams).map(([k,v]) => k+(v==""?"":"="+v)).join("&");
       //   if (debug >= 1) console.log(`route /${villageName}?${q} -> village '${villageName}'`);
       // } else
-      if (debug >= 1) console.log(`route /${villageName} -> village '${villageName}'`);
-      Session.set("urlVillage", villageName);
+      setPassword(queryParams.p);
       const currentView = Session.get("currentView");
-      if (!currentView) {
-        newView ("lobby");
-      } else if (currentView != "lobby") {
-        newView ("lateLobby");
+      if (!currentView || currentView == "startMenu" || currentView == "historyIndex" || currentView == "historyEntry" || currentView == "lobby") {
+        newView = "lobby";
+      } else {
+        newView = "lateLobby";
       }
-      BlazeLayout.render('main');
-    }
+      routed (newView, params.villageName);
+  }
   });
 
 }

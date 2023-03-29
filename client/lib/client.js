@@ -88,8 +88,8 @@ reportError = function(msg) {
 }
 
 setPassword = function(pwd) {
-  if (pwd != Session.get('adminPassword')) {
-    Session.set('adminMode',undefined);
-    Session.set('adminPassword',pwd);
+  if (pwd && pwd != Session.get('adminPassword')) {
+    Session.set('adminMode', undefined);
+    Session.set('adminPassword', pwd);
   }
 }

@@ -15,6 +15,5 @@ MeteorSubsHistory = new SubsCache();
   ingame_templates();
   night_templates();
   day_templates();
-  Tracker.autorun(trackGameState);
-  Session.set('currentView', 'startMenu');
+  initSession();
 })();

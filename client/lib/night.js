@@ -2,7 +2,6 @@ night_templates = function() {
 
   Template.nightView.rendered = () => {
     $('html').addClass("night");
-    initSession();
     if (alive()) hideRole();
     startClock();
   };

@@ -5,7 +5,6 @@ lobby_templates = function() {
 //======================================================================
 
   Template.lobby.rendered = function(event) {
-    rendered();
     this.find("input").focus();
   };
 
@@ -89,14 +88,6 @@ lobby_templates = function() {
 //======================================================================
 // lateLobby template
 //======================================================================
-
-  Template.lateLobby.rendered = function(event) {
-    initSession();
-    if (Session.get('gameID')) return;
-    const villageName = Session.get('urlVillage');
-    if (villageName) joinGame(villageName);
-    hideRole();
-  };
 
   Template.lateLobby.helpers({
     players: () => allPlayers (null, 1),

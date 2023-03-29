@@ -15,7 +15,6 @@ start_templates = function() {
   //======================================================================
 
   Template.startMenu.rendered = function() {
-    resetUserState();
     this.find("input").focus();
   };
 
@@ -27,7 +26,6 @@ start_templates = function() {
 
   Template.startMenu.events({
     'click .btn-reset': () => {
-      resetUserState();
       ok = Meteor.call('resetAllGames', Session.get('adminPassword'), (error, obj) => {
         if (error || !obj) {
           reportError('failed to reset all games')
