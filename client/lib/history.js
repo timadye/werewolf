@@ -13,12 +13,11 @@ history_templates = function() {
   Template.historyIndex.events({
     'click .btn-leave-village': leaveVillage,
     'click .btn-new': () => {
-      Session.set('lobbyView', '');
+      FlowRouter.go(`/${gameName()}`);
     },
     'click .btn-download': downloadVillage,
     'click .btn-show': (event) => {
-      Session.set('historyEntry', event.target.id);
-      Session.set('lobbyView', 'historyEntry');
+      FlowRouter.go(`/${gameName()}/~history/${event.target.id}`);
     },
   });
 
@@ -36,10 +35,10 @@ history_templates = function() {
   Template.historyEntry.events({
     'click .btn-leave-village': leaveVillage,
     'click .btn-new': () => {
-      Session.set('lobbyView', '');
+      FlowRouter.go(`/${gameName()}`);
     },
     'click .btn-old': () => {
-      Session.set('lobbyView', 'historyIndex');
+      FlowRouter.go(`/${gameName()}/~history`);
     },
   });
 
@@ -51,7 +50,7 @@ history_templates = function() {
 //======================================================================
 
 showHistory = function () {
-  if (Session.equals('lobbyView', 'historyEntry')) {
+  if (Session.equals('currentView', 'historyEntry')) {
     historyID = Session.get('historyEntry');
   } else {
     const game = getCurrentGame();

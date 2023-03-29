@@ -6,13 +6,7 @@ start_templates = function() {
 
   Template.main.helpers({
     whichView: () => {
-      currentView = Session.get('currentView');
-      if (currentView != 'lobby') {
-        Session.set('lobbyView', '');
-        return currentView;
-      }
-      lobbyView = Session.get('lobbyView');
-      return lobbyView ? lobbyView : currentView;
+      return Session.get('currentView');
     }
   });
 

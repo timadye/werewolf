@@ -44,6 +44,10 @@ trackGameState = function() {
   }
   const currentView = Session.get('currentView');
   if (game.state === 'waitingForPlayers') {
+    if (currentView == "historyIndex" || currentView == "historyEntry") {
+      if (debug >= 2) console.log (`trackGameState ${Meteor.connection._lastSessionId}: game.state = ${game.state}, currentView: ${currentView}`);
+      return;
+    }
     Session.set('currentView', 'lobby');
   } else if (game.state === 'endGame') {
     Session.set('currentView', 'endGame');

@@ -85,6 +85,15 @@ removePlayer = function(game, name) {
   }
 }
 
+rendered = function() {
+  initSession();
+  hideRole();
+  if (!Session.get('gameID')) {
+    const villageName = Session.get('urlVillage');
+    if (villageName) joinGame(villageName);
+  }
+}
+
 joinGame = function(name) {
   setDebugLevel();
   MeteorSubs.subscribe('games', name, function onReady() {
@@ -192,7 +201,6 @@ resetUserState = function() {
   setCurrentGame(null);
   setCurrentPlayer(null);
   initSession();
-  hideRole();
 }
 
 setPassword = function(pwd) {
@@ -280,9 +288,7 @@ startClock = function (start=true) {
 }
 
 leaveVillage = function () {
-  Session.set('currentView', 'startMenu');
-  Session.set('turnMessage', null);
-  Session.set('errorMessage', null);
+  newView ('startMenu');
   Session.set('joinPlayer', null);
   resetUserState();
 };
@@ -307,6 +313,14 @@ resetGame = function() {
       Players.update(player._id, { $set: initialPlayer() });
     }
   }
+}
+
+newView = function(view) {
+  hideRole();
+  Session.set('errorMessage', null);
+  Session.set('turnMessage', null);
+  if (view)
+    Session.set('currentView', view);
 }
 
 endGame = function() {

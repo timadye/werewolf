@@ -7,7 +7,24 @@ routes = function() {
       if (queryParams.p) {
         setPassword(queryParams.p);
       }
-      Session.set("currentView", "startMenu");
+      newView ("startMenu");
+      BlazeLayout.render('main');
+    }
+  });
+
+  FlowRouter.route('/:villageName/~history', {
+    action: (params, queryParams) => {
+      newView ('historyIndex');
+      Session.set("urlVillage", params.villageName);
+      BlazeLayout.render('main');
+    }
+  });
+
+  FlowRouter.route('/:villageName/~history/:historyID', {
+    action: (params, queryParams) => {
+      newView ('historyEntry');
+      Session.set("urlVillage", params.villageName);
+      Session.set('historyEntry', params.historyID);
       BlazeLayout.render('main');
     }
   });
@@ -24,8 +41,12 @@ routes = function() {
       // } else
       if (debug >= 1) console.log(`route /${villageName} -> village '${villageName}'`);
       Session.set("urlVillage", villageName);
-      if (Session.get("currentView") != "lobby")
-        Session.set("currentView", "lateLobby");
+      const currentView = Session.get("currentView");
+      if (!currentView) {
+        newView ("lobby");
+      } else if (currentView != "lobby") {
+        newView ("lateLobby");
+      }
       BlazeLayout.render('main');
     }
   });
