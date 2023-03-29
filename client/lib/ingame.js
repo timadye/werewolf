@@ -145,3 +145,21 @@ alive = function() {
   const player = getCurrentPlayer();
   return player ? player.alive : false;
 }
+
+leaveGame = function() {
+  const player = getCurrentPlayer();
+  if (player && player.alive) {
+    Session.set('turnMessage', null);
+    Session.set('errorMessage', null);
+    Players.update(player._id, {$set: {alive: false}});
+  } else {
+    leaveVillage();
+  }
+};
+
+endGame = function() {
+  Session.set('errorMessage', null);
+  Session.set('turnMessage', null);
+  const gameID = Session.get('gameID');
+  if (gameID) Games.update(gameID, {$set: {state: 'endGame'}});
+}
