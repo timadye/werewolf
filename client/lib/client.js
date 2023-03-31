@@ -68,18 +68,18 @@ setDebugLevel = function() {
   });
 }
 
-setTitle = function(name) {
-  if (name == undefined) {
-    name = getPlayerName();
-    if (!name) {
-      name = getGameName();
-      if (!name) {
+setTitle = function(title) {
+  if (title == undefined) {
+    title = getPlayerName();
+    if (!title) {
+      title = getGameName();
+      if (!title) {
         document.title = "Werewolf";
         return;
       }
     }
   }
-  document.title = name + " - Werewolf";
+  document.title = title + " - Werewolf";
 }
 
 reportError = function(msg) {

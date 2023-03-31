@@ -27,9 +27,9 @@ server_startup = function() {
     }
   });
 
-  Meteor.publish('games', (villageName) => {
-    if (debug >= 2) console.log("publish games", villageName);
-    return Games.find({name: villageName});
+  Meteor.publish('games', (gameName) => {
+    if (debug >= 2) console.log("publish games", gameName);
+    return Games.find({name: gameName});
   });
 
   Meteor.publish('players', (gameID) => {
@@ -45,9 +45,9 @@ server_startup = function() {
     ];
   });
 
-  Meteor.publish('pastGames', (villageName) => {
-    if (debug >= 2) console.log("publish pastGames", villageName);
-    return GamesHistory.find({name: villageName}, {fields: {name: 1, createdAt: 1}});
+  Meteor.publish('pastGames', (gameName) => {
+    if (debug >= 2) console.log("publish pastGames", gameName);
+    return GamesHistory.find({name: gameName}, {fields: {name: 1, createdAt: 1}});
   });
 
   Meteor.publish('allGames', (pwd) => {
@@ -65,8 +65,8 @@ server_startup = function() {
   });
 
   Meteor.methods({
-    villageExists: (villageName) => {
-      return Games.find( {name: villageName} ).count() > 0 ? 1 : 0;
+    villageExists: (gameName) => {
+      return Games.find( {name: gameName} ).count() > 0 ? 1 : 0;
     },
     resetAllGames: (pwd) => {
       if (adminMode || pwd == adminPassword) {

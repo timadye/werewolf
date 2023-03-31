@@ -39,7 +39,7 @@ start_templates = function() {
       FlowRouter.go(`/${gameName}`);
     },
     'submit #start-menu': (event) => {
-      const gameName = event.target.villageName.value.trim();
+      const gameName = event.target.gameName.value.trim();
       if (!gameName) return false;
       FlowRouter.go(`/${gameName}`);
       return false;
@@ -63,13 +63,13 @@ initialGame = function() {
   };
 }
 
-createGame = function(name, roles=["werewolf_1", "werewolf_2", "wolfsbane_1", "trapper_1"]) {
+createGame = function(gameName, roles=["werewolf_1", "werewolf_2", "wolfsbane_1", "trapper_1"]) {
   const gameID = Games.insert({
-    name: name,
+    name: gameName,
     // default roles
     roles: roles,
     ... initialGame()
   });
-  if (debug>=1) console.log(`New game in village '${name}' (${gameID})`)
+  if (debug>=1) console.log(`New game '${gameName}' (${gameID})`)
   return gameID;
 }

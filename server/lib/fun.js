@@ -11,7 +11,7 @@ assignRoles = function(gameID, players, roleNames) {
   if (debug>=3) console.log('allFellows =', allFellows);
 
   var decks = keyArrayMap (roleNames,
-                           name => [(allRoles[name]||{}).deck, name],
+                           roleName => [(allRoles[roleName]||{}).deck, roleName],
                            initObject (Object.values(allRoles) . map (v => v.deck)));
   for (let i=1; decks.roles.length < players.length; i++) {
     decks.roles.push ("villager_"+i);
@@ -274,20 +274,20 @@ loverSuicide = function (allLovers, playerMap, player) {
   return deaths;
 }
 
-downloadHistory = function (villageName) {
-  h = GamesHistory.find({ name: villageName });
+downloadHistory = function (gameName) {
+  h = GamesHistory.find({ name: gameName });
   gamesHistory = h ? h.fetch() : `error finding gamesHistory.gameID=${game._id}`;
   ids = h ? gamesHistory.map (g => g._id) : [];
   t = TurnsHistory.find({ historyID: { $in: ids }});
   turnsHistory = t ? t.fetch() : `error finding turnsHistory->gameID=${game._id}`;
   obj = {
-    villageName: villageName,
+    gameName: gameName,
     gamesHistory: gamesHistory,
     turnsHistory: turnsHistory,
   };
   if (debug >= 1) {
-    info = Object.entries(obj).flatMap(([k,v])=>(k!="villageName" && Array.isArray(v) ? [`${v.length} ${k}`] : [])).join(", ");
-    console.log (`download history for '${villageName}': ${info}`);
+    info = Object.entries(obj).flatMap(([k,v])=>(k!="gameName" && Array.isArray(v) ? [`${v.length} ${k}`] : [])).join(", ");
+    console.log (`download history for '${gameName}': ${info}`);
   }
   return obj;
 }
@@ -302,14 +302,14 @@ downloadAll = function() {
   t = TurnsHistory.find({});
   turnsHistory = t ? t.fetch() : "error reading 'turnsHistory'";
   obj = {
-    villageName: null,  // all villages
+    gameName: null,  // all villages
     games: games,
     players: players,
     gamesHistory: gamesHistory,
     turnsHistory: turnsHistory,
   };
   if (debug >= 1) {
-    info = Object.entries(obj).flatMap(([k,v])=>(k!="villageName" && Array.isArray(v) ? [`${v.length} ${k}`] : [])).join(", ");
+    info = Object.entries(obj).flatMap(([k,v])=>(k!="gameName" && Array.isArray(v) ? [`${v.length} ${k}`] : [])).join(", ");
     console.log (`download all data: ${info}`);
   }
   return obj;

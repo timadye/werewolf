@@ -59,7 +59,7 @@ lobby_templates = function() {
       const target = event.explicitOriginalTarget || event.relatedTarget || document.activeElement || {};
       const action = target.name || 'player-add';
       const playerName = event.target.playerName.value.trim();
-      if (debug >= 1) console.log(`action = ${action}, name = '${playerName}'`);
+      if (debug >= 1) console.log(`action = ${action}, playerName = '${playerName}'`);
       const game = getCurrentGame();
       if (action != 'player-remove') {
         FlowRouter.go(`/${getGameName()}/${playerName}`);
@@ -232,8 +232,8 @@ readyToStart = function() {
   var types = { werewolf:0, cultist:0 };
   var decks = { roles:0,    lovers:0  };
   var ndark=  { [false]:0, [true]:0   };
-  for (const name of game.roles) {
-    role = allRoles[name];
+  for (const roleName of game.roles) {
+    role = allRoles[roleName];
     const n = role.number || 1;
     types[role.type] += n;
     decks[role.deck] += n;  // deck=roles or lovers
