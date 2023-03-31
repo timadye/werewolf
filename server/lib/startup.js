@@ -1,5 +1,3 @@
-import { Meteor } from 'meteor/meteor';
-
 server_startup = function() {
 
   Meteor.startup(() => {
@@ -27,9 +25,19 @@ server_startup = function() {
     }
   });
 
-  Meteor.publish('games', (gameName) => {
-    if (debug >= 2) console.log("publish games", gameName);
-    return Games.find({name: gameName});
+  Meteor.publish('game', function(gameName) {
+    if (debug >= 1) console.log("publish game", gameName);
+    const game = Games.findOne({name: gameName}, {});
+    if (!game) {
+      const err = new Meteor.Error('no-game', `Game '${gameName}' does not exist`);
+      if (debug >= 1) console.log(`publish error: ${err.error}, ${err.reason}`);
+      this.error(err);
+      return null;
+    }
+    return [
+      Games.find({name: gameName}),
+      Players.find({gameID: game._id})
+    ];
   });
 
   Meteor.publish('players', (gameID) => {
