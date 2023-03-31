@@ -14,9 +14,6 @@ trackGameState = function() {
   const game = getCurrentGame();
   if (!game) {
     if (debug >= 2) console.log (`trackGameState ${Meteor.connection._lastSessionId}`); // stops working with: Session.get('currentView')
-    if (!Session.equals('currentView', 'startMenu')) {
-      setCurrentGame();
-    }
     return;
   }
 
@@ -42,57 +39,83 @@ trackGameState = function() {
   if (debug >= 2) console.log (`trackGameState ${Meteor.connection._lastSessionId}: game.state = ${game.state}, currentView: ${currentView} -> ${Session.get('currentView')}`);
 }
 
-routed = function(view, villageName=null, playerName=null) {
-  Session.set("gameName", villageName);
-  if (playerName) Session.set('playerName', playerName);  // playerID set on first call to getCurrentPlayer
+routed = function(view, gameName=null, playerName=null) {
   Session.set('errorMessage', null);
   Session.set('turnMessage', null);
   hideRole();
-  if (view) Session.set('currentView', view);
-  BlazeLayout.render('main');
+  setCurrentGame (gameName, (gameID) => {
+    if (debug >= 2) console.log('setCurrentGame onReady', view, gameName, playerName, gameID);
+    if (gameID && playerName) {
+      const player = Players.findOne ({gameID: gameID, name: playerName}, {});
+      if (player) {
+        var playerID = player._id;
+      } else {
+        var playerID = createPlayer (gameID, gameName, playerName);
+      }
+    } else {
+      var playerID = null;
+    }
+    Session.set('gameID', gameID);
+    setCurrentPlayer (playerID);
+    if (view) Session.set('currentView', view);
+    BlazeLayout.render('main');
+  });
 }
 
 setAdminMode = function() {
   Session.setDefault('adminMode',false);
   Session.setDefault('adminPassword','');
-  MeteorSubs.subscribe('allGames', Session.get('adminPassword'), function onReady() {
+  MeteorSubs.subscribe('allGames', Session.get('adminPassword'), () => {
     if (debug>=1) console.log('Enable admin mode');
     Session.set('adminMode',true);
     if (debug>=3) console.log(`all games = ${allGames()}`);
   });
 }
 
-setCurrentGame = function() {
-  setTitle();
-  hideRole();
-  if (!Session.get('gameID')) {
-    const villageName = Session.get('gameName');
-    if (villageName) joinGame(villageName);
+setCurrentGame = function(gameName, onReadyPlayers=null) {
+  if (debug >= 2) console.log('setCurrentGame', gameName);
+  const gameID = Session.get('gameID');
+  if (gameID) {
+    if (gameName == getGameName (gameID)) {
+      if (onReadyPlayers) onReadyPlayers(gameID);
+      return;
+    }
+    leaveVillage();
+  }
+  if (gameName) {
+    joinGame(gameName, onReadyPlayers);
+  } else {
+    if (onReadyPlayers) onReadyPlayers(null);
   }
 }
 
-joinGame = function(name) {
-  MeteorSubs.subscribe('games', name, function onReady() {
-    var game = Games.findOne({name: name});
+joinGame = function(gameName, onReadyPlayers=null) {
+  MeteorSubs.subscribe('games', gameName, () => {
+    if (debug >= 2) console.log('joinGame games onReady', gameName);
+    const game = Games.findOne({name: gameName}, {});
     if (!game) {
-      leaveVillage();
-      reportError(`no village '${name}'`);
+      var gameID = createGame (gameName);
+    } else {
+      var gameID = game._id;
     }
-    if (debug>=1) console.log(`Join village '${name}', id=${game._id}`);
-    MeteorSubs.subscribe('players', game._id);
-    Session.set('gameID', game._id);
-    setTitle (name);
+    if (debug>=1) console.log(`Join village '${gameName}', id=${gameID}`);
+    MeteorSubs.subscribe('players', gameID, () => {
+      if (debug >= 2) console.log('joinGame players onReady', gameID);
+      if (onReadyPlayers) {
+        onReadyPlayers(gameID);
+      }
+    });
   });
 }
+
+
 
 leaveVillage = function () {
   MeteorSubsHistory.clear();
   setCurrentPlayer(null);
   Session.set('joinPlayer', null);
   Session.set('gameID', null);
-  Session.set('gameName', null);
   Session.set('playerID', null);
-  Session.set('playerName', null);
   FlowRouter.go('/');
 };
 

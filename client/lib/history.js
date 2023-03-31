@@ -5,7 +5,7 @@ history_templates = function() {
 
   Template.historyIndex.helpers({
     games: () => {
-      games = GamesHistory.find({name: gameName()}, {fields: {createdAt: 1}, sort: {createdAt: -1}}).fetch();
+      games = GamesHistory.find({name: getGameName()}, {fields: {createdAt: 1}, sort: {createdAt: -1}}).fetch();
       return games.map(game => ({_id: game._id, date: new Date(game.createdAt).toLocaleString()}));
     },
   });
@@ -13,11 +13,11 @@ history_templates = function() {
   Template.historyIndex.events({
     'click .btn-leave-village': leaveVillage,
     'click .btn-new': () => {
-      FlowRouter.go(`/${gameName()}`);
+      FlowRouter.go(`/${getGameName()}`);
     },
     'click .btn-download': downloadVillage,
     'click .btn-show': (event) => {
-      FlowRouter.go(`/${gameName()}/~history/${event.target.id}`);
+      FlowRouter.go(`/${getGameName()}/~history/${event.target.id}`);
     },
   });
 
@@ -35,10 +35,10 @@ history_templates = function() {
   Template.historyEntry.events({
     'click .btn-leave-village': leaveVillage,
     'click .btn-new': () => {
-      FlowRouter.go(`/${gameName()}`);
+      FlowRouter.go(`/${getGameName()}`);
     },
     'click .btn-old': () => {
-      FlowRouter.go(`/${gameName()}/~history`);
+      FlowRouter.go(`/${getGameName()}/~history`);
     },
   });
 

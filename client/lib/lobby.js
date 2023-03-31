@@ -14,7 +14,7 @@ lobby_templates = function() {
       const player= Players.findOne(id);
       if (!player) {
         return null;
-      } else if (player.session == Meteor.connection._lastSessionId) {
+      } else if (Session.equals('playerID', id)) {
         return "current-player";
       } else if (player.session) {
         return "active-player";
@@ -49,24 +49,23 @@ lobby_templates = function() {
     },
     'click .btn-download': downloadAll,
     'click .btn-old': () => {
-      MeteorSubsHistory.subscribe('pastGames', gameName());
-      FlowRouter.go(`/${gameName()}/~history`);
+      MeteorSubsHistory.subscribe('pastGames', getGameName());
+      FlowRouter.go(`/${getGameName()}/~history`);
     },
     'click .toggle-player': (event) => {
-      setCurrentPlayer (event.target.id, true);
+      toggleCurrentPlayer (event.target.id);
     },
     'submit #lobby-add': (event) => {
       const target = event.explicitOriginalTarget || event.relatedTarget || document.activeElement || {};
       const action = target.name || 'player-add';
-      const playerName = event.target.playerName.value;
-      if (debug >= 2) console.log(`action = ${action}, name = '${playerName}'`);
+      const playerName = event.target.playerName.value.trim();
+      if (debug >= 1) console.log(`action = ${action}, name = '${playerName}'`);
       const game = getCurrentGame();
       if (action != 'player-remove') {
-        const player = createPlayer(game, playerName);
-        if (player) setCurrentPlayer (player._id);
+        FlowRouter.go(`/${getGameName()}/${playerName}`);
       } else {
         removePlayer(game, playerName);
-        setCurrentPlayer (null);
+        FlowRouter.go(`/${getGameName()}`);
       }
       event.target.playerName.value = '';
       return false;
@@ -114,8 +113,8 @@ lobby_templates = function() {
       if (joinPlayer) {
         const player= Players.findOne(joinPlayer);
         if (player) {
-          confirm ("Join Game", `Replace ${player.name}?`, `Are you sure you want to replace ${player.name} in the ${gameName()} game`, player.alive && player.session !== true, () => {
-            if (debug >= 1) console.log (`Late join game ${gameName()} as ${player.name}`);
+          confirm ("Join Game", `Replace ${player.name}?`, `Are you sure you want to replace ${player.name} in the ${getGameName()} game`, player.alive && player.session !== true, () => {
+            if (debug >= 1) console.log (`Late join game ${getGameName()} as ${player.name}`);
             Players.update(joinPlayer, {$set: {session: Meteor.connection._lastSessionId}});
             Session.set ('currentView', 'lobby');
             Session.set ("joinPlayer", null);
@@ -124,7 +123,7 @@ lobby_templates = function() {
           return;
         }
       }
-      if (debug >= 1) console.log (`Late join game ${gameName()}`);
+      if (debug >= 1) console.log (`Late join game ${getGameName()}`);
       Session.set ('currentView', 'lobby');
       Session.set ("joinPlayer", null);
     },
@@ -132,7 +131,7 @@ lobby_templates = function() {
       const joinPlayer = Session.get ("joinPlayer");
       newPlayer = (joinPlayer && joinPlayer == event.target.id) ? null : event.target.id;
       Session.set ("joinPlayer", newPlayer);
-      setTitle (newPlayer ? playerName(newPlayer) : null);
+      setTitle (newPlayer ? getPlayerName(newPlayer) : null);
     },
     'click .btn-end': () => {
       confirm ("End Game", "End game?", "This will end the game for all players", true, () => {
@@ -163,27 +162,27 @@ initialPlayer = function() {
   };
 }
 
-createPlayer = function(game, name) {
-  if (!game || !name) return null;
-  const player = Players.findOne({gameID: game._id, name: name});
+createPlayer = function(gameID, gameName, playerName) {
+  if (!gameID || !playerName) return null;
+  const player = Players.findOne({gameID: gameID, name: playerName});
   if (player) {
-    if (debug>=1) console.log(`Player '${name}' (${player._id}) is already in game '${game.name}'`)
+    if (debug>=1) console.log(`Player '${playerName}' (${player._id}) is already in game '${gameName}'`)
     return player;
   }
   const playerID = Players.insert({
-    gameID: game._id,
-    name: name,
+    gameID: gameID,
+    name: playerName,
     session: null,
     ... initialPlayer()
   });
-  if (debug>=1) console.log(`New player '${name}' (${playerID}) in game '${game.name}'`)
-  return Players.findOne(playerID);
+  if (debug>=1) console.log(`New player '${playerName}' (${playerID}) in game '${gameName}'`)
+  return playerID;
 }
 
-removePlayer = function(game, name) {
+removePlayer = function(game, playerName) {
   if (!game) return;
-  if (name) {
-    var player = Players.findOne({gameID: game._id, name: name});
+  if (playerName) {
+    var player = Players.findOne({gameID: game._id, name: playerName});
   } else {
     var player = getCurrentPlayer();
   }
@@ -204,29 +203,27 @@ removePlayer = function(game, name) {
   }
 }
 
-setCurrentPlayer = function (newID=null, toggle=false) {
+setCurrentPlayer = function (newID=null) {
   const playerID = Session.get('playerID');
-  if (playerID) {
-    if (newID == playerID) {
-      if (toggle) {
-        Players.update(playerID, {$set: {session: null}});
-        Session.set('playerID', null);
-        setTitle();
-        return null;
-      } else {
-        return playerID;
-      }
-    } else {
-      Players.update(playerID, {$set: {session: null}});
-    }
+  if (newID == playerID) return playerID;
+  if (playerID && !newID) {
+    Players.update(playerID, {$set: {session: null}});
   }
   Session.set('playerID', newID);
   if (newID) {
     Players.update(newID, {$set: {session: Meteor.connection._lastSessionId}});
-    setTitle();
-    return newID;
   }
-  return null;
+  setTitle();
+  return newID;
+}
+
+toggleCurrentPlayer = function (newID) {
+  if (!newID) return;
+  if (Session.equals('playerID', newID)) {
+    FlowRouter.go(`/${getGameName()}`);
+  } else {
+    FlowRouter.go(`/${getGameName()}/${getPlayerName(newID)}`);
+  }
 }
 
 readyToStart = function() {

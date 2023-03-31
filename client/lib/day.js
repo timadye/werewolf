@@ -109,5 +109,5 @@ voting = function() {
       calls[call] = 1;
     }
   }
-  return guillotine==1 ? playerName(called) : "";
+  return guillotine==1 ? getPlayerName(called) : "";
 }

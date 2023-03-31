@@ -14,9 +14,9 @@ main_templates = function() {
   registerHelper ({
     errorMessage: () => Session.get('errorMessage'),
     game: getCurrentGame,
-    gameName: gameName,
-    playerName: () => (playerName() || "a lurker"),
-    lurker: () => (!playerName()),
+    gameName: getGameName,
+    playerName: () => (getPlayerName() || "a lurker"),
+    lurker: () => (!getPlayerName()),
     alive: alive,
     adminMode: () => { return Session.equals('adminMode', true); }
   });
@@ -70,9 +70,9 @@ setDebugLevel = function() {
 
 setTitle = function(name) {
   if (name == undefined) {
-    name = playerName();
+    name = getPlayerName();
     if (!name) {
-      name = gameName();
+      name = getGameName();
       if (!name) {
         document.title = "Werewolf";
         return;

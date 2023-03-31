@@ -43,7 +43,7 @@ ingame_templates = function() {
     allRoles: () => {  // not used any more
       const game = getCurrentGame();
       if (!game) return null;
-      var msg = Object.entries (game.playerRoles) . map (([playerID, role]) => `${playerName(playerID)} is the ${roleInfo(role).name}`);
+      var msg = Object.entries (game.playerRoles) . map (([playerID, role]) => `${getPlayerName(playerID)} is the ${roleInfo(role).name}`);
       for (const fellow of ['lover', 'rival']) {
         for (const fellows of game.fellows[fellow]) {
           msg.push (fellows.map(p => p.name).join(" and ") + ` are ${fellow}s`);

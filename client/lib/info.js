@@ -3,28 +3,27 @@ getCurrentGame = function() {
   return gameID ? Games.findOne(gameID) : null;
 }
 
-gameName = function(gameID=null) {
-  if (!gameID) return Session.get('playerName') || null;
+getGameName = function(gameID=null) {
+  if (!gameID) {
+    gameID = Session.get('gameID');
+    if (!gameID) return null;
+  }
   const game = Games.findOne(gameID, { fields: { name: 1 } });
   return game ? game.name : null;
 }
 
-playerName = function(playerID=null) {
-  if (!playerID) return Session.get('playerName') || null;
+getPlayerName = function(playerID=null) {
+  if (!playerID) {
+    playerID = Session.get('playerID');
+    if (!playerID) return null;
+  }
   const player = Players.findOne(playerID, { fields: { name: 1 } });
   return player ? player.name : null;
 }
 
 getCurrentPlayer = function() {
   const playerID = Session.get('playerID');
-  if (playerID) return Players.findOne(playerID);
-  // if playerID not yet set, then try playerName and set playerID for next time
-  const playerName = Session.get('playerName');
-  if (!playerName) return null;
-  const player = Players.findOne({name: playerName});
-  if (!player) return null;
-  Session.set('playerID', player._id);
-  return player;
+  return playerID ? Players.findOne(playerID) : null;
 }
 
 allGames = function() {

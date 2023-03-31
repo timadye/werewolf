@@ -3,7 +3,6 @@ routes = function() {
   FlowRouter.route('/', {
     action: (params, queryParams) => {
       if (debug >= 1) console.log("route /");
-      Session.set('gameID', null);
       setPassword(queryParams.p);
       routed ("startMenu");
     }
@@ -16,14 +15,6 @@ routes = function() {
   //   }
   // });
 
-  FlowRouter.route('/:villageName/~history/:historyID', {
-    action: (params, queryParams) => {
-      if (debug >= 1) console.log(`route /${params.villageName}/~history/${params.historyID}`);
-      Session.set('historyEntry', params.historyID);
-      routed ('historyEntry', params.villageName);
-    }
-  });
-
   FlowRouter.route('/:villageName', {
     action: (params, queryParams) => {
       if (debug >= 1) console.log(`route /${params.villageName}`);
@@ -33,7 +24,9 @@ routes = function() {
       // } else
       setPassword(queryParams.p);
       const currentView = Session.get("currentView");
-      if (!currentView || currentView == "startMenu" || currentView == "historyIndex" || currentView == "historyEntry" || currentView == "lobby") {
+      if (currentView == "lobby") {
+        newView = null;
+      } else if (!currentView || currentView == "startMenu" || currentView == "historyIndex" || currentView == "historyEntry") {
         newView = "lobby";
       } else {
         newView = "lateLobby";
@@ -49,7 +42,21 @@ routes = function() {
         routed ('historyIndex', params.villageName);
         return;
       }
-      routed ('lobby', params.villageName, params.playerName);  // will move on
+      const currentView = Session.get("currentView");
+      if (!currentView || currentView == "startMenu" || currentView == "historyIndex" || currentView == "historyEntry") {
+        newView = "lobby";
+      } else {
+        newView = null;
+      }
+      routed (newView, params.villageName, params.playerName);
+    }
+  });
+
+  FlowRouter.route('/:villageName/~history/:historyID', {
+    action: (params, queryParams) => {
+      if (debug >= 1) console.log(`route /${params.villageName}/~history/${params.historyID}`);
+      Session.set('historyEntry', params.historyID);
+      routed ('historyEntry', params.villageName);
     }
   });
 

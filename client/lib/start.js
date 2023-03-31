@@ -35,21 +35,13 @@ start_templates = function() {
       });
     },
     'click .join-village': (event) => {
-      const villageName = event.target.id;
-      FlowRouter.go(`/${villageName}`);
+      const gameName = event.target.id;
+      FlowRouter.go(`/${gameName}`);
     },
     'submit #start-menu': (event) => {
-      const villageName = event.target.villageName.value;
-      if (!villageName) return false;
-      Meteor.call ('villageExists', villageName, (error, result) => {
-        if (error || result<0) {
-          event.target.villageName.value = "";
-          if (!error) console.log ("reset all games");
-          return false;
-        }
-        if (!result) createGame (villageName);
-        FlowRouter.go(`/${villageName}`);
-      });
+      const gameName = event.target.villageName.value.trim();
+      if (!gameName) return false;
+      FlowRouter.go(`/${gameName}`);
       return false;
     },
   });
@@ -79,5 +71,5 @@ createGame = function(name, roles=["werewolf_1", "werewolf_2", "wolfsbane_1", "t
     ... initialGame()
   });
   if (debug>=1) console.log(`New game in village '${name}' (${gameID})`)
-  return Games.findOne(gameID);
+  return gameID;
 }
