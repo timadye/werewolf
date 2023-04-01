@@ -1,3 +1,15 @@
+createGame = function(gameName, roles=["werewolf_1", "werewolf_2", "wolfsbane_1", "trapper_1"]) {
+  const gameID = Games.insert({
+    name: gameName,
+    createdAt: new Date().valueOf(),
+    // default roles
+    roles: roles,
+    ... initialGame()
+  });
+  if (debug>=1) console.log(`New game '${gameName}' (${gameID})`);
+  return gameID;
+}
+
 resetAllGames = function() {
   if (debug>=1) console.log("reset all games");
   Games.remove({});

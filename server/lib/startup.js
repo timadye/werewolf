@@ -26,23 +26,13 @@ server_startup = function() {
   });
 
   Meteor.publish('game', function(gameName) {
-    if (debug >= 1) console.log("publish game", gameName);
+    if (debug >= 2) console.log("publish game", gameName);
     const game = Games.findOne({name: gameName}, {});
-    if (!game) {
-      const err = new Meteor.Error('no-game', `Game '${gameName}' does not exist`);
-      if (debug >= 1) console.log(`publish error: ${err.error}, ${err.reason}`);
-      this.error(err);
-      return null;
-    }
+    const gameID = game ? game._id : createGame (gameName);
     return [
-      Games.find({name: gameName}),
-      Players.find({gameID: game._id})
+      Games.find(gameID),
+      Players.find({gameID: gameID})
     ];
-  });
-
-  Meteor.publish('players', (gameID) => {
-    if (debug >= 2) console.log("publish players", gameID);
-    return Players.find({gameID: gameID});
   });
 
   Meteor.publish('gamesHistory', (historyID) => {

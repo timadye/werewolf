@@ -90,40 +90,19 @@ setCurrentGame = function(gameName, onReadyPlayers=null) {
 }
 
 joinGame = function(gameName, onReadyPlayers=null) {
-  const sub = MeteorSubs.subscribe('game', gameName, {
+  MeteorSubs.subscribe('game', gameName, {
     onReady: () => {
       if (debug >= 2) console.log('joinGame games onReady', gameName);
       const game = Games.findOne({name: gameName}, {});
       if (!game) {
-        console.log (`subscribed to game, but '${gameName}' not found`);
+        console.log (`Subscribed to game, but '${gameName}' not found`);
         return;
-      } else {
-        var gameID = game._id;
       }
-      if (debug >= 1) console.log(`Join village '${gameName}', id=${gameID}`);
-      if (onReadyPlayers) onReadyPlayers(gameID);
-    },
-
-    onError: (err) => {
-      if (!err) return;
-      if (debug >= 2) console.log(`joinGame games onError ${gameName}: error ${err.error}, ${err.reason}`);
-      if (debug >= 1) console.log(err.reason);
-      if (err.error != 'no-game') return;
-      sub.stopNow();
-      const gameID = createGame (gameName);
-      if (gameID) {
-        MeteorSubs.subscribe('game', gameName, {
-          onReady: () => {
-            if (debug >= 1) console.log(`Join new village '${gameName}', id=${gameID}`);
-            if (onReadyPlayers) onReadyPlayers(gameID);
-          }
-        });
-      }
+      if (debug >= 1) console.log(`Join village '${gameName}', id=${game._id}`);
+      if (onReadyPlayers) onReadyPlayers(game._id);
     }
   });
 }
-
-
 
 leaveVillage = function () {
   MeteorSubsHistory.clear();
