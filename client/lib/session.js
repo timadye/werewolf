@@ -47,15 +47,13 @@ routed = function(view, gameName=null, playerName=null) {
     if (debug >= 2) console.log('setCurrentGame onReady', view, gameName, playerName, gameID);
     if (gameID && playerName) {
       const player = Players.findOne ({gameID: gameID, name: playerName}, {});
-      if (player) {
-        var playerID = player._id;
-      } else {
-        var playerID = createPlayer (gameID, gameName, playerName);
-      }
+      var playerID = player ? player._id : createPlayer (gameID, gameName, playerName);
     } else {
       var playerID = null;
     }
-    Session.set('gameID', gameID);
+    if (!Session.equals('gameID', gameID)) {  // only set gameID if not already set. Is this needed to prevent unneccessary refresh?
+      Session.set('gameID', gameID);
+    }
     setCurrentPlayer (playerID);
     if (view) Session.set('currentView', view);
     BlazeLayout.render('main');
