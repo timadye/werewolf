@@ -72,7 +72,7 @@ setAdminMode = function() {
   });
 }
 
-setCurrentGame = function(gameName, onReadyPlayers=null) {
+setCurrentGame = function (gameName, onReadyPlayers=null) {
   if (debug >= 2) console.log('setCurrentGame', gameName);
   const gameID = Session.get('gameID');
   if (gameID) {
@@ -89,7 +89,7 @@ setCurrentGame = function(gameName, onReadyPlayers=null) {
   }
 }
 
-joinGame = function(gameName, onReadyPlayers=null) {
+joinGame = function (gameName, onReadyPlayers=null) {
   MeteorSubs.subscribe('game', gameName, {
     onReady: () => {
       if (debug >= 2) console.log('joinGame games onReady', gameName);
