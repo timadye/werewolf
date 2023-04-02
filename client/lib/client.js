@@ -11,8 +11,7 @@ main_templates = function() {
   // global helpers
   registerHelper ({
     errorMessage: () => Session.get('errorMessage'),
-    game: getCurrentGame,
-    gameName: getGameName,
+    gameName: () => getGameName(),
     playerName: () => (getPlayerName() || "a lurker"),
     lurker: () => (!getPlayerName()),
     alive: alive,

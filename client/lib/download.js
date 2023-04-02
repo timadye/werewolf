@@ -10,11 +10,7 @@ downloadAll = function() { downloadGame(true); }
 downloadVillage = function() { downloadGame(false); }
 
 downloadGame = function(all) {
-  var gameName = null;
-  if (!all) {
-    const game = getCurrentGame();
-    if (game) gameName = game.name;
-  }
+  const gameName = all ? null : getGameName();
   const callback = (error, obj) => {
     if (error) {
       reportError("download failed");

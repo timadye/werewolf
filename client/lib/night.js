@@ -14,7 +14,7 @@ night_templates = function() {
   Template.nightView.helpers({
     players: () => [ ... allPlayers(), { _id: '0', name: 'none' } ],
     playerClass: (id) => {
-      const player= Players.findOne(id);
+      const player= Players.findOne(id, {fields:{vote:1}});
       if (!player) {
         return null;
       } else if (player.vote) {
@@ -27,7 +27,7 @@ night_templates = function() {
 
   Template.nightView.events({
     'click .toggle-player': (event) => {
-      const player = getCurrentPlayer();
+      const player = getCurrentPlayer({name:1, role:1, lastvote:1});
       if (player) {
         let vote = event.target.id;
         if (debug >= 3) console.log ('player =', player);

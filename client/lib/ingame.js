@@ -6,7 +6,7 @@ ingame_templates = function() {
 
   Template.gameHeader.helpers({
     listAllRoles: () => {
-      return getCurrentGame().roles.map (r => roleInfo(r).name) . join(", ");
+      return getCurrentGame({roles:1}).roles.map (r => roleInfo(r).name) . join(", ");
     },
 
     time: () => {
@@ -21,13 +21,13 @@ ingame_templates = function() {
     hiddenSecrets: () => Session.get("hiddenSecrets"),
 
     roleName: () => {
-      const player = getCurrentPlayer();
+      const player = getCurrentPlayer({role:1});
       const role = roleInfo (player ? player.role : null);
       return role.properName ? role.properName : `the ${role.name}`;
     },
 
     allFellows: () => {
-      const player = getCurrentPlayer();
+      const player = getCurrentPlayer({fellows:1});
       if (!player) return null;
       return Object.entries (player.fellows) . map (([f,players]) => {
         const pmsg = players.join(" and ");
@@ -42,7 +42,7 @@ ingame_templates = function() {
     },
 
     allRoles: () => {  // not used any more
-      const game = getCurrentGame();
+      const game = getCurrentGame({playerRoles:1, fellows:1});
       if (!game) return null;
       var msg = Object.entries (game.playerRoles) . map (([playerID, role]) => `${getPlayerName(playerID)} is the ${roleInfo(role).name}`);
       for (const fellow of ['lover', 'rival']) {
@@ -154,12 +154,12 @@ hideSecrets = function (hide=true) {
 }
 
 alive = function() {
-  const player = getCurrentPlayer();
+  const player = getCurrentPlayer({alive:1});
   return player ? player.alive : false;
 }
 
 leaveGame = function() {
-  const player = getCurrentPlayer();
+  const player = getCurrentPlayer({alive:1});
   if (player && player.alive) {
     Session.set('turnMessage', null);
     Session.set('errorMessage', null);

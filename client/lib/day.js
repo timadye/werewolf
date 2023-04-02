@@ -12,27 +12,27 @@ day_templates = function() {
   };
 
   Template.dayView.helpers({
-    haveVigilante: () => getCurrentGame().roles.some (r => roleInfo(r).vigilante),
+    haveVigilante: () => getCurrentGame({roles:1}).roles.some (r => roleInfo(r).vigilante),
     voting: voting,
     players: allPlayers,
     playerClass: (id) => {
       let cl = [];
-      const loaded= Players.find({_id: id, crossbow: true}) . count();
+      const loaded= Players.find({_id: id, crossbow: true}, {fields:{}}) . count();
       if (loaded) {
         cl.push ("crossbow-loaded");
       } else {
-        const caller= Players.find({_id: id, call: {$ne: null}, alive: {$eq: true}}) . count();
+        const caller= Players.find({_id: id, call: {$ne: null}, alive: {$eq: true}}, {fields:{}}) . count();
         if (caller) {
           cl.push ("guillotine-caller");
         }
       }
       if (voting()) {
-        const voted= Players.find({_id: id, guillotine: {$ne: null}, alive: {$eq: true}}) . count();
+        const voted= Players.find({_id: id, guillotine: {$ne: null}, alive: {$eq: true}}, {fields:{}}) . count();
         if (voted) {
           cl.push ("voted-player");
         }
       } else {
-        const ncalls= Players.find({call: id, alive: {$eq: true}}) . count();
+        const ncalls= Players.find({call: id, alive: {$eq: true}}, {fields:{}}) . count();
         if        (ncalls >= 2) {
           cl.push ("guillotine-player");
         } else if (ncalls >= 1) {
@@ -42,7 +42,7 @@ day_templates = function() {
       return cl.join(" ");
     },
     voiceOfFate: () => {
-      const game= getCurrentGame();
+      const game= getCurrentGame({voiceOfFate:1});
       if (!game) return null;
       return game.voiceOfFate;
     },
@@ -66,7 +66,7 @@ day_templates = function() {
     },
     'click .btn-twang': () => {
       // allow anyone to load a crossbow, but only vigilante can fire.
-      const player = getCurrentPlayer();
+      const player = getCurrentPlayer({crossbow:1});
       if (player)
         Players.update (player._id, {$set: {crossbow: !player.crossbow}});
     },
@@ -91,7 +91,7 @@ day_templates = function() {
 //======================================================================
 
 guillotineVote = function(vote) {
-  const player = getCurrentPlayer();
+  const player = getCurrentPlayer({});
   if (player) Players.update (player._id, {$set: {guillotine: vote}});
 }
 

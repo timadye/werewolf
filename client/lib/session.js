@@ -12,7 +12,7 @@ initSession = function() {
 // sets the state of the game (which template to render)
 trackGameState = function() {
   const currentView = Session.peek('currentView');
-  const game = getCurrentGame();
+  const game = getCurrentGame({state:1, historyID:1});
   if (!game) {
     if (debug >= 2) console.log (`trackGameState ${Meteor.connection._lastSessionId}, currentView: ${currentView}`);
     return;

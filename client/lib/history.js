@@ -60,7 +60,7 @@ pastGamesSubscribe = function (onReady, gameName) {
 
 historySubscribe = function (onReady, historyID=null) {
   if (!historyID) {
-    const game = getCurrentGame();
+    const game = getCurrentGame({historyID:1});
     if (!game) return;
     historyID = game.historyID;
     if (!historyID) return;

@@ -12,7 +12,7 @@ lobby_templates = function() {
     players: () => allPlayers (null, 2),
     playerClass: playerClass,
     roleKeys: () => {
-      const game= getCurrentGame();
+      const game= getCurrentGame({roles:1});
       if (!game) return null;
       let last = "";
       return availableRoles(game)
@@ -26,7 +26,6 @@ lobby_templates = function() {
         });
     },
     startButtonDisabled: () => readyToStart() ? null : "disabled",
-    errorMessage: () => Session.get('errorMessage'),
   });
 
   Template.lobby.events({
@@ -46,19 +45,19 @@ lobby_templates = function() {
       const action = target.name || 'player-add';
       const playerName = event.target.playerName.value.trim();
       if (debug >= 1) console.log(`action = ${action}, playerName = '${playerName}'`);
-      const game = getCurrentGame();
+      const game = getCurrentGame({name:1, roles:1});
       if (action != 'player-remove') {
-        FlowRouter.go(`/${getGameName()}/${playerName}`);
+        FlowRouter.go(`/${game.name}/${playerName}`);
       } else {
         removePlayer(game, playerName);
-        FlowRouter.go(`/${getGameName()}`);
+        FlowRouter.go(`/${game.name}`);
       }
       event.target.playerName.value = '';
       return false;
     },
     'click .toggle-role': (event) => {
       const role = event.target.id;
-      var game = getCurrentGame();
+      var game = getCurrentGame({roles:1});
       const ind = game.roles.indexOf(role);
       if (ind >= 0) {
         game.roles.splice(ind,1);
@@ -77,7 +76,6 @@ lobby_templates = function() {
   Template.lateLobby.helpers({
     players: () => allPlayers (null, 1),
     playerClass: playerClass,
-    errorMessage: () => Session.get('errorMessage'),
   });
 
   Template.lateLobby.events({
@@ -132,9 +130,9 @@ createPlayer = function(gameID, gameName, playerName) {
 removePlayer = function(game, playerName) {
   if (!game) return;
   if (playerName) {
-    var player = Players.findOne({gameID: game._id, name: playerName});
+    var player = Players.findOne({gameID: game._id, name: playerName}, {fields: {name:1}});
   } else {
-    var player = getCurrentPlayer();
+    var player = getCurrentPlayer({name:1});
   }
   if (player) {
     if (debug >= 1) console.log (`Remove player '${player.name}' (${player._id}) from game '${game.name}'`);
@@ -179,7 +177,7 @@ toggleCurrentPlayer = function (event) {
 }
 
 playerClass = function (id) {
-  const player= Players.findOne(id);
+  const player= Players.findOne(id, {fields: {session:1}});
   if (!player) {
     return null;
   } else if (Session.equals('playerID', id)) {
@@ -192,7 +190,7 @@ playerClass = function (id) {
 }
 
 readyToStart = function() {
-  const game = getCurrentGame();
+  const game = getCurrentGame({roles:1});
   if (!game) return false;
   var types = { werewolf:0, cultist:0 };
   var decks = { roles:0,    lovers:0  };

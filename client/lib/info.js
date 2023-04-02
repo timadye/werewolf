@@ -1,6 +1,8 @@
-getCurrentGame = function() {
+getCurrentGame = function(fields=null) {
   const gameID = Session.get('gameID');
-  return gameID ? Games.findOne(gameID) : null;
+  game = gameID ? Games.findOne(gameID, fields===null ? {} : {fields: fields}) : null;
+  if (debug >= 3) console.log (`getCurrentGame(${gameID}) =`, game);
+  return game;
 }
 
 getGameName = function(gameID=null) {
@@ -21,9 +23,11 @@ getPlayerName = function(playerID=null) {
   return player ? player.name : null;
 }
 
-getCurrentPlayer = function() {
+getCurrentPlayer = function(fields=null) {
   const playerID = Session.get('playerID');
-  return playerID ? Players.findOne(playerID) : null;
+  const player = playerID ? Players.findOne(playerID, fields===null ? {} : {fields: fields}) : null;
+  if (debug >= 3) console.log (`getCurrentPlayer(${playerID}) =`, player);
+  return player;
 }
 
 allGames = function() {
