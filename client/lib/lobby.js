@@ -180,7 +180,7 @@ playerClass = function (id) {
   const player= Players.findOne(id, {fields: {session:1}});
   if (!player) {
     return null;
-  } else if (Session.equals('playerID', id)) {
+  } else if (player.session && Session.equals('playerID', id)) {
     return "current-player";
   } else if (player.session) {
     return "active-player";
