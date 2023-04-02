@@ -81,8 +81,6 @@ day_templates = function() {
     },
     'click .btn-guillotine': () => guillotineVote("guillotine"),
     'click .btn-spare':      () => guillotineVote("spare"),
-    'click .btn-show': () => showRole(),
-    'click .btn-hide': () => hideRole(),
   });
 
 }

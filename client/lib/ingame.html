@@ -1,16 +1,21 @@
 <template name="roleMenu">
-  {{#if hiddenRole}}
-    <button class="btn btn-secondary btn-md btn-show">Show {{#if alive}}Role{{else}}Fate&#39;s Secrets{{/if}}</button>
-  {{else}}
-    <button class="btn btn-secondary btn-md btn-hide">Hide {{#if alive}}Role{{else}}Fate&#39;s Secrets{{/if}}</button><br>
-    {{#if alive}}
+  {{#if alive}}
+    {{#if hiddenRole}}
+      <button class="btn btn-secondary btn-md btn-show-role">Show Role</button>
+    {{else}}
+      <button class="btn btn-secondary btn-md btn-hide-role">Hide Role</button><br>
       <p>
       You are {{ roleName }}.<br>
       {{#each fellow in allFellows}}
         {{fellow}}.<br>
       {{/each}}
       </p>
+    {{/if}}
+  {{else}}
+    {{#if hiddenSecrets}}
+      <button class="btn btn-secondary btn-md btn-show-secrets">Show Fate&#39;s Secrets</button>
     {{else}}
+      <button class="btn btn-secondary btn-md btn-hide-secrets">Hide Fate&#39;s Secrets</button><br>
       {{> roleInfo view=view}}
     {{/if}}
   {{/if}}

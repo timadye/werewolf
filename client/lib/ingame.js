@@ -18,6 +18,7 @@ ingame_templates = function() {
 
   Template.roleMenu.helpers({
     hiddenRole: () => Session.get("hiddenRole"),
+    hiddenSecrets: () => Session.get("hiddenSecrets"),
 
     roleName: () => {
       const player = getCurrentPlayer();
@@ -53,6 +54,12 @@ ingame_templates = function() {
     },
   });
 
+  Template.roleMenu.events({
+    'click .btn-show-role': () => showRole(),
+    'click .btn-hide-role': () => hideRole(),
+    'click .btn-show-secrets': () => showSecrets(),
+    'click .btn-hide-secrets': () => hideSecrets(),
+  });
 
   Template.roleInfo.helpers({
     history: showHistory,
@@ -138,15 +145,19 @@ startClock = function (start=true) {
 }
 
 showRole = function () {
-  if (alive()) {
-    hideRole(false);
-  } else {
-    historySubscribe(() => hideRole(false));
-  }
+  hideRole(false);
+}
+
+showSecrets = function () {
+  historySubscribe(() => hideSecrets(false));
 }
 
 hideRole = function (hide=true) {
   Session.set ("hiddenRole", hide);
+}
+
+hideSecrets = function (hide=true) {
+  Session.set ("hiddenSecrets", hide);
 }
 
 alive = function() {

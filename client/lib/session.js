@@ -43,6 +43,7 @@ routed = function(view, gameName=null, playerName=null, onReady=null) {
   Session.set('errorMessage', null);
   Session.set('turnMessage', null);
   hideRole();
+  hideSecrets();
   setCurrentGame (gameName, (gameID) => {
     if (debug >= 2) console.log(`setCurrentGame onReady view=${view}, gameName=${gameName}, playerName=${playerName}, gameID=${gameID}`);
     if (gameID && playerName) {

@@ -40,8 +40,6 @@ night_templates = function() {
         Players.update (player._id, {$set: {vote: vote}});
       }
     },
-    'click .btn-show': () => showRole(),
-    'click .btn-hide': () => hideRole(),
   });
 
 }
