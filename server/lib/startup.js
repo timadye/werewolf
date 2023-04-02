@@ -13,7 +13,7 @@ server_startup = function() {
       let players = Players.find({}, { fields: {name: 1, gameID: 1}, sort: {createdAt: 1} });
       players = players ? players.fetch() : [];
       for (const game of games) {
-        let ps = players.filter (p => p.gameID = game._id) . map (p => p.name) . join(', ');
+        let ps = players.filter (p => p.gameID == game._id) . map (p => p.name) . join(', ');
         ps = ps ? `players ${ps}` : 'no players';
         ds = new Date(game.createdAt).toISOString();
         console.log (`Resume game '${game.name}' (${game.state}, created ${ds}) with ${ps}`);
