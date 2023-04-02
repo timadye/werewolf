@@ -48,7 +48,11 @@ allPlayers = function (gameID=null, includeInactive=0, fields={name:1}) {
   return ret ? ret.fetch() : [];
 }
 
-// define Session.peek(key) to look at value without setting a dependency
+// define Session.peek(key) to look at value without setting a dependency.
+// According to https://github.com/meteor/meteor/issues/8430#issuecomment-284602567
+// Session objects are really just ReactiveDict's, so we use their methods.
+// https://github.com/meteor/meteor/blob/master/packages/session/session.js
+// https://github.com/meteor/meteor/blob/master/packages/reactive-dict/reactive-dict.js
 import { EJSON } from 'meteor/ejson';
 Session.peek = (key) => {
   const val = Session.keys[key];

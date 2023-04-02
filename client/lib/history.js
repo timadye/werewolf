@@ -50,7 +50,12 @@ history_templates = function() {
 //======================================================================
 
 pastGamesSubscribe = function (onReady, gameName) {
-  MeteorSubsHistory.subscribe('pastGames', gameName, { onReady: onReady });
+  MeteorSubsHistory.subscribe('pastGames', gameName, {
+    onReady: () => {
+      if (debug >= 1) console.log (`Subscribed to 'pastGames' for '${gameName}'`);
+      onReady();
+    }
+  });
 }
 
 historySubscribe = function (onReady, historyID=null) {
@@ -65,11 +70,12 @@ historySubscribe = function (onReady, historyID=null) {
   // Fortunately Meteor's native subscribe should do what we went - at least inside the Tracker:
   // it doesn't republish the same subscription, and
   // unsubscribes when the state changes again (ie. we leave the endGame view).
-  if (debug >= 1) console.log (`historySubscribe ${historyID}, inTracker=${!!Tracker.currentComputation}`);
-  const MeteorHistory = Tracker.currentComputation ? Meteor : MeteorSubsHistory;
+  const inTracker = !!Tracker.currentComputation
+  const MeteorHistory = inTracker ? Meteor : MeteorSubsHistory;
+  if (debug >= 2) console.log (`subscribe to 'gamesHistory' for historyID=${historyID} (in tracker=${inTracker})`);
   MeteorHistory.subscribe('gamesHistory', historyID, {
     onReady: () => {
-      if (debug >= 2) console.log ("historySubscribe onReady", historyID);
+      if (debug >= 1) console.log (`Subscribed to 'gamesHistory' for historyID ${historyID} (in tracker=${inTracker})`);
       Session.set('historyEntry', historyID);
       onReady();
     }

@@ -52,9 +52,7 @@ routed = function(view, gameName=null, playerName=null, onReady=null) {
     } else {
       var playerID = null;
     }
-    if (!Session.equals('gameID', gameID)) {  // only set gameID if not already set. Is this needed to prevent unneccessary refresh?
-      Session.set('gameID', gameID);
-    }
+    Session.set('gameID', gameID);
     setCurrentPlayer (playerID);
 
     const routingDone = () => {
