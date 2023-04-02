@@ -10,18 +10,7 @@ lobby_templates = function() {
 
   Template.lobby.helpers({
     players: () => allPlayers (null, 2),
-    playerClass: (id) => {
-      const player= Players.findOne(id);
-      if (!player) {
-        return null;
-      } else if (Session.equals('playerID', id)) {
-        return "current-player";
-      } else if (player.session) {
-        return "active-player";
-      } else {
-        return null;
-      }
-    },
+    playerClass: playerClass,
     roleKeys: () => {
       const game= getCurrentGame();
       if (!game) return null;
@@ -51,9 +40,7 @@ lobby_templates = function() {
     'click .btn-old': () => {
       FlowRouter.go(`/${getGameName()}/~history`);
     },
-    'click .toggle-player': (event) => {
-      toggleCurrentPlayer (event.target.id);
-    },
+    'click .toggle-player': toggleCurrentPlayer,
     'submit #lobby-add': (event) => {
       const target = event.explicitOriginalTarget || event.relatedTarget || document.activeElement || {};
       const action = target.name || 'player-add';
@@ -89,53 +76,17 @@ lobby_templates = function() {
 
   Template.lateLobby.helpers({
     players: () => allPlayers (null, 1),
-    playerClass: (id) => {
-      const joinPlayer = Session.get ("joinPlayer");
-      if (joinPlayer && joinPlayer == id) {
-        return "current-player";
-      } else {
-        const player= Players.findOne(id);
-        if (player && player.alive) {
-          return (player.session === true) ? "missing-player" : "active-player";
-        } else {
-          return null;
-        }
-      }
-    },
+    playerClass: playerClass,
     errorMessage: () => Session.get('errorMessage'),
   });
 
   Template.lateLobby.events({
     'click .btn-leave': leaveVillage,
-    'click .btn-join': () => {
-      const joinPlayer = Session.get ("joinPlayer");
-      if (joinPlayer) {
-        const player= Players.findOne(joinPlayer);
-        if (player) {
-          confirm ("Join Game", `Replace ${player.name}?`, `Are you sure you want to replace ${player.name} in the ${getGameName()} game`, player.alive && player.session !== true, () => {
-            if (debug >= 1) console.log (`Late join game ${getGameName()} as ${player.name}`);
-            Players.update(joinPlayer, {$set: {session: Meteor.connection._lastSessionId}});
-            Session.set ('currentView', 'lobby');
-            Session.set ("joinPlayer", null);
-            setTitle (player.name);
-          });
-          return;
-        }
-      }
-      if (debug >= 1) console.log (`Late join game ${getGameName()}`);
-      Session.set ('currentView', 'lobby');
-      Session.set ("joinPlayer", null);
-    },
-    'click .toggle-player': (event) => {
-      const joinPlayer = Session.get ("joinPlayer");
-      newPlayer = (joinPlayer && joinPlayer == event.target.id) ? null : event.target.id;
-      Session.set ("joinPlayer", newPlayer);
-      setTitle (newPlayer ? getPlayerName(newPlayer) : null);
-    },
+    'click .btn-join': () => Session.set ("lateLobby", false),
+    'click .toggle-player': toggleCurrentPlayer,
     'click .btn-end': () => {
       confirm ("End Game", "End game?", "This will end the game for all players", true, () => {
         resetGame();
-        Session.set ("joinPlayer", null);
       });
     },
     'click .btn-download': downloadAll,
@@ -206,7 +157,8 @@ setCurrentPlayer = function (newID=null) {
   const playerID = Session.get('playerID');
   if (newID == playerID) return playerID;
   if (playerID && !newID) {
-    Players.update(playerID, {$set: {session: null}});
+    const keep = Session.get ('lateLobby') ? true : null;
+    Players.update(playerID, {$set: {session: keep}});
   }
   Session.set('playerID', newID);
   if (newID) {
@@ -216,12 +168,26 @@ setCurrentPlayer = function (newID=null) {
   return newID;
 }
 
-toggleCurrentPlayer = function (newID) {
+toggleCurrentPlayer = function (event) {
+  const newID = event.target.id;
   if (!newID) return;
   if (Session.equals('playerID', newID)) {
     FlowRouter.go(`/${getGameName()}`);
   } else {
     FlowRouter.go(`/${getGameName()}/${getPlayerName(newID)}`);
+  }
+}
+
+playerClass = function (id) {
+  const player= Players.findOne(id);
+  if (!player) {
+    return null;
+  } else if (Session.equals('playerID', id)) {
+    return "current-player";
+  } else if (player.session) {
+    return "active-player";
+  } else {
+    return null;
   }
 }
 

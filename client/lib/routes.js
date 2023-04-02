@@ -24,12 +24,10 @@ routes = function() {
       // } else
       setPassword(queryParams.p);
       const currentView = Session.get("currentView");
-      if (currentView == "lobby") {
-        newView = null;
-      } else if (!currentView || currentView == "startMenu" || currentView == "historyIndex" || currentView == "historyEntry") {
+      if (!currentView || currentView == "startMenu" || currentView == "historyIndex" || currentView == "historyEntry") {
         newView = "lobby";
       } else {
-        newView = "lateLobby";
+        newView = null;
       }
       routed (newView, params.gameName);
   }

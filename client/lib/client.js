@@ -5,9 +5,7 @@ main_templates = function() {
   //======================================================================
 
   Template.main.helpers({
-    whichView: () => {
-      return Session.get('currentView');
-    }
+    whichView: () => Session.get('currentView'),
   });
 
   // global helpers
@@ -18,7 +16,7 @@ main_templates = function() {
     playerName: () => (getPlayerName() || "a lurker"),
     lurker: () => (!getPlayerName()),
     alive: alive,
-    adminMode: () => { return Session.equals('adminMode', true); }
+    adminMode: () => Session.get('adminMode'),
   });
 
 }

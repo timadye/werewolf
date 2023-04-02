@@ -97,14 +97,7 @@ ingame_templates = function() {
         leaveGame();
       });
     },
-    'click .btn-rejoin': () => {
-      const player = Players.findOne({session: Meteor.connection._lastSessionId});
-      if (player) {
-        Session.set ("joinPlayer", player._id);
-        Players.update(player._id, {$set: {session: true}});
-      }
-      Session.set('currentView', 'lateLobby');
-    },
+    'click .btn-rejoin': () => Session.set ("lateLobby", true),
     'click .btn-end': () => {
       confirm ("End Game", "End game?", "This will end the game for all players", true, () => {
         endGame();

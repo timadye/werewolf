@@ -11,26 +11,20 @@ initSession = function() {
 
 // sets the state of the game (which template to render)
 trackGameState = function() {
-  const game = getCurrentGame();
   const currentView = Session.peek('currentView');
+  const game = getCurrentGame();
   if (!game) {
     if (debug >= 2) console.log (`trackGameState ${Meteor.connection._lastSessionId}, currentView: ${currentView}`);
     return;
   }
-
   if (game.state === 'waitingForPlayers') {
-    if (Session.equals('currentView', "historyIndex") || Session.equals('currentView', "historyEntry")) {
-      if (debug >= 2) console.log (`trackGameState ${Meteor.connection._lastSessionId}: game.state = ${game.state}, currentView: ${currentView}`);
-      return;
+    if (!Session.equals('currentView', "historyIndex") && !Session.equals('currentView', "historyEntry")) {
+      Session.set('currentView', 'lobby');
     }
-    Session.set('currentView', 'lobby');
   } else if (game.state === 'endGame') {
     historySubscribe (() => Session.set('currentView', 'endGame'), game.historyID);
-
-  } else if (Session.equals('currentView', 'lateLobby')) {
-    if (debug >= 2) console.log (`trackGameState ${Meteor.connection._lastSessionId}: game.state = ${game.state}, currentView: ${currentView}`);
-    return;
-
+  } else if (Session.get('lateLobby')) {
+    Session.set('currentView', 'lateLobby');
   } else if (game.state === 'nightTime') {
     Session.set('currentView', 'nightView');
   } else if (game.state === 'dayTime') {
@@ -112,7 +106,7 @@ joinGame = function (gameName, onReadyPlayers=null) {
 leaveVillage = function () {
   MeteorSubsHistory.clear();
   setCurrentPlayer(null);
-  Session.set('joinPlayer', null);
+  Session.set('lateLobby', false);
   Session.set('gameID', null);
   Session.set('playerID', null);
   FlowRouter.go('/');
@@ -127,4 +121,5 @@ resetGame = function() {
       Players.update(player._id, { $set: initialPlayer() });
     }
   }
+  Session.set('lateLobby', false);
 }
