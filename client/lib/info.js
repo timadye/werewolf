@@ -47,3 +47,10 @@ allPlayers = function (gameID=null, includeInactive=0, fields={name:1}) {
   const ret = allPlayersFind (gameID, includeInactive, fields);
   return ret ? ret.fetch() : [];
 }
+
+// define Session.peek(key) to look at value without setting a dependency
+import { EJSON } from 'meteor/ejson';
+Session.peek = (key) => {
+  const val = Session.keys[key];
+  return val === undefined ? undefined : EJSON.parse(val);
+}

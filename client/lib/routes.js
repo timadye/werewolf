@@ -38,8 +38,9 @@ routes = function() {
   FlowRouter.route('/:gameName/:playerName', {
     action: (params, queryParams) => {
       if (debug >= 1) console.log(`route /${params.gameName}/${params.playerName}`);
+      const gameName = params.gameName;
       if (params.playerName == "~history") {  // handle ambiguous route
-        routed ('historyIndex', params.gameName);
+        routed ('historyIndex', gameName, null, (onReady) => pastGamesSubscribe(onReady, gameName));
         return;
       }
       const currentView = Session.get("currentView");
@@ -48,15 +49,15 @@ routes = function() {
       } else {
         newView = null;
       }
-      routed (newView, params.gameName, params.playerName);
+      routed (newView, gameName, params.playerName);
     }
   });
 
   FlowRouter.route('/:gameName/~history/:historyID', {
     action: (params, queryParams) => {
       if (debug >= 1) console.log(`route /${params.gameName}/~history/${params.historyID}`);
-      Session.set('historyEntry', params.historyID);
-      routed ('historyEntry', params.gameName);
+      const historyID = params.historyID;
+      routed ('historyEntry', params.gameName, null, (onReady) => historySubscribe(onReady, historyID));
     }
   });
 

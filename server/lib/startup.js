@@ -25,7 +25,7 @@ server_startup = function() {
     }
   });
 
-  Meteor.publish('game', function(gameName) {
+  Meteor.publish('game', (gameName) => {
     if (debug >= 2) console.log("publish game", gameName);
     const game = Games.findOne({name: gameName}, {});
     const gameID = game ? game._id : createGame (gameName);
@@ -38,7 +38,7 @@ server_startup = function() {
   Meteor.publish('gamesHistory', (historyID) => {
     if (debug >= 2) console.log("publish gamesHistory", historyID);
     return [
-      GamesHistory.find({_id: historyID}),
+      GamesHistory.find(historyID),
       TurnsHistory.find({historyID: historyID})
     ];
   });

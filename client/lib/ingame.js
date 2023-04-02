@@ -137,6 +137,14 @@ startClock = function (start=true) {
   }
 }
 
+showRole = function () {
+  if (alive()) {
+    hideRole(false);
+  } else {
+    historySubscribe(() => hideRole(false));
+  }
+}
+
 hideRole = function (hide=true) {
   Session.set ("hiddenRole", hide);
 }

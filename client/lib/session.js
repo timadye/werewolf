@@ -12,22 +12,22 @@ initSession = function() {
 // sets the state of the game (which template to render)
 trackGameState = function() {
   const game = getCurrentGame();
+  const currentView = Session.peek('currentView');
   if (!game) {
-    if (debug >= 2) console.log (`trackGameState ${Meteor.connection._lastSessionId}`); // stops working with: Session.get('currentView')
+    if (debug >= 2) console.log (`trackGameState ${Meteor.connection._lastSessionId}, currentView: ${currentView}`);
     return;
   }
 
-  const currentView = Session.get('currentView');
   if (game.state === 'waitingForPlayers') {
-    if (currentView == "historyIndex" || currentView == "historyEntry") {
+    if (Session.equals('currentView', "historyIndex") || Session.equals('currentView', "historyEntry")) {
       if (debug >= 2) console.log (`trackGameState ${Meteor.connection._lastSessionId}: game.state = ${game.state}, currentView: ${currentView}`);
       return;
     }
     Session.set('currentView', 'lobby');
   } else if (game.state === 'endGame') {
-    Session.set('currentView', 'endGame');
+    historySubscribe (() => Session.set('currentView', 'endGame'), game.historyID);
 
-  } else if (currentView == 'lateLobby') {
+  } else if (Session.equals('currentView', 'lateLobby')) {
     if (debug >= 2) console.log (`trackGameState ${Meteor.connection._lastSessionId}: game.state = ${game.state}, currentView: ${currentView}`);
     return;
 
@@ -36,15 +36,15 @@ trackGameState = function() {
   } else if (game.state === 'dayTime') {
     Session.set('currentView', 'dayView');
   }
-  if (debug >= 2) console.log (`trackGameState ${Meteor.connection._lastSessionId}: game.state = ${game.state}, currentView: ${currentView} -> ${Session.get('currentView')}`);
+  if (debug >= 2) console.log (`trackGameState ${Meteor.connection._lastSessionId}: game.state = ${game.state}, currentView: ${currentView} -> ${Session.peek('currentView')}`);
 }
 
-routed = function(view, gameName=null, playerName=null) {
+routed = function(view, gameName=null, playerName=null, onReady=null) {
   Session.set('errorMessage', null);
   Session.set('turnMessage', null);
   hideRole();
   setCurrentGame (gameName, (gameID) => {
-    if (debug >= 2) console.log('setCurrentGame onReady', view, gameName, playerName, gameID);
+    if (debug >= 2) console.log(`setCurrentGame onReady view=${view}, gameName=${gameName}, playerName=${playerName}, gameID=${gameID}`);
     if (gameID && playerName) {
       const player = Players.findOne ({gameID: gameID, name: playerName}, {});
       var playerID = player ? player._id : createPlayer (gameID, gameName, playerName);
@@ -55,8 +55,16 @@ routed = function(view, gameName=null, playerName=null) {
       Session.set('gameID', gameID);
     }
     setCurrentPlayer (playerID);
-    if (view) Session.set('currentView', view);
-    BlazeLayout.render('main');
+
+    const routingDone = () => {
+      if (view) Session.set('currentView', view);
+      BlazeLayout.render('main');
+    }
+    if (onReady) {
+      onReady(routingDone);
+    } else {
+      routingDone();
+    }
   });
 }
 

@@ -28,7 +28,7 @@ history_templates = function() {
   Template.historyEntry.helpers({
     date: () => {
       game = GamesHistory.findOne(Session.get('historyEntry'), {fields: {createdAt: 1}});
-      return new Date(game.createdAt).toLocaleString();
+      return game ? new Date(game.createdAt).toLocaleString() : null;
     },
   });
 
@@ -49,17 +49,36 @@ history_templates = function() {
 // history functions
 //======================================================================
 
-showHistory = function () {
-  if (Session.equals('currentView', 'historyEntry')) {
-    historyID = Session.get('historyEntry');
-  } else {
+pastGamesSubscribe = function (onReady, gameName) {
+  MeteorSubsHistory.subscribe('pastGames', gameName, { onReady: onReady });
+}
+
+historySubscribe = function (onReady, historyID=null) {
+  if (!historyID) {
     const game = getCurrentGame();
-    if (!game) return null;
+    if (!game) return;
     historyID = game.historyID;
+    if (!historyID) return;
   }
+  // MeteorSubs doesn't seem to work when called from inside a Tracker.autorun (trackGameState):
+  // instead, it calls the server's publish in an infinite loop.
+  // Fortunately Meteor's native subscribe should do what we went - at least inside the Tracker:
+  // it doesn't republish the same subscription, and
+  // unsubscribes when the state changes again (ie. we leave the endGame view).
+  if (debug >= 1) console.log (`historySubscribe ${historyID}, inTracker=${!!Tracker.currentComputation}`);
+  const MeteorHistory = Tracker.currentComputation ? Meteor : MeteorSubsHistory;
+  MeteorHistory.subscribe('gamesHistory', historyID, {
+    onReady: () => {
+      if (debug >= 2) console.log ("historySubscribe onReady", historyID);
+      Session.set('historyEntry', historyID);
+      onReady();
+    }
+  });
+}
+
+showHistory = function () {
+  const historyID = Session.get('historyEntry');
   if (!historyID) return null;
-  var subs = MeteorSubsHistory.subscribe('gamesHistory', historyID);
-  if (!subs.ready()) return null;
   const game = GamesHistory.findOne(historyID);
   if (!game) return null;
   const history = TurnsHistory.find({historyID: historyID}, {sort: {createdAt: 1}}).fetch();

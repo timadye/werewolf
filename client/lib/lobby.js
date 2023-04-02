@@ -49,7 +49,6 @@ lobby_templates = function() {
     },
     'click .btn-download': downloadAll,
     'click .btn-old': () => {
-      MeteorSubsHistory.subscribe('pastGames', getGameName());
       FlowRouter.go(`/${getGameName()}/~history`);
     },
     'click .toggle-player': (event) => {
