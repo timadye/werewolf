@@ -73,6 +73,16 @@ li {
   border-radius: 7px;
 }
 
+#start-buttons .removing-games {
+  color: white;
+  background-color: #900;
+}
+
+#start-buttons .removing-games:hover {
+  color: white;
+  background-color: #b00;
+}
+
 .village-btn {
   width: 100%;
   padding: 0;

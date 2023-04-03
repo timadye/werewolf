@@ -12,8 +12,21 @@ createGame = function(gameName, roles=["werewolf_1", "werewolf_2", "wolfsbane_1"
 
 resetAllGames = function() {
   if (debug>=1) console.log("reset all games");
-  Games.remove({});
-  Players.remove({});
+  var n = Games.remove({});
+  n += Players.remove({});
+  return n;
+}
+
+removeGame = function (gameName) {
+  const game = Games.findOne({name: gameName}, {});
+  if (!game) {
+    if (debug>=1) console.log(`game '${gameName}' does not exist for removal`);
+    return 0;
+  }
+  if (debug>=1) console.log("remove game", gameName);
+  var n = Games.remove(game._id);
+  n += Players.remove({gameID: game._id});
+  return n;
 }
 
 assignRoles = function(gameID, players, roleNames) {

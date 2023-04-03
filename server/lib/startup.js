@@ -66,15 +66,25 @@ server_startup = function() {
     villageExists: (gameName) => {
       return Games.find( {name: gameName} ).count() > 0 ? 1 : 0;
     },
-    resetAllGames: (pwd) => {
+    removeGames: (pwd, gameName) => {
       if (adminMode || pwd == adminPassword) {
-        resetAllGames();
-        return true;
+        if (gameName === null) {
+          return resetAllGames();
+        } else {
+          return removeGame(gameName);
+        }
       } else {
-        return false;
+        return null;
       }
     },
     debugLevel: () => {
+      return debug;
+    },
+    increaseDebugLevel: (pwd, delta=1) => {
+      if (adminMode || pwd == adminPassword) {
+        debug += delta;
+        console.log(`set new debug level ${debug}`);
+      }
       return debug;
     },
     downloadHistory: downloadHistory,

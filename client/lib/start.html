@@ -8,13 +8,13 @@
   <form id="start-menu">
     {{#if adminMode}}
       <div id="start-menu-list">
-      {{#each game in allGames}}
-        <div class="btn btn-primary btn-lg checkbox village-btn">
-          <label class="village-checkbox">
-            <input type="checkbox" id="{{ game.name }}" class="join-village"/>{{ game.name }}<br>
-          </label>
-        </div>
-      {{/each}}
+        {{#each game in allGames}}
+          <div class="btn btn-primary btn-lg checkbox village-btn">
+            <label class="village-checkbox">
+              <input type="checkbox" id="{{ game.name }}" class="join-village"/>{{ game.name }}<br>
+            </label>
+          </div>
+        {{/each}}
       </div>
     {{/if}}
     <div class="form-group">
@@ -23,9 +23,14 @@
     <input type="submit" class="btn btn-primary btn-lg" value="Enter Village">
   </form>
 
-  <br/>
+  <br/><br/><br/>
   {{#if adminMode}}
-    <button class="btn btn-primary btn-lg btn-reset">Reset all games</button>
+    <div id="start-buttons">
+      <button class="btn btn-primary btn-md btn-reset">Reset all games</button>
+      <button class="btn btn-primary btn-md {{removingClass}} btn-remove">Remove games</button>
+      <button class="btn btn-primary btn-md btn-verbose">Verbose</button>
+      <button class="btn btn-primary btn-md btn-quiet">Quiet</button>
+    </div>
   {{/if}}
 
 </template>
