@@ -61,10 +61,10 @@ routed = function(view, gameName=null, playerName=null, onReady=null) {
   });
 }
 
-setAdminMode = function() {
-  Session.setDefault('adminMode',false);
-  Session.setDefault('adminPassword','');
-  MeteorSubs.subscribe('allGames', Session.get('adminPassword'), () => {
+setAdminMode = function(pwd='') {
+  Session.set('adminMode',false);
+  Session.set('adminPassword',pwd);
+  MeteorSubs.subscribe('allGames', pwd, () => {
     if (debug>=1) console.log('Enable admin mode');
     Session.set('adminMode',true);
     if (debug>=3) console.log(`all games = ${allGames()}`);

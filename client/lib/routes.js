@@ -36,6 +36,7 @@ routes = function() {
   FlowRouter.route('/:gameName/:playerName', {
     action: (params, queryParams) => {
       if (debug >= 1) console.log(`route /${params.gameName}/${params.playerName}`);
+      setPassword(queryParams.p);
       const gameName = params.gameName;
       if (params.playerName == "~history") {  // handle ambiguous route
         routed ('historyIndex', gameName, null, (onReady) => pastGamesSubscribe(onReady, gameName));
@@ -54,6 +55,7 @@ routes = function() {
   FlowRouter.route('/:gameName/~history/:historyID', {
     action: (params, queryParams) => {
       if (debug >= 1) console.log(`route /${params.gameName}/~history/${params.historyID}`);
+      setPassword(queryParams.p);
       const historyID = params.historyID;
       routed ('historyEntry', params.gameName, null, (onReady) => historySubscribe(onReady, historyID));
     }
