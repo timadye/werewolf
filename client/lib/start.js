@@ -38,6 +38,22 @@ start_templates = function() {
     },
     'click .btn-verbose': () => increaseDebugLevel(1),
     'click .btn-quiet': () => increaseDebugLevel(-1),
+    'click .btn-exit-admin': () => {
+      Meteor.call('resetDebug', Session.get('adminPassword'), (error, newDebug) => {
+        if (error) {
+          reportError('exitAdmin failed');
+        } else {
+          if (newDebug != debug) {
+            console.log(`reset debug level to ${newDebug}`);
+          }
+          debug = newDebug;
+        }
+      });
+      Session.set('adminMode', false);
+      Session.set('adminPassword', '');
+      console.log(`exited admin mode`);
+      FlowRouter.go('/');
+    },
     'click .join-village': (event) => {
       const gameName = event.target.id;
       if (Session.get('removingGames')) {
