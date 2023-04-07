@@ -77,6 +77,13 @@ server_startup = function() {
         return null;
       }
     },
+    resetDebug: (pwd) => {
+      if (adminMode || pwd == adminPassword) {
+        debug = Number(process.env.WEREWOLF_DEBUG || 1);
+        console.log(`debug level reset to ${debug}`);
+      }
+      return debug;
+    },
     debugLevel: () => {
       return debug;
     },
