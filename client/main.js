@@ -1,3 +1,5 @@
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 debug = 0;   // overridden by server setting if higher
 dash = "\u2013";
 nbsp = "\u00A0";
