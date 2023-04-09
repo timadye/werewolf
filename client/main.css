@@ -1,7 +1,7 @@
 @import url("https://fonts.googleapis.com/css?family=Hanken%20Grotesk");
 
 * {
-  font-family: 'Hanken Grotesk', inherit;
+  font-family: "Hanken Grotesk", sans-serif;
 }
 
 html {
@@ -352,5 +352,6 @@ caption {
   display: block;
   text-align: right;
   margin: 50px 2px 2px 2px;
+  padding: 0 5px 0 5px;
   float: right;
 }
