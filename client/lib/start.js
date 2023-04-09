@@ -63,7 +63,7 @@ start_templates = function() {
       }
     },
     'submit #start-menu': (event) => {
-      const gameName = event.target.gameName.value.trim();
+      const gameName = event.target.gameName.value.trim().replace(/\s+/g,' ');
       if (!gameName) return false;
       Session.set('removingGames', false);
       FlowRouter.go('lobby', {gameName:gameName}, {});

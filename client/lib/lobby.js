@@ -42,7 +42,7 @@ lobby_templates = function() {
     'submit #lobby-add': (event) => {
       const target = event.explicitOriginalTarget || event.relatedTarget || document.activeElement || {};
       const action = target.name || 'player-add';
-      const playerName = event.target.playerName.value.trim();
+      const playerName = event.target.playerName.value.trim().replace(/\s+/g,' ');
       if (debug >= 1) console.log(`action = ${action}, playerName = '${playerName}'`);
       const game = getCurrentGame({name:1, roles:1});
       if (action != 'player-remove') {
