@@ -11,7 +11,7 @@
   {{#if alive}}
     <h4>Select a player
       {{#if haveVigilante}}
-        <button class="btn btn-primary btn-md btn-twang">Load crossbow</button>
+        <button class="btn btn-primary evt-twang">Load crossbow</button>
       {{/if}}
     </h4>
   {{else if lurker}}
@@ -39,14 +39,14 @@
   {{#if voting}}
     <h4>Execute {{voting}}?</h4>
     {{#if alive}}
-      <button class="btn btn-primary btn-lg btn-guillotine">Guillotine</button>
-      <button class="btn btn-primary btn-lg btn-spare">Spare</button>
+      <button class="btn btn-primary btn-lg evt-guillotine">Guillotine</button>
+      <button class="btn btn-primary btn-lg evt-spare">Spare</button>
     {{else}}
       <button class="btn btn-primary btn-lg" disabled>Guillotine</button>
       <button class="btn btn-primary btn-lg" disabled>Spare</button>
     {{/if}}
   {{else}}
-    <button class="btn btn-primary btn-lg btn-sleep">Sleep</button>
+    <button class="btn btn-primary btn-lg evt-sleep">Sleep</button>
   {{/if}}
   <br><br>
 

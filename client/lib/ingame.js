@@ -55,10 +55,10 @@ ingame_templates = function() {
   });
 
   Template.roleMenu.events({
-    'click .btn-show-role': () => showRole(),
-    'click .btn-hide-role': () => hideRole(),
-    'click .btn-show-secrets': () => showSecrets(),
-    'click .btn-hide-secrets': () => hideSecrets(),
+    'click .evt-show-role': () => showRole(),
+    'click .evt-hide-role': () => hideRole(),
+    'click .evt-show-secrets': () => showSecrets(),
+    'click .evt-hide-secrets': () => hideSecrets(),
   });
 
   Template.roleInfo.helpers({
@@ -92,28 +92,28 @@ ingame_templates = function() {
   });
 
   Template.gameFooter.events({
-    'click .btn-suicide': () => {
+    'click .evt-suicide': () => {
       confirm ("Kill Myself", "Leave game?", "If you kill yourself, you could tip the balance of power in the village!", true, () => {
         leaveGame();
       });
     },
-    'click .btn-rejoin': () => Session.set ("lateLobby", true),
-    'click .btn-end': () => {
+    'click .evt-rejoin': () => Session.set ("lateLobby", true),
+    'click .evt-end': () => {
       confirm ("End Game", "End game?", "This will end the game for all players", true, () => {
         endGame();
       });
     },
-    'click .btn-download': downloadAll,
+    'click .evt-download': downloadAll,
   });
 
   Template.endGame.events({
-    'click .btn-leave-village': leaveVillage,
-    'click .btn-new': () => {
+    'click .evt-leave-village': leaveVillage,
+    'click .evt-new': () => {
       confirm ("New Game", "New game?", "This will remove the game summary for everyone", true, () => {
         resetGame();
       });
     },
-    'click .btn-download': downloadAll,
+    'click .evt-download': downloadAll,
   });
 
 }

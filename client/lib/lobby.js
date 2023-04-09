@@ -29,13 +29,13 @@ lobby_templates = function() {
   });
 
   Template.lobby.events({
-    'click .btn-leave': leaveVillage,
-    'click .btn-start': () => {
+    'click .evt-leave': leaveVillage,
+    'click .evt-start': () => {
       const gameID = Session.get('gameID');
       if (gameID) Games.update(gameID, {$set: {state: 'settingUp'}});
     },
-    'click .btn-download': downloadAll,
-    'click .btn-old': () => {
+    'click .evt-download': downloadAll,
+    'click .evt-old': () => {
       FlowRouter.go('ingame', {gameName:getGameName(), playerName:'~history'}, {});
     },
     'click .toggle-player': toggleCurrentPlayer,
@@ -78,15 +78,15 @@ lobby_templates = function() {
   });
 
   Template.lateLobby.events({
-    'click .btn-leave': leaveVillage,
-    'click .btn-join': () => Session.set ("lateLobby", false),
+    'click .evt-leave': leaveVillage,
+    'click .evt-join': () => Session.set ("lateLobby", false),
     'click .toggle-player': toggleCurrentPlayer,
-    'click .btn-end': () => {
+    'click .evt-end': () => {
       confirm ("End Game", "End game?", "This will end the game for all players", true, () => {
         resetGame();
       });
     },
-    'click .btn-download': downloadAll,
+    'click .evt-download': downloadAll,
   });
 
 }

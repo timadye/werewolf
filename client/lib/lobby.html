@@ -20,9 +20,9 @@
 
   <form id="lobby-add">
     <div id="player-group" class="form-group">
-      <input type="text" class="form-control" id="player-name" name="playerName" placeholder="Your name" autofocus>
-      <button name="player-add" class="btn btn-primary btn-md btn-add">Add</button>
-      <button name="player-remove" class="btn btn-primary btn-md btn-remove">Remove</button>
+      <input type="text" class="form-control" id="player-name" name="playerName" placeholder="Your name" autocorrect="off" autofocus>
+      <button name="player-add" class="btn btn-primary">Add</button>
+      <button name="player-remove" class="btn btn-primary">Remove</button>
     </div>
   </form>
 
@@ -45,12 +45,12 @@
     </div>
   </form>
 
-  <button class="btn btn-primary btn-lg btn-start" {{ startButtonDisabled }}>Start Game</button>
+  <button class="btn btn-primary btn-lg evt-start" {{ startButtonDisabled }}>Start Game</button>
   {{#if adminMode}}
-    <button class="btn btn-secondary btn-md btn-download">Download</button>
+    <button class="btn btn-secondary evt-download">Download</button>
   {{/if}}
-  <button class="btn btn-secondary btn-md btn-old">History</button>
-  <button class="btn btn-secondary btn-md btn-leave">Leave Village</button>
+  <button class="btn btn-secondary evt-old">History</button>
+  <button class="btn btn-secondary evt-leave">Leave Village</button>
 </template>
 
 <template name="lateLobby">
@@ -73,10 +73,10 @@
     </div>
   </form>
 
-  <button class="btn btn-primary btn-lg btn-join">Join Game</button>
+  <button class="btn btn-primary btn-lg evt-join">Join Game</button>
   {{#if adminMode}}
-    <button class="btn btn-secondary btn-md btn-download">Download</button>
+    <button class="btn btn-secondary evt-download">Download</button>
   {{/if}}
-  <button class="btn btn-secondary btn-md btn-leave">Leave Village</button>
-  <button class="btn btn-secondary btn-md btn-end">End Game</button>
+  <button class="btn btn-secondary evt-leave">Leave Village</button>
+  <button class="btn btn-secondary evt-end">End Game</button>
 </template>

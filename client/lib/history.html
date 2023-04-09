@@ -1,13 +1,13 @@
 <template name="historyIndex">
   <h2>{{gameName}} village</h2>
-  <button class="btn btn-primary btn-lg btn-new">New Game</button>
-  <button class="btn btn-secondary btn-lg btn-download">Download</button>
-  <button class="btn btn-secondary btn-lg btn-leave-village">Leave Village</button>
+  <button class="btn btn-primary btn-lg evt-new">New Game</button>
+  <button class="btn btn-secondary btn-lg evt-download">Download</button>
+  <button class="btn btn-secondary btn-lg evt-leave-village">Leave Village</button>
   <h3>Previous Games</h3>
   <div id="old-games-list">
     {{#each game in games}}
       <label class="old-games-checkbox">
-        <button name="old-game" id="{{game._id}}" class="btn btn-md btn-show">{{game.date}}</button>
+        <button id="{{game._id}}" class="btn evt-show">{{game.date}}</button>
       </label>
     {{/each}}
   </div>
@@ -16,9 +16,9 @@
 
 <template name="historyEntry">
   <h2>{{gameName}} village</h2>
-  <button class="btn btn-primary btn-lg btn-new">New Game</button>
-  <button class="btn btn-primary btn-lg btn-old">History</button>
-  <button class="btn btn-secondary btn-lg btn-leave-village">Leave Village</button>
+  <button class="btn btn-primary btn-lg evt-new">New Game</button>
+  <button class="btn btn-primary btn-lg evt-old">History</button>
+  <button class="btn btn-secondary btn-lg evt-leave-village">Leave Village</button>
   <h3>Game started at {{date}}</h3>
   {{> roleInfo view="historyEntry"}}
 </template>

@@ -64,13 +64,13 @@ day_templates = function() {
         }
       }
     },
-    'click .btn-twang': () => {
+    'click .evt-twang': () => {
       // allow anyone to load a crossbow, but only vigilante can fire.
       const player = getCurrentPlayer({crossbow:1});
       if (player)
         Players.update (player._id, {$set: {crossbow: !player.crossbow}});
     },
-    'click .btn-sleep': (event) => {
+    'click .evt-sleep': (event) => {
       const gameID = Session.get('gameID');
       if (gameID) Games.update(gameID, {$set: {state: 'nightTime'}});
       // "Not permitted. Untrusted code may only update documents by ID.":
@@ -79,8 +79,8 @@ day_templates = function() {
         Players.update (playerID, {$set: {call: null, guillotine: null, crossbow: null}});
       }
     },
-    'click .btn-guillotine': () => guillotineVote("guillotine"),
-    'click .btn-spare':      () => guillotineVote("spare"),
+    'click .evt-guillotine': () => guillotineVote("guillotine"),
+    'click .evt-spare':      () => guillotineVote("spare"),
   });
 
 }

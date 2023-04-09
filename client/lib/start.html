@@ -9,7 +9,7 @@
     {{#if adminMode}}
       <div id="start-menu-list">
         {{#each game in allGames}}
-          <div class="btn btn-primary btn-lg checkbox village-btn">
+          <div class="btn btn-primary btn-lg checkbox village-button">
             <label class="village-checkbox">
               <input type="checkbox" id="{{ game.name }}" class="join-village"/>{{ game.name }}<br>
             </label>
@@ -18,7 +18,7 @@
       </div>
     {{/if}}
     <div class="form-group">
-      <input type="text" class="form-control" id="village-name" name="gameName" placeholder="Enter village name" autocorrect="off" autocapitalize="off" autofocus>
+      <input type="text" class="form-control" name="gameName" placeholder="Enter village name" autocorrect="off" autocapitalize="off" autofocus>
     </div>
     <input type="submit" class="btn btn-primary btn-lg" value="Enter Village">
   </form>
@@ -26,11 +26,11 @@
   <br/><br/><br/>
   {{#if adminMode}}
     <div id="start-buttons">
-      <button class="btn btn-primary btn-md btn-reset">Reset all games</button>
-      <button class="btn btn-primary btn-md {{removingClass}} btn-remove">Remove games</button><br/><br/>
-      <button class="btn btn-primary btn-md btn-verbose">Verbose</button>
-      <button class="btn btn-primary btn-md btn-quiet">Quiet</button>
-      <button class="btn btn-primary btn-md btn-exit-admin">Exit admin</button>
+      <button class="btn btn-primary evt-reset">Reset all games</button>
+      <button class="btn btn-primary {{removingClass}} evt-remove">Remove games</button><br/><br/>
+      <button class="btn btn-primary evt-verbose">Verbose</button>
+      <button class="btn btn-primary evt-quiet">Quiet</button>
+      <button class="btn btn-primary evt-exit-admin">Exit admin</button>
     </div>
   {{/if}}
 

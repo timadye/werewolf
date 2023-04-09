@@ -23,8 +23,8 @@ start_templates = function() {
   });
 
   Template.startMenu.events({
-    'click .btn-reset': () => resetAllGames(),
-    'click .btn-remove': () => {
+    'click .evt-reset': () => resetAllGames(),
+    'click .evt-remove': () => {
       const removingGames = !Session.get('removingGames');
       const setRemoving = () => {
         if (debug >= 1) console.log ((removingGames ? "Enable" : "Disable"), "removing games");
@@ -36,9 +36,9 @@ start_templates = function() {
         setRemoving();
       }
     },
-    'click .btn-verbose': () => increaseDebugLevel(1),
-    'click .btn-quiet': () => increaseDebugLevel(-1),
-    'click .btn-exit-admin': () => {
+    'click .evt-verbose': () => increaseDebugLevel(1),
+    'click .evt-quiet': () => increaseDebugLevel(-1),
+    'click .evt-exit-admin': () => {
       Meteor.call('resetDebug', Session.get('adminPassword'), (error, newDebug) => {
         if (error) {
           reportError('exitAdmin failed');
