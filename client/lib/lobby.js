@@ -33,7 +33,6 @@ lobby_templates = function() {
     'click .btn-start': () => {
       const gameID = Session.get('gameID');
       if (gameID) Games.update(gameID, {$set: {state: 'settingUp'}});
-      setTitle();
     },
     'click .btn-download': downloadAll,
     'click .btn-old': () => {

@@ -109,6 +109,7 @@ leaveVillage = function () {
   Session.set('lateLobby', false);
   Session.set('gameID', null);
   Session.set('playerID', null);
+  setTitle()
   FlowRouter.go('start', {}, {});
 };
 
