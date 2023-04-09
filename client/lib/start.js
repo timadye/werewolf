@@ -52,21 +52,21 @@ start_templates = function() {
       Session.set('adminMode', false);
       Session.set('adminPassword', '');
       console.log(`exited admin mode`);
-      FlowRouter.go('/');
+      FlowRouter.go('start', {}, {});
     },
     'click .join-village': (event) => {
       const gameName = event.target.id;
       if (Session.get('removingGames')) {
         if (gameName) removeGame (gameName);
       } else {
-        FlowRouter.go(`/${gameName}`);
+        FlowRouter.go('lobby', {gameName:gameName}, {});
       }
     },
     'submit #start-menu': (event) => {
       const gameName = event.target.gameName.value.trim();
       if (!gameName) return false;
       Session.set('removingGames', false);
-      FlowRouter.go(`/${gameName}`);
+      FlowRouter.go('lobby', {gameName:gameName}, {});
       return false;
     },
   });

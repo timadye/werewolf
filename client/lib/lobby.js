@@ -37,7 +37,7 @@ lobby_templates = function() {
     },
     'click .btn-download': downloadAll,
     'click .btn-old': () => {
-      FlowRouter.go(`/${getGameName()}/~history`);
+      FlowRouter.go('ingame', {gameName:getGameName(), playerName:'~history'}, {});
     },
     'click .toggle-player': toggleCurrentPlayer,
     'submit #lobby-add': (event) => {
@@ -47,10 +47,10 @@ lobby_templates = function() {
       if (debug >= 1) console.log(`action = ${action}, playerName = '${playerName}'`);
       const game = getCurrentGame({name:1, roles:1});
       if (action != 'player-remove') {
-        FlowRouter.go(`/${game.name}/${playerName}`);
+        FlowRouter.go('ingame', {gameName:game.name, playerName:playerName}, {});
       } else {
         removePlayer(game, playerName);
-        FlowRouter.go(`/${game.name}`);
+        FlowRouter.go('lobby', {gameName:game.name}, {});
       }
       event.target.playerName.value = '';
       return false;
@@ -170,9 +170,9 @@ toggleCurrentPlayer = function (event) {
   const newID = event.target.id;
   if (!newID) return;
   if (Session.equals('playerID', newID)) {
-    FlowRouter.go(`/${getGameName()}`);
+    FlowRouter.go('lobby', {gameName:getGameName()}, {});
   } else {
-    FlowRouter.go(`/${getGameName()}/${getPlayerName(newID)}`);
+    FlowRouter.go('ingame', {gameName:getGameName(), playerName:getPlayerName(newID)}, {});
   }
 }
 

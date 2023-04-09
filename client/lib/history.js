@@ -13,11 +13,11 @@ history_templates = function() {
   Template.historyIndex.events({
     'click .btn-leave-village': leaveVillage,
     'click .btn-new': () => {
-      FlowRouter.go(`/${getGameName()}`);
+      FlowRouter.go('lobby', {gameName:getGameName()}, {});
     },
     'click .btn-download': downloadVillage,
     'click .btn-show': (event) => {
-      FlowRouter.go(`/${getGameName()}/~history/${event.target.id}`);
+      FlowRouter.go('history', {gameName:getGameName(), historyID:event.target.id}, {});
     },
   });
 
@@ -35,10 +35,10 @@ history_templates = function() {
   Template.historyEntry.events({
     'click .btn-leave-village': leaveVillage,
     'click .btn-new': () => {
-      FlowRouter.go(`/${getGameName()}`);
+      FlowRouter.go('lobby', {gameName:getGameName()}, {});
     },
     'click .btn-old': () => {
-      FlowRouter.go(`/${getGameName()}/~history`);
+      FlowRouter.go('ingame', {gameName:getGameName(), playerName:'~history'}, {});
     },
   });
 

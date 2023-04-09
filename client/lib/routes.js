@@ -1,6 +1,7 @@
 routes = function() {
 
   FlowRouter.route('/', {
+    name: 'start',
     action: (params, queryParams) => {
       if (debug >= 1) console.log("route /");
       setPassword(queryParams.p);
@@ -16,6 +17,7 @@ routes = function() {
   // });
 
   FlowRouter.route('/:gameName', {
+    name: 'lobby',
     action: (params, queryParams) => {
       if (debug >= 1) console.log(`route /${params.gameName}`);
       // if (Object.keys(queryParams) != 0) {
@@ -34,6 +36,7 @@ routes = function() {
   });
 
   FlowRouter.route('/:gameName/:playerName', {
+    name: 'ingame',
     action: (params, queryParams) => {
       if (debug >= 1) console.log(`route /${params.gameName}/${params.playerName}`);
       setPassword(queryParams.p);
@@ -53,6 +56,7 @@ routes = function() {
   });
 
   FlowRouter.route('/:gameName/~history/:historyID', {
+    name: 'history',
     action: (params, queryParams) => {
       if (debug >= 1) console.log(`route /${params.gameName}/~history/${params.historyID}`);
       setPassword(queryParams.p);

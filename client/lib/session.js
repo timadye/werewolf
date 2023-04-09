@@ -109,7 +109,7 @@ leaveVillage = function () {
   Session.set('lateLobby', false);
   Session.set('gameID', null);
   Session.set('playerID', null);
-  FlowRouter.go('/');
+  FlowRouter.go('start', {}, {});
 };
 
 resetGame = function() {
