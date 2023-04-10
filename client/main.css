@@ -4,17 +4,17 @@
   font-family: "Hanken Grotesk", sans-serif;
 }
 
-html {
+body {
   --current-bg-color: white;
   --current-fg-color: black;
 }
 
-html.night {
+body.night {
   --current-bg-color: #222;
   --current-fg-color: white;
 }
 
-html.day {
+body.day {
   --current-bg-color: #ffc;
   --current-fg-color: black;
 }

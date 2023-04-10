@@ -1,13 +1,13 @@
 night_templates = function() {
 
   Template.nightView.rendered = () => {
-    $('html').addClass("night");
+    document.body.className = "night";
     if (alive()) hideRole();
     startClock();
   };
 
   Template.nightView.destroyed = () => {
-    $('html').removeClass("night");
+    document.body.className = "";
     startClock(false);
   };
 

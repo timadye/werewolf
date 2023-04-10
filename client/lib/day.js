@@ -1,13 +1,13 @@
 day_templates = function() {
 
   Template.dayView.rendered = () => {
-    $('html').addClass("day");
+    document.body.className = "day";
     if (alive()) hideRole();
     startClock();
   };
 
   Template.dayView.destroyed = () => {
-    $('html').removeClass("day");
+    document.body.className = "";
     startClock(false);
   };
 
