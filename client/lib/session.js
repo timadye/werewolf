@@ -34,7 +34,6 @@ trackGameState = function() {
 }
 
 routed = function(view, gameName=null, playerName=null, onReady=null) {
-  Session.set('errorMessage', null);
   Session.set('turnMessage', null);
   hideRole();
   hideSecrets();
@@ -82,6 +81,8 @@ setCurrentGame = function (gameName, onReadyPlayers=null) {
     leaveVillage();
   }
   if (gameName) {
+    Session.set('errorMessage', null);
+    Session.set('creatingGame', false);
     joinGame(gameName, onReadyPlayers);
   } else {
     if (onReadyPlayers) onReadyPlayers(null);
@@ -89,17 +90,28 @@ setCurrentGame = function (gameName, onReadyPlayers=null) {
 }
 
 joinGame = function (gameName, onReadyPlayers=null) {
-  MeteorSubs.subscribe('game', gameName, {
+  var sub = MeteorSubs.subscribe('game', gameName, {
     onReady: () => {
       if (debug >= 2) console.log('joinGame games onReady', gameName);
       const game = Games.findOne({name: gameName}, {});
       if (!game) {
-        console.log (`Subscribed to game, but '${gameName}' not found`);
+        if (debug >= 0) console.log (`Subscribed to game, but '${gameName}' not found`);
         return;
       }
       if (debug >= 1) console.log(`Join village '${gameName}', id=${game._id}`);
       if (onReadyPlayers) onReadyPlayers(game._id);
-    }
+    },
+    onStop: (error) => {
+      if (error) {
+        if (debug >= 0) console.log (`error '${error.error}' subscribing to game '${gameName}': ${error.reason}`);
+        sub.stopNow();
+        Session.set('creatingGame', true);
+        Session.set('errorMessage', error.reason);
+        if (error.error == 'no-game') {
+          FlowRouter.go('start', {}, {});
+        }
+      }
+    },
   });
 }
 

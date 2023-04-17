@@ -10,7 +10,10 @@ main_templates = function() {
 
   // global helpers
   registerHelper ({
-    errorMessage: () => Session.get('errorMessage'),
+    errorMessage: () => {
+      const errorMessage = Session.get('errorMessage');
+      return errorMessage ? errorMessage.split('\n') : [];
+    },
     gameName: () => getGameName(),
     playerName: () => (getPlayerName() || "a lurker"),
     lurker: () => (!getPlayerName()),

@@ -45,6 +45,7 @@ lobby_templates = function() {
       const playerName = event.target.playerName.value.trim().replace(/\s+/g,' ');
       if (debug >= 1) console.log(`action = ${action}, playerName = '${playerName}'`);
       const game = getCurrentGame({name:1, roles:1});
+      if (!game) return false;
       if (action != 'player-remove') {
         FlowRouter.go('ingame', {gameName:game.name, playerName:playerName}, {});
       } else {
@@ -57,6 +58,7 @@ lobby_templates = function() {
     'click .toggle-role': (event) => {
       const role = event.target.id;
       var game = getCurrentGame({roles:1});
+      if (!game) return false;
       const ind = game.roles.indexOf(role);
       if (ind >= 0) {
         game.roles.splice(ind,1);

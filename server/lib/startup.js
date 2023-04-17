@@ -25,13 +25,16 @@ server_startup = function() {
     }
   });
 
-  Meteor.publish('game', (gameName) => {
+  Meteor.publish('game', function (gameName) {
     if (debug >= 2) console.log("publish game", gameName);
     const game = Games.findOne({name: gameName}, {});
-    const gameID = game ? game._id : createGame (gameName);
+    if (!game) {
+      this.error(new Meteor.Error('no-game', noGame(gameName)));
+      return;
+    }
     return [
-      Games.find(gameID),
-      Players.find({gameID: gameID})
+      Games.find(game._id),
+      Players.find({gameID: game._id})
     ];
   });
 
@@ -63,9 +66,24 @@ server_startup = function() {
   });
 
   Meteor.methods({
+
     villageExists: (gameName) => {
       return Games.find( {name: gameName} ).count() > 0 ? 1 : 0;
     },
+
+    createGame: (incantation, pwd) => {
+      const game = Games.findOne({name: incantation}, {name: 1});
+      if (game) {
+        if (debug >= 2) console.log("createGame: game", incantation, "already exists");
+        return game.name;
+      }
+      const gameName = tryCreateGame (incantation, pwd);
+      if (!gameName) {
+        throw new Meteor.Error ('no-game', noGame(incantation));
+      }
+      return gameName;
+    },
+
     removeGames: (pwd, gameName) => {
       if (adminMode || pwd == adminPassword) {
         if (gameName === null) {
@@ -77,6 +95,7 @@ server_startup = function() {
         return null;
       }
     },
+
     resetDebug: (pwd) => {
       if (adminMode || pwd == adminPassword) {
         debug = Number(process.env.WEREWOLF_DEBUG || 1);
@@ -84,9 +103,11 @@ server_startup = function() {
       }
       return debug;
     },
+
     debugLevel: () => {
       return debug;
     },
+
     increaseDebugLevel: (pwd, delta=1) => {
       if (adminMode || pwd == adminPassword) {
         debug += delta;
@@ -94,7 +115,9 @@ server_startup = function() {
       }
       return debug;
     },
+
     downloadHistory: downloadHistory,
+
     downloadAll: (pwd) => {
       if (adminMode || pwd == adminPassword) {
         return downloadAll();
@@ -102,6 +125,7 @@ server_startup = function() {
         return null;
       }
     },
+
   });
 
 }

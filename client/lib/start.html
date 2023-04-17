@@ -2,7 +2,11 @@
   <h3>Oxford Werewolf</h3>
 
   {{#if errorMessage}}
-    <h5>{{ errorMessage }}</h5>
+    <h5>
+      {{#each msg in errorMessage}}
+        {{msg}}<br/>
+      {{/each}}
+    </h5>
   {{/if}}
 
   <form id="start-menu">

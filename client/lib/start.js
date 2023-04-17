@@ -55,6 +55,7 @@ start_templates = function() {
       FlowRouter.go('start', {}, {});
     },
     'click .join-village': (event) => {
+      // admin mode click on a village button
       const gameName = event.target.id;
       if (Session.get('removingGames')) {
         if (gameName) removeGame (gameName);
@@ -63,10 +64,22 @@ start_templates = function() {
       }
     },
     'submit #start-menu': (event) => {
+      // enter name in box and press enter or click on "Enter Village" button
       const gameName = event.target.gameName.value.trim().replace(/\s+/g,' ');
       if (!gameName) return false;
+      if (gameName.startsWith('admin ')) {
+        event.target.gameName.value = '';
+        setPassword (gameName.substring(6));
+        return false;
+      }
+      event.target.gameName.value = ' ' + gameName;
+      event.target.gameName.setSelectionRange(0, 0);  // put cursor at start of line
       Session.set('removingGames', false);
-      FlowRouter.go('lobby', {gameName:gameName}, {});
+      if (Session.get('creatingGame')) {
+        createGame (gameName);
+      } else {
+        FlowRouter.go('lobby', {gameName:gameName}, {});
+      }
       return false;
     },
   });
@@ -77,6 +90,19 @@ start_templates = function() {
 //======================================================================
 // start functions
 //======================================================================
+
+createGame = function (createGame) {
+  console.log(`try creating game with '${createGame}'`);
+  Meteor.call ('createGame', createGame, Session.get('adminPassword'), (error, gameName) => {
+    if (error) {
+      if (debug>=0) console.log (`error '${error.error}' creating game with '${createGame}': ${error.reason}`);
+      Session.set('errorMessage', error.reason);
+    } else if (gameName) {
+      Session.set('errorMessage', null);
+      FlowRouter.go('lobby', {gameName:gameName}, {});
+    }
+  });
+}
 
 resetAllGames = function () {
   confirm ("Reset all games", "Remove all games?", "This will delete all villages", true, () => {

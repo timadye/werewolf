@@ -1,3 +1,44 @@
+newGames = new Map();
+incantations = new Map();
+
+noGame = function(gameName) {
+  const createNames = [
+    "found", "establish", "build", "construct", "erect", "create", "start", "begin", "initiate", "inaugurate",
+    "manifest", "organise", "install", "dictate", "name", "enact", "originate", "plant", "bulldoze", "settle",
+  ]
+  var createName = newGames.get(gameName);
+  if (!createName) {
+    createName = createNames[Math.floor(Math.random() * createNames.length)];
+    newGames.set(gameName, createName);
+    incantations.set(`${createName} ${gameName}`, gameName);
+  }
+  if (debug >= 1) console.log(`game ${gameName} does not exist - use '${createName} ${gameName}' to create it`);
+  const maxGames = 1000;
+  while (newGames.size > maxGames) {
+    if (debug >= 1) console.log (`remove oldest tentative game '${newGames.keys().next().value}'`);
+    newGames.delete(newGames.keys().next().value);
+    incantations.delete(incantations.keys().next().value);
+  }
+  return `Welcome traveller!
+I am the Voice of Fate.
+The ${gameName} village you are seeking does not exist. Should you choose it, it will be your duty to establish a new village.
+You can do this by saying "${createName}" before your chosen name.
+But beware! This incantation will only work for the name you have already chosen.`;
+}
+
+
+tryCreateGame = function (incantation, pwd) {
+  const gameName = incantations.get(incantation);
+  if (gameName) {
+    if (debug>=2) console.log (`create game '${gameName}' from incantation '${incantation}'`);
+    if (createGame (gameName)) return gameName;
+  } else if (adminMode || pwd == adminPassword) {
+    if (createGame (incantation)) return incantation;
+  }
+  return null;
+}
+
+
 createGame = function(gameName, roles=["werewolf_1", "werewolf_2", "wolfsbane_1", "trapper_1"]) {
   const gameID = Games.insert({
     name: gameName,
