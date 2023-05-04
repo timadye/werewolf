@@ -4,7 +4,8 @@ incantations = new Map();
 noGame = function(gameName) {
   const createNames = [
     "found", "establish", "build", "construct", "erect", "create", "start", "begin", "initiate", "inaugurate",
-    "manifest", "organise", "install", "dictate", "name", "enact", "originate", "plant", "bulldoze", "settle",
+    "manifest", "organise", "install", "dictate", "nominate", "enact", "originate", "plant", "congregate", "settle",
+    "convoke", "summon"
   ]
   var createName = newGames.get(gameName);
   if (!createName) {
@@ -21,8 +22,8 @@ noGame = function(gameName) {
   }
   return `Welcome traveller!
 I am the Voice of Fate.
-The ${gameName} village you are seeking does not exist. Should you choose it, it will be your duty to establish a new village.
-You can do this by saying "${createName}" before your chosen name.
+The "${gameName}" village you are seeking does not exist. Should you choose, it will be your duty to establish a new village.
+To keep this choice from the mindless hordes, I require you intone the word "${createName}" before your chosen name.
 But beware! This incantation will only work for the name you have already chosen.`;
 }
 
