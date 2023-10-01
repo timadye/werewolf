@@ -1,0 +1,1 @@
+doc/werewolf_summary.md
