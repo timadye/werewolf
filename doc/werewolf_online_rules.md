@@ -1,3 +1,5 @@
+\[ [App](https://oxford-werewolf.eu.meteorapp.com/) | [GitHub project](https://github.com/timadye/werewolf) | [original rules](https://timadye.github.io/werewolf/doc/werewolf_summary.html) | [PDF](https://timadye.github.io/werewolf/doc/werewolf_online_rules.pdf) | [Word](https://timadye.github.io/werewolf/doc/werewolf_online_rules.docx) \]
+
 # Oxford University Werewolf Rules
 
 _By Michael\
