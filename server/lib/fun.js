@@ -1,24 +1,24 @@
-newGames = new Map();
-incantations = new Map();
+global.newGames = new Map();
+global.incantations = new Map();
 
-noGame = function(gameName) {
+global.noGame = function(gameName) {
   const createNames = [
     "found", "establish", "build", "construct", "erect", "create", "start", "begin", "initiate", "inaugurate",
     "manifest", "organise", "install", "dictate", "nominate", "enact", "originate", "plant", "congregate", "settle",
     "convoke", "summon"
   ]
-  var createName = newGames.get(gameName);
+  var createName = global.newGames.get(gameName);
   if (!createName) {
     createName = createNames[Math.floor(Math.random() * createNames.length)];
-    newGames.set(gameName, createName);
-    incantations.set(`${createName} ${gameName}`, gameName);
+    global.newGames.set(gameName, createName);
+    global.incantations.set(`${createName} ${gameName}`, gameName);
   }
   if (debug >= 1) console.log(`game ${gameName} does not exist - use '${createName} ${gameName}' to create it`);
   const maxGames = 1000;
-  while (newGames.size > maxGames) {
-    if (debug >= 1) console.log (`remove oldest tentative game '${newGames.keys().next().value}'`);
-    newGames.delete(newGames.keys().next().value);
-    incantations.delete(incantations.keys().next().value);
+  while (global.newGames.size > maxGames) {
+    if (debug >= 1) console.log (`remove oldest tentative game '${global.newGames.keys().next().value}'`);
+    global.newGames.delete(global.newGames.keys().next().value);
+    global.incantations.delete(global.incantations.keys().next().value);
   }
   return `Welcome traveller!
 I am the Voice of Fate.
@@ -28,8 +28,8 @@ But beware! This incantation will only work for the name you have already chosen
 }
 
 
-tryCreateGame = function (incantation, pwd) {
-  const gameName = incantations.get(incantation);
+global.tryCreateGame = function (incantation, pwd) {
+  const gameName = global.incantations.get(incantation);
   if (gameName) {
     if (debug>=2) console.log (`create game '${gameName}' from incantation '${incantation}'`);
     if (createGame (gameName)) return gameName;
@@ -40,7 +40,7 @@ tryCreateGame = function (incantation, pwd) {
 }
 
 
-createGame = function(gameName, roles=["werewolf_1", "werewolf_2", "wolfsbane_1", "trapper_1"]) {
+global.createGame = function(gameName, roles=["werewolf_1", "werewolf_2", "wolfsbane_1", "trapper_1"]) {
   const gameID = Games.insert({
     name: gameName,
     createdAt: new Date().valueOf(),
@@ -52,14 +52,14 @@ createGame = function(gameName, roles=["werewolf_1", "werewolf_2", "wolfsbane_1"
   return gameID;
 }
 
-resetAllGames = function() {
+global.resetAllGames = function() {
   if (debug>=1) console.log("reset all games");
   var n = Games.remove({});
   n += Players.remove({});
   return n;
 }
 
-removeGame = function (gameName) {
+global.removeGame = function (gameName) {
   const game = Games.findOne({name: gameName}, {});
   if (!game) {
     if (debug>=1) console.log(`game '${gameName}' does not exist for removal`);
@@ -71,7 +71,7 @@ removeGame = function (gameName) {
   return n;
 }
 
-assignRoles = function(gameID, players, roleNames) {
+global.assignRoles = function(gameID, players, roleNames) {
   if (debug>=3) console.log('roles =', roleNames);
 
   const allFellows = keyArrayFromEntries (Object.entries(allRoles) . map (([k,v]) => [v.fellows, k]));
@@ -130,7 +130,7 @@ assignRoles = function(gameID, players, roleNames) {
   return gameSettings;
 }
 
-dawn = function (game, playersFound) {
+global.dawn = function (game, playersFound) {
   if (debug >= 3) console.log ('Dawn: playerRoles =', game.playerRoles);
 
   const players = playersFound.map (p => ({ ... p, act: {}, attackers: [], casualty: 0, cause: null }));
@@ -214,7 +214,7 @@ dawn = function (game, playersFound) {
   Games.update(game._id, {$set: {voiceOfFate: voiceOfFate, state: 'dayTime'}});
 }
 
-guillotine = function (game, players) {
+global.guillotine = function (game, players) {
   const victimPlayer = guillotineCall (players);
   if (!victimPlayer) return;
 
@@ -239,7 +239,7 @@ guillotine = function (game, players) {
   TurnsHistory.insert({historyID: game.historyID, phase: 'guillotine', players: history});
 }
 
-guillotineCall = function (players) {
+global.guillotineCall = function (players) {
   if (debug >= 3) console.log('players =', players);
   let calls = {}, guillotine = [];
   for (const player of players) {
@@ -266,7 +266,7 @@ guillotineCall = function (players) {
   }
 }
 
-twang = function (game, players, vigilanteID, vigilante) {
+global.twang = function (game, players, vigilanteID, vigilante) {
   const victimPlayer = players.find (p => p._id == vigilante.twang);
   if (!victimPlayer) return;
   const victim = { _id: victimPlayer._id, name: victimPlayer.name, attackers: [vigilanteID], casualty: 2, cause: 'crossbow' };
@@ -278,7 +278,7 @@ twang = function (game, players, vigilanteID, vigilante) {
   TurnsHistory.insert({historyID: game.historyID, phase: 'vigilante', players: history});
 }
 
-killPlayer = function (cause, game, players, victim) {
+global.killPlayer = function (cause, game, players, victim) {
   if (victim.casualty < 2) return [[victim], [], []];
   let playerMap = objectMap (players, p => ({[p._id]: Object.assign({},p)}));
   const history = [victim].concat (loverSuicide (game.fellows.lover, playerMap, victim));
@@ -313,7 +313,7 @@ killPlayer = function (cause, game, players, victim) {
   return [history, voiceOfFate];
 }
 
-loverSuicide = function (allLovers, playerMap, player) {
+global.loverSuicide = function (allLovers, playerMap, player) {
   playerMap[player._id] = player;
   if (debug >= 3) console.log ('loverSuicide: lovers =', allLovers, ', playerMap =', playerMap, ', player =', player);
   var deaths = [], suicides = [];
@@ -341,7 +341,7 @@ loverSuicide = function (allLovers, playerMap, player) {
   return deaths;
 }
 
-downloadHistory = function (gameName) {
+global.downloadHistory = function (gameName) {
   h = GamesHistory.find({ name: gameName });
   gamesHistory = h ? h.fetch() : `error finding gamesHistory.gameID=${game._id}`;
   ids = h ? gamesHistory.map (g => g._id) : [];
@@ -359,7 +359,7 @@ downloadHistory = function (gameName) {
   return obj;
 }
 
-downloadAll = function() {
+global.downloadAll = function() {
   g = Games.find({});
   games = g ? g.fetch() : "error reading 'games'";
   p = Players.find({});

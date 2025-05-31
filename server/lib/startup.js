@@ -1,8 +1,8 @@
-server_startup = function() {
+global.server_startup = function() {
 
   Meteor.startup(() => {
     if (debug >= 0) {
-      console.log(`Start Werewolf server: adminMode=${adminMode}, debug=${debug}, resetOnStart=${resetOnStart}`);
+      console.log(`Start Werewolf server: adminMode=${global.adminMode}, debug=${debug}, resetOnStart=${resetOnStart}`);
     }
     if (resetOnStart) {
       Games.remove({});
@@ -52,7 +52,7 @@ server_startup = function() {
   });
 
   Meteor.publish('allGames', (pwd) => {
-    if (adminMode || pwd == adminPassword) {
+    if (global.adminMode || pwd == adminPassword) {
       if (debug >= 1) console.log("admin mode: publish allGames");
       return Games.find({}, { fields: {name: 1} });
     } else {
@@ -85,7 +85,7 @@ server_startup = function() {
     },
 
     removeGames: (pwd, gameName) => {
-      if (adminMode || pwd == adminPassword) {
+      if (global.adminMode || pwd == adminPassword) {
         if (gameName === null) {
           return resetAllGames();
         } else {
@@ -97,7 +97,7 @@ server_startup = function() {
     },
 
     resetDebug: (pwd) => {
-      if (adminMode || pwd == adminPassword) {
+      if (global.adminMode || pwd == adminPassword) {
         debug = Number(process.env.WEREWOLF_DEBUG || 1);
         console.log(`debug level reset to ${debug}`);
       }
@@ -109,7 +109,7 @@ server_startup = function() {
     },
 
     increaseDebugLevel: (pwd, delta=1) => {
-      if (adminMode || pwd == adminPassword) {
+      if (global.adminMode || pwd == adminPassword) {
         debug += delta;
         console.log(`set new debug level ${debug}`);
       }
@@ -119,7 +119,7 @@ server_startup = function() {
     downloadHistory: downloadHistory,
 
     downloadAll: (pwd) => {
-      if (adminMode || pwd == adminPassword) {
+      if (global.adminMode || pwd == adminPassword) {
         return downloadAll();
       } else {
         return null;

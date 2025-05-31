@@ -1,4 +1,4 @@
-observe = function() {
+global.observe = function() {
 
   Games.find({state: 'settingUp'}).observeChanges({
     added: (id, game) => {
