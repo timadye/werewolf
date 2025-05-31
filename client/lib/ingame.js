@@ -93,13 +93,13 @@ ingame_templates = function() {
 
   Template.gameFooter.events({
     'click .evt-suicide': () => {
-      confirm ("Kill Myself", "Leave game?", "If you kill yourself, you could tip the balance of power in the village!", true, () => {
+      ask_confirm ("Kill Myself", "Leave game?", "If you kill yourself, you could tip the balance of power in the village!", true, () => {
         leaveGame();
       });
     },
     'click .evt-rejoin': () => Session.set ("lateLobby", true),
     'click .evt-end': () => {
-      confirm ("End Game", "End game?", "This will end the game for all players", true, () => {
+      ask_confirm ("End Game", "End game?", "This will end the game for all players", true, () => {
         endGame();
       });
     },
@@ -109,7 +109,7 @@ ingame_templates = function() {
   Template.endGame.events({
     'click .evt-leave-village': leaveVillage,
     'click .evt-new': () => {
-      confirm ("New Game", "New game?", "This will remove the game summary for everyone", true, () => {
+      ask_confirm ("New Game", "New game?", "This will remove the game summary for everyone", true, () => {
         resetGame();
       });
     },

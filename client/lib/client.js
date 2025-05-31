@@ -42,7 +42,7 @@ registerHelper = function(helpers, helper) {
   }
 }
 
-confirm = function (button="OK", title="Confirm?", text="", doConfirm=true, ok) {
+ask_confirm = function (button="OK", title="Confirm?", text="", doConfirm=true, ok) {
   if (doConfirm) {
     sweetAlert({
       title: title,

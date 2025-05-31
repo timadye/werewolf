@@ -84,7 +84,7 @@ lobby_templates = function() {
     'click .evt-join': () => Session.set ("lateLobby", false),
     'click .toggle-player': toggleCurrentPlayer,
     'click .evt-end': () => {
-      confirm ("End Game", "End game?", "This will end the game for all players", true, () => {
+      ask_confirm ("End Game", "End game?", "This will end the game for all players", true, () => {
         resetGame();
       });
     },

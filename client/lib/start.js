@@ -31,7 +31,7 @@ start_templates = function() {
         Session.set('removingGames', removingGames);
       }
       if (removingGames) {
-        confirm ("Remove games", "Remove games?", "Start removing villages", true, setRemoving);
+        ask_confirm ("Remove games", "Remove games?", "Start removing villages", true, setRemoving);
       } else {
         setRemoving();
       }
@@ -105,7 +105,7 @@ createGame = function (createGame) {
 }
 
 resetAllGames = function () {
-  confirm ("Reset all games", "Remove all games?", "This will delete all villages", true, () => {
+  ask_confirm ("Reset all games", "Remove all games?", "This will delete all villages", true, () => {
     Meteor.call('removeGames', Session.get('adminPassword'), null, (error, ndel) => {
       if (error) {
         reportError(`failed to remove all games`);
