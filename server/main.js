@@ -1,7 +1,7 @@
-adminMode     = !!Number(process.env.WEREWOLF_ADMIN);
-debug         = Number(process.env.WEREWOLF_DEBUG || 1);
-adminPassword = process.env.WEREWOLF_PASSWORD || "admin";
-resetOnStart  = !!Number(process.env.WEREWOLF_RESET_ON_START);
+global.adminMode     = !!Number(process.env.WEREWOLF_ADMIN);
+global.debug         = Number(process.env.WEREWOLF_DEBUG || 1);
+global.adminPassword = process.env.WEREWOLF_PASSWORD || "admin";
+global.resetOnStart  = !!Number(process.env.WEREWOLF_RESET_ON_START);
 
 (function() {
   collections();

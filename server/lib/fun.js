@@ -13,10 +13,10 @@ global.noGame = function(gameName) {
     global.newGames.set(gameName, createName);
     global.incantations.set(`${createName} ${gameName}`, gameName);
   }
-  if (debug >= 1) console.log(`game ${gameName} does not exist - use '${createName} ${gameName}' to create it`);
+  if (global.adminMode >= 1) console.log(`game ${gameName} does not exist - use '${createName} ${gameName}' to create it`);
   const maxGames = 1000;
   while (global.newGames.size > maxGames) {
-    if (debug >= 1) console.log (`remove oldest tentative game '${global.newGames.keys().next().value}'`);
+    if (global.adminMode >= 1) console.log (`remove oldest tentative game '${global.newGames.keys().next().value}'`);
     global.newGames.delete(global.newGames.keys().next().value);
     global.incantations.delete(global.incantations.keys().next().value);
   }
@@ -31,9 +31,9 @@ But beware! This incantation will only work for the name you have already chosen
 global.tryCreateGame = function (incantation, pwd) {
   const gameName = global.incantations.get(incantation);
   if (gameName) {
-    if (debug>=2) console.log (`create game '${gameName}' from incantation '${incantation}'`);
+    if (global.adminMode>=2) console.log (`create game '${gameName}' from incantation '${incantation}'`);
     if (createGame (gameName)) return gameName;
-  } else if (adminMode || pwd == adminPassword) {
+  } else if (global.adminMode || pwd == global.adminPassword) {
     if (createGame (incantation)) return incantation;
   }
   return null;
@@ -48,12 +48,12 @@ global.createGame = function(gameName, roles=["werewolf_1", "werewolf_2", "wolfs
     roles: roles,
     ... initialGame()
   });
-  if (debug>=1) console.log(`New game '${gameName}' (${gameID})`);
+  if (global.adminMode>=1) console.log(`New game '${gameName}' (${gameID})`);
   return gameID;
 }
 
 global.resetAllGames = function() {
-  if (debug>=1) console.log("reset all games");
+  if (global.adminMode>=1) console.log("reset all games");
   var n = Games.remove({});
   n += Players.remove({});
   return n;
@@ -62,20 +62,20 @@ global.resetAllGames = function() {
 global.removeGame = function (gameName) {
   const game = Games.findOne({name: gameName}, {});
   if (!game) {
-    if (debug>=1) console.log(`game '${gameName}' does not exist for removal`);
+    if (global.adminMode>=1) console.log(`game '${gameName}' does not exist for removal`);
     return 0;
   }
-  if (debug>=1) console.log("remove game", gameName);
+  if (global.adminMode>=1) console.log("remove game", gameName);
   var n = Games.remove(game._id);
   n += Players.remove({gameID: game._id});
   return n;
 }
 
 global.assignRoles = function(gameID, players, roleNames) {
-  if (debug>=3) console.log('roles =', roleNames);
+  if (global.adminMode>=3) console.log('roles =', roleNames);
 
   const allFellows = keyArrayFromEntries (Object.entries(allRoles) . map (([k,v]) => [v.fellows, k]));
-  if (debug>=3) console.log('allFellows =', allFellows);
+  if (global.adminMode>=3) console.log('allFellows =', allFellows);
 
   var decks = keyArrayMap (roleNames,
                            roleName => [(allRoles[roleName]||{}).deck, roleName],
@@ -83,13 +83,13 @@ global.assignRoles = function(gameID, players, roleNames) {
   for (let i=1; decks.roles.length < players.length; i++) {
     decks.roles.push ("villager_"+i);
   }
-  if (debug>=3) console.log('decks =', decks);
+  if (global.adminMode>=3) console.log('decks =', decks);
 
   const shuffledRoles = shuffleArray (decks.roles, players.length);
-  if (debug>=3) console.log('shuffledRoles =', shuffledRoles);
-  if (debug>=3) console.log('players =', players);
+  if (global.adminMode>=3) console.log('shuffledRoles =', shuffledRoles);
+  if (global.adminMode>=3) console.log('players =', players);
   const rolePlayers = objectMap (players, (player,i) => ({[shuffledRoles[i]]: player}));
-  if (debug>=3) console.log('rolePlayers =', rolePlayers);
+  if (global.adminMode>=3) console.log('rolePlayers =', rolePlayers);
 
   const roleFellows = objectMap (allFellows, (([f,roles]) => {
     const fplayers = roles.flatMap (r => {
@@ -104,7 +104,7 @@ global.assignRoles = function(gameID, players, roleNames) {
     const r = allRoles[role];
     return r ? [r.fellows, shuffleArray (unloved, r.number, true)] : []
   }, roleFellows);
-  if (debug>=3) Object.entries(fellows).forEach(([k,v])=>console.log(`fellows[${k}] =`,v));
+  if (global.adminMode>=3) Object.entries(fellows).forEach(([k,v])=>console.log(`fellows[${k}] =`,v));
 
   Object.entries (rolePlayers) . forEach (([role, player]) => {
     const playerID = player._id;
@@ -116,7 +116,7 @@ global.assignRoles = function(gameID, players, roleNames) {
                                                                              : []);
                                        return others.length ? {[fellowType]: others.map(p=>p.name)} : null;
                                      });
-    if (debug>=1) {
+    if (global.adminMode>=1) {
       let fellowsStr = Object.entries (playerFellows) . map (([f,pa]) => [f+"="+(pa.join(","))]) . join(" ");
       if (fellowsStr) fellowsStr = " (fellow "+fellowsStr+")";
       console.log (`Player ${player.name} (${player._id}) is ${role}${fellowsStr}`);
@@ -131,11 +131,11 @@ global.assignRoles = function(gameID, players, roleNames) {
 }
 
 global.dawn = function (game, playersFound) {
-  if (debug >= 3) console.log ('Dawn: playerRoles =', game.playerRoles);
+  if (global.adminMode >= 3) console.log ('Dawn: playerRoles =', game.playerRoles);
 
   const players = playersFound.map (p => ({ ... p, act: {}, attackers: [], casualty: 0, cause: null }));
   const playerMap = objectMap (players, p => ({[p._id]: p}));
-  if (debug >= 3) console.log ('initial players =', players);
+  if (global.adminMode >= 3) console.log ('initial players =', players);
   var nwerewolves = 0;
   for (const player of players) {
     const roleName = game.playerRoles[player._id];
@@ -198,8 +198,8 @@ global.dawn = function (game, playersFound) {
       injuries.push(player.name);
     }
   }
-  if (debug >= 1) console.log (`Dawn: deaths = ${deaths}, suicides = ${suicides}, injuries = ${injuries}`);
-  if (debug >= 2) console.log ('details =', players);
+  if (global.adminMode >= 1) console.log (`Dawn: deaths = ${deaths}, suicides = ${suicides}, injuries = ${injuries}`);
+  if (global.adminMode >= 2) console.log ('details =', players);
   TurnsHistory.insert({historyID: game.historyID, phase: 'night', players: players});
 
   let voiceOfFate = [];
@@ -228,7 +228,7 @@ global.guillotine = function (game, players) {
   const calls = players.flatMap (p => (p.call == victimPlayer._id ? [p._id] : []));
   const dead = (votes.guillotine.length > votes.spare.length);
   const victim = { _id: victimPlayer._id, name: victimPlayer.name, ... votes, attackers: calls, casualty: dead?2:0, cause: 'guillotine' };
-  if (debug >= 1) console.log (`Player ${victim.name} (${victim._id}) was ${dead?"guillotined":"spared"} by ${votes.guillotine.length} to ${votes.spare.length}`);
+  if (global.adminMode >= 1) console.log (`Player ${victim.name} (${victim._id}) was ${dead?"guillotined":"spared"} by ${votes.guillotine.length} to ${votes.spare.length}`);
 
   const [history, voiceOfFate] = killPlayer ("Guillotine", game, players, victim);
   if (!dead) {
@@ -240,7 +240,7 @@ global.guillotine = function (game, players) {
 }
 
 global.guillotineCall = function (players) {
-  if (debug >= 3) console.log('players =', players);
+  if (global.adminMode >= 3) console.log('players =', players);
   let calls = {}, guillotine = [];
   for (const player of players) {
     if (player.call) {
@@ -255,7 +255,7 @@ global.guillotineCall = function (players) {
   if (guillotine.length == 1) {
     return guillotine[0];
   } else {
-    if (debug >= 0) {
+    if (global.adminMode >= 0) {
       if (guillotine.length == 0) {
         console.log (`Ignore vote on call which was not seconded on ${Object.keys(calls).join(" and ")} - why was this requested by the client?`);
       }  else {
@@ -270,7 +270,7 @@ global.twang = function (game, players, vigilanteID, vigilante) {
   const victimPlayer = players.find (p => p._id == vigilante.twang);
   if (!victimPlayer) return;
   const victim = { _id: victimPlayer._id, name: victimPlayer.name, attackers: [vigilanteID], casualty: 2, cause: 'crossbow' };
-  if (debug >= 1) console.log (`Player ${victim.name} (${victim._id}) was shot by ${vigilante.name} (${vigilanteID})`);
+  if (global.adminMode >= 1) console.log (`Player ${victim.name} (${victim._id}) was shot by ${vigilante.name} (${vigilanteID})`);
 
   const [history, voiceOfFate] = killPlayer ("Vigilante", game, players, victim);
 
@@ -294,8 +294,8 @@ global.killPlayer = function (cause, game, players, victim) {
       Players.update (player._id, {$set: {alive: false}});
     }
   }
-  if      (debug == 1) console.log (`${cause}: deaths = ${deaths}, suicides = ${suicides}`);
-  else if (debug >= 2) console.log (`${cause}: deaths = ${deaths}, suicides = ${suicides}, details =`, history);
+  if      (global.adminMode == 1) console.log (`${cause}: deaths = ${deaths}, suicides = ${suicides}`);
+  else if (global.adminMode >= 2) console.log (`${cause}: deaths = ${deaths}, suicides = ${suicides}, details =`, history);
 
   let voiceOfFate = [];
   if (deaths.length) {
@@ -315,7 +315,7 @@ global.killPlayer = function (cause, game, players, victim) {
 
 global.loverSuicide = function (allLovers, playerMap, player) {
   playerMap[player._id] = player;
-  if (debug >= 3) console.log ('loverSuicide: lovers =', allLovers, ', playerMap =', playerMap, ', player =', player);
+  if (global.adminMode >= 3) console.log ('loverSuicide: lovers =', allLovers, ', playerMap =', playerMap, ', player =', player);
   var deaths = [], suicides = [];
   for (const lovers of allLovers) {
     if (lovers.some (p => p._id == player._id)) {
@@ -323,7 +323,7 @@ global.loverSuicide = function (allLovers, playerMap, player) {
         if (lover._id != player._id) {
           const suicide = playerMap[lover._id];
           if (suicide && (!suicide.casualty || suicide.casualty <= 1)) {
-            if (debug >= 1) console.log (`Player ${player.name}'s (${player._id}) death by ${player.cause} causes ${suicide.name} (${suicide._id}) to suicide`);
+            if (global.adminMode >= 1) console.log (`Player ${player.name}'s (${player._id}) death by ${player.cause} causes ${suicide.name} (${suicide._id}) to suicide`);
             suicide.casualty = 3;
             suicide.cause = 'lover';
             suicides.push (suicide);
@@ -352,7 +352,7 @@ global.downloadHistory = function (gameName) {
     gamesHistory: gamesHistory,
     turnsHistory: turnsHistory,
   };
-  if (debug >= 1) {
+  if (global.adminMode >= 1) {
     info = Object.entries(obj).flatMap(([k,v])=>(k!="gameName" && Array.isArray(v) ? [`${v.length} ${k}`] : [])).join(", ");
     console.log (`download history for '${gameName}': ${info}`);
   }
@@ -375,7 +375,7 @@ global.downloadAll = function() {
     gamesHistory: gamesHistory,
     turnsHistory: turnsHistory,
   };
-  if (debug >= 1) {
+  if (global.adminMode >= 1) {
     info = Object.entries(obj).flatMap(([k,v])=>(k!="gameName" && Array.isArray(v) ? [`${v.length} ${k}`] : [])).join(", ");
     console.log (`download all data: ${info}`);
   }

@@ -1,13 +1,13 @@
 global.server_startup = function() {
 
   Meteor.startup(() => {
-    if (debug >= 0) {
-      console.log(`Start Werewolf server: adminMode=${global.adminMode}, debug=${debug}, resetOnStart=${resetOnStart}`);
+    if (global.adminMode >= 0) {
+      console.log(`Start Werewolf server: adminMode=${global.adminMode}, debug=${global.adminMode}, resetOnStart=${global.resetOnStart}`);
     }
-    if (resetOnStart) {
+    if (global.resetOnStart) {
       Games.remove({});
       Players.remove({});
-    } else if (debug >= 1) {
+    } else if (global.adminMode >= 1) {
       let games = Games.find({}, { fields: {name: 1, state: 1, createdAt: 1}, sort: {createdAt: 1} });
       games = games ? games.fetch() : [];
       let players = Players.find({}, { fields: {name: 1, gameID: 1}, sort: {createdAt: 1} });
@@ -26,7 +26,7 @@ global.server_startup = function() {
   });
 
   Meteor.publish('game', function (gameName) {
-    if (debug >= 2) console.log("publish game", gameName);
+    if (global.adminMode >= 2) console.log("publish game", gameName);
     const game = Games.findOne({name: gameName}, {});
     if (!game) {
       this.error(new Meteor.Error('no-game', noGame(gameName)));
@@ -39,7 +39,7 @@ global.server_startup = function() {
   });
 
   Meteor.publish('gamesHistory', (historyID) => {
-    if (debug >= 2) console.log("publish gamesHistory", historyID);
+    if (global.adminMode >= 2) console.log("publish gamesHistory", historyID);
     return [
       GamesHistory.find(historyID),
       TurnsHistory.find({historyID: historyID})
@@ -47,19 +47,19 @@ global.server_startup = function() {
   });
 
   Meteor.publish('pastGames', (gameName) => {
-    if (debug >= 2) console.log("publish pastGames", gameName);
+    if (global.adminMode >= 2) console.log("publish pastGames", gameName);
     return GamesHistory.find({name: gameName}, {fields: {name: 1, createdAt: 1}});
   });
 
   Meteor.publish('allGames', (pwd) => {
-    if (global.adminMode || pwd == adminPassword) {
-      if (debug >= 1) console.log("admin mode: publish allGames");
+    if (global.adminMode || pwd == global.adminPassword) {
+      if (global.adminMode >= 1) console.log("admin mode: publish allGames");
       return Games.find({}, { fields: {name: 1} });
     } else {
       if (pwd) {
-        if (debug >= 1) console.log("don't publish allGames - authentication failure");
+        if (global.adminMode >= 1) console.log("don't publish allGames - authentication failure");
       } else {
-        if (debug >= 2) console.log("don't publish allGames");
+        if (global.adminMode >= 2) console.log("don't publish allGames");
       }
       return null;
     }
@@ -74,7 +74,7 @@ global.server_startup = function() {
     createGame: (incantation, pwd) => {
       const game = Games.findOne({name: incantation}, {name: 1});
       if (game) {
-        if (debug >= 2) console.log("createGame: game", incantation, "already exists");
+        if (global.adminMode >= 2) console.log("createGame: game", incantation, "already exists");
         return game.name;
       }
       const gameName = tryCreateGame (incantation, pwd);
@@ -85,7 +85,7 @@ global.server_startup = function() {
     },
 
     removeGames: (pwd, gameName) => {
-      if (global.adminMode || pwd == adminPassword) {
+      if (global.adminMode || pwd == global.adminPassword) {
         if (gameName === null) {
           return resetAllGames();
         } else {
@@ -97,29 +97,29 @@ global.server_startup = function() {
     },
 
     resetDebug: (pwd) => {
-      if (global.adminMode || pwd == adminPassword) {
-        debug = Number(process.env.WEREWOLF_DEBUG || 1);
-        console.log(`debug level reset to ${debug}`);
+      if (global.adminMode || pwd == global.adminPassword) {
+        global.adminMode = Number(process.env.WEREWOLF_DEBUG || 1);
+        console.log(`debug level reset to ${global.adminMode}`);
       }
-      return debug;
+      return global.adminMode;
     },
 
     debugLevel: () => {
-      return debug;
+      return global.adminMode;
     },
 
     increaseDebugLevel: (pwd, delta=1) => {
-      if (global.adminMode || pwd == adminPassword) {
-        debug += delta;
-        console.log(`set new debug level ${debug}`);
+      if (global.adminMode || pwd == global.adminPassword) {
+        global.adminMode += delta;
+        console.log(`set new debug level ${global.adminMode}`);
       }
-      return debug;
+      return global.adminMode;
     },
 
     downloadHistory: downloadHistory,
 
     downloadAll: (pwd) => {
-      if (global.adminMode || pwd == adminPassword) {
+      if (global.adminMode || pwd == global.adminPassword) {
         return downloadAll();
       } else {
         return null;
