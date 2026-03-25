@@ -13,4 +13,4 @@ _Oxford Werewolf_ is a little rough around the edges, but we have found from man
 * This app relies on the players to detect the end-game conditions - this can be a good role for dead players, who can follow the progress of the game by selecting `Show Fate's Secrets`.
 * Occasionally, if there is a connection problem, a player may be thrown out of the game and taken back to the setup screen. From there, they can select their name and `Join Game`. If they are shown as a dead "lurker", then they can select `Rejoin` to return to the setup screen (being careful not to look at fate's secrets on the way).
 
-This code is currently running here: https://oxford-werewolf.eu.meteorapp.com/ . Please note it it takes a minute to start up the first time.
+This code is currently running here: https://oxford-werewolf.sandbox.galaxycloud.app/ . Please note it it takes a minute to start up the first time.
