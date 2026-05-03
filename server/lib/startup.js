@@ -1,17 +1,25 @@
-server_startup = function() {
+import { Meteor } from 'meteor/meteor';
+import { downloadHistory, Games, Players } from '/server/globals.js';
 
-  Meteor.startup(() => {
+export const adminMode     = !!Number(process.env.WEREWOLF_ADMIN);
+export const debug         = Number(process.env.WEREWOLF_DEBUG || 1);
+export const adminPassword = process.env.WEREWOLF_PASSWORD || "admin";
+export const resetOnStart  = !!Number(process.env.WEREWOLF_RESET_ON_START);
+
+export function server_startup() {
+
+  Meteor.startup(async () => {
     if (debug >= 0) {
       console.log(`Start Werewolf server: adminMode=${adminMode}, debug=${debug}, resetOnStart=${resetOnStart}`);
     }
     if (resetOnStart) {
-      Games.remove({});
-      Players.remove({});
+      Games.removeAsync({});
+      Players.removeAsync({});
     } else if (debug >= 1) {
       let games = Games.find({}, { fields: {name: 1, state: 1, createdAt: 1}, sort: {createdAt: 1} });
-      games = games ? games.fetch() : [];
+      games = games ? await games.fetch() : [];
       let players = Players.find({}, { fields: {name: 1, gameID: 1}, sort: {createdAt: 1} });
-      players = players ? players.fetch() : [];
+      players = players ? await players.fetch() : [];
       for (const game of games) {
         let ps = players.filter (p => p.gameID == game._id) . map (p => p.name) . join(', ');
         ps = ps ? `players ${ps}` : 'no players';
@@ -25,9 +33,9 @@ server_startup = function() {
     }
   });
 
-  Meteor.publish('game', function (gameName) {
+  Meteor.publish('game', async function (gameName) {
     if (debug >= 2) console.log("publish game", gameName);
-    const game = Games.findOne({name: gameName}, {});
+    const game = await Games.findOne({name: gameName}, {});
     if (!game) {
       this.error(new Meteor.Error('no-game', noGame(gameName)));
       return;
@@ -38,7 +46,7 @@ server_startup = function() {
     ];
   });
 
-  Meteor.publish('gamesHistory', (historyID) => {
+  Meteor.publish('gamesHistory', async (historyID) => {
     if (debug >= 2) console.log("publish gamesHistory", historyID);
     return [
       GamesHistory.find(historyID),
@@ -46,12 +54,12 @@ server_startup = function() {
     ];
   });
 
-  Meteor.publish('pastGames', (gameName) => {
+  Meteor.publish('pastGames', async (gameName) => {
     if (debug >= 2) console.log("publish pastGames", gameName);
     return GamesHistory.find({name: gameName}, {fields: {name: 1, createdAt: 1}});
   });
 
-  Meteor.publish('allGames', (pwd) => {
+  Meteor.publish('allGames', async (pwd) => {
     if (adminMode || pwd == adminPassword) {
       if (debug >= 1) console.log("admin mode: publish allGames");
       return Games.find({}, { fields: {name: 1} });
@@ -67,12 +75,12 @@ server_startup = function() {
 
   Meteor.methods({
 
-    villageExists: (gameName) => {
-      return Games.find( {name: gameName} ).count() > 0 ? 1 : 0;
+    villageExists: async (gameName) => {
+      return await Games.find( {name: gameName} ).count() > 0 ? 1 : 0;
     },
 
-    createGame: (incantation, pwd) => {
-      const game = Games.findOne({name: incantation}, {name: 1});
+    createGame: async (incantation, pwd) => {
+      const game = await Games.findOne({name: incantation}, {name: 1});
       if (game) {
         if (debug >= 2) console.log("createGame: game", incantation, "already exists");
         return game.name;
@@ -84,7 +92,7 @@ server_startup = function() {
       return gameName;
     },
 
-    removeGames: (pwd, gameName) => {
+    removeGames: async (pwd, gameName) => {
       if (adminMode || pwd == adminPassword) {
         if (gameName === null) {
           return resetAllGames();

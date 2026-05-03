@@ -1,4 +1,6 @@
-observe = function() {
+import { debug, adminMode, resetOnStart, Games, Players } from '/server/globals.js';
+
+export function observe() {
 
   Games.find({state: 'settingUp'}).observeChanges({
     added: (id, game) => {

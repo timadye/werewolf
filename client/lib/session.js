@@ -1,6 +1,7 @@
 //======================================================================
 // Session management functions
 //======================================================================
+// import { FlowRouter } from 'meteor/ostrio:flow-router-extra';
 
 initSession = function() {
   setDebugLevel();
@@ -50,7 +51,7 @@ routed = function(view, gameName=null, playerName=null, onReady=null) {
 
     const routingDone = () => {
       if (view) Session.set('currentView', view);
-      BlazeLayout.render('main');
+      FlowRouter.render('main');
     }
     if (onReady) {
       onReady(routingDone);
