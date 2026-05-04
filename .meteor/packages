@@ -12,9 +12,9 @@ tracker@1.3.3                 # Meteor's client-side reactive programming librar
 es5-shim@4.8.0                # ECMAScript 5 compatibility for older browsers
 ecmascript@0.16.8              # Enable ECMAScript2015+ syntax in app code
 
-kadira:flow-router      # FlowRouter is a very simple router for Meteor
 kadira:blaze-layout     # Layout manager for blaze (works well with FlowRouter)
 
 session@1.2.1
 kevohagan:sweetalert
 ccorcos:subs-cache
+ostrio:flow-router-extra

@@ -2,6 +2,8 @@
 // Session management functions
 //======================================================================
 
+import { FlowRouter } from 'meteor/ostrio:flow-router-extra';
+
 initSession = function() {
   setDebugLevel();
   setAdminMode();
