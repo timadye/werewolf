@@ -1,4 +1,8 @@
-downloadObject = function(obj, filename=null) {
+import { debug } from '/imports/client/globals.js'
+import { reportError } from '/client/lib/client.js'
+import { getGameName } from '/client/lib/info.js'
+
+export function downloadObject(obj, filename=null) {
   const a = document.createElement('a');
   const data = JSON.stringify(obj, undefined, 2);
   a.href = URL.createObjectURL( new Blob([data], { type:'text/json' }) );
@@ -6,10 +10,10 @@ downloadObject = function(obj, filename=null) {
   a.click();
 }
 
-downloadAll = function() { downloadGame(true); }
-downloadVillage = function() { downloadGame(false); }
+export function downloadAll() { downloadGame(true); }
+export function downloadVillage() { downloadGame(false); }
 
-downloadGame = function(all) {
+export function downloadGame(all) {
   const gameName = all ? null : getGameName();
   const callback = (error, obj) => {
     if (error) {

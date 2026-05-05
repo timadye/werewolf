@@ -1,4 +1,7 @@
-server_startup = function() {
+import { adminMode, debug, adminPassword, resetOnStart } from '/imports/server/globals.js'
+import { noGame, tryCreateGame, createGame, resetAllGames, removeGame, downloadHistory, downloadAll } from '/server/lib/fun.js'
+
+export function server_startup() {
 
   Meteor.startup(() => {
     if (debug >= 0) {

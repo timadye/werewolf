@@ -1,19 +1,21 @@
-debug = 0;   // overridden by server setting if higher
-dash = "\u2013";
-nbsp = "\u00A0";
+import { collections } from '/lib/collections.js'
+import { routes } from '/client/lib/routes.js'
+import { main_templates } from '/client/lib/client.js'
+import { start_templates } from '/client/lib/start.js'
+import { lobby_templates } from '/client/lib/lobby.js'
+import { history_templates } from '/client/lib/history.js'
+import { ingame_templates } from '/client/lib/ingame.js'
+import { night_templates } from '/client/lib/night.js'
+import { day_templates } from '/client/lib/day.js'
+import { initSession } from '/client/lib/session.js'
 
-MeteorSubs = new SubsCache();
-MeteorSubsHistory = new SubsCache();
-
-(function() {
-  collections();
-  routes();
-  main_templates();
-  start_templates();
-  lobby_templates();
-  history_templates();
-  ingame_templates();
-  night_templates();
-  day_templates();
-  initSession();
-})();
+collections();
+routes();
+main_templates();
+start_templates();
+lobby_templates();
+history_templates();
+ingame_templates();
+night_templates();
+day_templates();
+initSession();

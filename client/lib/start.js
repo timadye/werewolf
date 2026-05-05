@@ -1,6 +1,9 @@
 import { FlowRouter } from 'meteor/ostrio:flow-router-extra';
 
-start_templates = function() {
+import { ask_confirm, reportError, setPassword } from '/client/lib/client.js'
+import { allGames } from '/client/lib/info.js'
+
+export function start_templates() {
 
   //======================================================================
   // main template
@@ -93,7 +96,7 @@ start_templates = function() {
 // start functions
 //======================================================================
 
-createGame = function (createGame) {
+export function createGame (createGame) {
   console.log(`try creating game with '${createGame}'`);
   Meteor.call ('createGame', createGame, Session.get('adminPassword'), (error, gameName) => {
     if (error) {
@@ -106,7 +109,7 @@ createGame = function (createGame) {
   });
 }
 
-resetAllGames = function () {
+export function resetAllGames () {
   ask_confirm ("Reset all games", "Remove all games?", "This will delete all villages", true, () => {
     Meteor.call('removeGames', Session.get('adminPassword'), null, (error, ndel) => {
       if (error) {
@@ -118,7 +121,7 @@ resetAllGames = function () {
   });
 }
 
-removeGame = function (gameName=null) {
+export function removeGame (gameName=null) {
   Meteor.call('removeGames', Session.get('adminPassword'), gameName, (error, ndel) => {
     const msg = gameName===null ? 'all games' : `game '${gameName}'`;
     if (error) {
@@ -129,7 +132,7 @@ removeGame = function (gameName=null) {
   });
 }
 
-increaseDebugLevel = function (delta=1) {
+export function increaseDebugLevel (delta=1) {
   Meteor.call('increaseDebugLevel', Session.get('adminPassword'), delta, (error, newDebug) => {
     if (error) {
       reportError('increaseDebugLevel failed');

@@ -1,4 +1,7 @@
-observe = function() {
+import { debug } from '/imports/server/globals.js'
+import { assignRoles, dawn, guillotine, twang } from '/server/lib/fun.js'
+
+export function observe() {
 
   Games.find({state: 'settingUp'}).observeChanges({
     added: (id, game) => {

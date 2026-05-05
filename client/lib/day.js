@@ -1,4 +1,9 @@
-day_templates = function() {
+import { getCurrentGame, getPlayerName, getCurrentPlayer, allPlayers } from '/client/lib/info.js'
+import { startClock, hideRole, alive } from '/client/lib/ingame.js'
+import { playerClass } from '/client/lib/lobby.js'
+import { roleInfo } from '/lib/roles.js'
+
+export function day_templates() {
 
   Template.dayView.rendered = () => {
     document.body.className = "day";
@@ -90,12 +95,12 @@ day_templates = function() {
 // day functions
 //======================================================================
 
-guillotineVote = function(vote) {
+export function guillotineVote(vote) {
   const player = getCurrentPlayer({});
   if (player) Players.update (player._id, {$set: {guillotine: vote}});
 }
 
-voting = function() {
+export function voting() {
   let calls = {}, guillotine = 0, called = null;
   for (const {call} of Players.find ({call: {$ne: null}, alive: {$eq: true}}, {fields: {call:1} }) . fetch()) {
     if (call in calls) {

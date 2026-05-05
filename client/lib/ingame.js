@@ -1,4 +1,13 @@
-ingame_templates = function() {
+import { debug } from '/imports/client/globals.js'
+import { ask_confirm } from '/client/lib/client.js'
+import { downloadAll } from '/client/lib/download.js'
+import { historySubscribe, showHistory } from '/client/lib/history.js'
+import { getCurrentGame, getPlayerName, getCurrentPlayer, allPlayers } from '/client/lib/info.js'
+import { leaveVillage, resetGame } from '/client/lib/session.js'
+import { allRoles, roleInfo } from '/lib/roles.js'
+import { objectMap } from '/lib/utils.js'
+
+export function ingame_templates() {
 
 //======================================================================
 // Game playing templates
@@ -124,7 +133,7 @@ ingame_templates = function() {
 //======================================================================
 
 var interval = null;
-startClock = function (start=true) {
+export function startClock (start=true) {
   if (interval) Meteor.clearInterval(interval);
   Session.set('time', 0);
   if (start) {
@@ -137,28 +146,28 @@ startClock = function (start=true) {
   }
 }
 
-showRole = function () {
+export function showRole () {
   hideRole(false);
 }
 
-showSecrets = function () {
+export function showSecrets () {
   historySubscribe(() => hideSecrets(false));
 }
 
-hideRole = function (hide=true) {
+export function hideRole (hide=true) {
   Session.set ("hiddenRole", hide);
 }
 
-hideSecrets = function (hide=true) {
+export function hideSecrets (hide=true) {
   Session.set ("hiddenSecrets", hide);
 }
 
-alive = function() {
+export function alive() {
   const player = getCurrentPlayer({alive:1});
   return player ? player.alive : false;
 }
 
-leaveGame = function() {
+export function leaveGame() {
   const player = getCurrentPlayer({alive:1});
   if (player && player.alive) {
     Session.set('turnMessage', null);
@@ -169,7 +178,7 @@ leaveGame = function() {
   }
 };
 
-endGame = function() {
+export function endGame() {
   Session.set('errorMessage', null);
   Session.set('turnMessage', null);
   const gameID = Session.get('gameID');

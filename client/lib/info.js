@@ -1,11 +1,14 @@
-getCurrentGame = function(fields=null) {
+import { debug } from '/imports/client/globals.js'
+import { alive } from '/client/lib/ingame.js'
+
+export function getCurrentGame(fields=null) {
   const gameID = Session.get('gameID');
   game = gameID ? Games.findOne(gameID, fields===null ? {} : {fields: fields}) : null;
   if (debug >= 3) console.log (`getCurrentGame(${gameID}) =`, game);
   return game;
 }
 
-getGameName = function(gameID=null) {
+export function getGameName(gameID=null) {
   if (!gameID) {
     gameID = Session.get('gameID');
     if (!gameID) return null;
@@ -14,7 +17,7 @@ getGameName = function(gameID=null) {
   return game ? game.name : null;
 }
 
-getPlayerName = function(playerID=null) {
+export function getPlayerName(playerID=null) {
   if (!playerID) {
     playerID = Session.get('playerID');
     if (!playerID) return null;
@@ -23,19 +26,19 @@ getPlayerName = function(playerID=null) {
   return player ? player.name : null;
 }
 
-getCurrentPlayer = function(fields=null) {
+export function getCurrentPlayer(fields=null) {
   const playerID = Session.get('playerID');
   const player = playerID ? Players.findOne(playerID, fields===null ? {} : {fields: fields}) : null;
   if (debug >= 3) console.log (`getCurrentPlayer(${playerID}) =`, player);
   return player;
 }
 
-allGames = function() {
+export function allGames() {
   const ret = Games.find ({}, {fields: {name: 1}, sort: {createdAt: 1}}).fetch();
   return ret ? ret.map((game) => game.name) : ret;
 }
 
-allPlayersFind = function (gameID=null, includeInactive=0, fields={name:1}) {
+export function allPlayersFind (gameID=null, includeInactive=0, fields={name:1}) {
   // includeInactive: 0=active and alive, 1=active, 2=all
   if (!gameID) {
     gameID = Session.get('gameID');
@@ -47,7 +50,7 @@ allPlayersFind = function (gameID=null, includeInactive=0, fields={name:1}) {
                         {fields: fields});
 }
 
-allPlayers = function (gameID=null, includeInactive=0, fields={name:1}) {
+export function allPlayers (gameID=null, includeInactive=0, fields={name:1}) {
   const ret = allPlayersFind (gameID, includeInactive, fields);
   return ret ? ret.fetch() : [];
 }

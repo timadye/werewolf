@@ -1,6 +1,14 @@
 import { FlowRouter } from 'meteor/ostrio:flow-router-extra';
 
-history_templates = function() {
+import { debug, dash, nbsp, MeteorSubs, MeteorSubsHistory } from '/imports/client/globals.js'
+import { downloadVillage } from '/client/lib/download.js'
+import { getCurrentGame, getGameName } from '/client/lib/info.js'
+import { alive, endGame } from '/client/lib/ingame.js'
+import { trackGameState, leaveVillage } from '/client/lib/session.js'
+import { roleInfo } from '/lib/roles.js'
+import { objectMap } from '/lib/utils.js'
+
+export function history_templates() {
   //======================================================================
   // historyIndex template
   //======================================================================
@@ -51,7 +59,7 @@ history_templates = function() {
 // history functions
 //======================================================================
 
-pastGamesSubscribe = function (onReady, gameName) {
+export function pastGamesSubscribe (onReady, gameName) {
   MeteorSubsHistory.subscribe('pastGames', gameName, {
     onReady: () => {
       if (debug >= 1) console.log (`Subscribed to 'pastGames' for '${gameName}'`);
@@ -60,7 +68,7 @@ pastGamesSubscribe = function (onReady, gameName) {
   });
 }
 
-historySubscribe = function (onReady, historyID=null) {
+export function historySubscribe (onReady, historyID=null) {
   if (!historyID) {
     const game = getCurrentGame({historyID:1});
     if (!game) return;
@@ -84,7 +92,7 @@ historySubscribe = function (onReady, historyID=null) {
   });
 }
 
-showHistory = function () {
+export function showHistory () {
   const historyID = Session.get('historyEntry');
   if (!historyID) return null;
   const game = GamesHistory.findOne(historyID);
@@ -97,7 +105,7 @@ showHistory = function () {
   return historyTable (game, history);
 }
 
-historyTable = function (game, history) {
+export function historyTable (game, history) {
   const col0 = {Class:"", name:""};
   const players = game.players.map (p => ({...p, role: roleInfo(game.playerRoles[p._id]), alive:true})) . filter (p=>!p.role.zombie);
   if (debug >= 2) console.log ('players = ', players);

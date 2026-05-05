@@ -1,6 +1,14 @@
 import { FlowRouter } from 'meteor/ostrio:flow-router-extra';
 
-lobby_templates = function() {
+import { debug } from '/imports/client/globals.js'
+import { ask_confirm, setTitle } from '/client/lib/client.js'
+import { downloadAll } from '/client/lib/download.js'
+import { getCurrentGame, getGameName, getPlayerName, getCurrentPlayer, allPlayersFind, allPlayers } from '/client/lib/info.js'
+import { alive } from '/client/lib/ingame.js'
+import { leaveVillage, resetGame } from '/client/lib/session.js'
+import { allRoles } from '/lib/roles.js'
+
+export function lobby_templates() {
 
 //======================================================================
 // lobby template
@@ -100,7 +108,7 @@ lobby_templates = function() {
 // lobby functions
 //======================================================================
 
-initialPlayer = function() {
+export function initialPlayer() {
   return {
     role: null,
     vote: null, // id that this player selects at night
@@ -113,7 +121,7 @@ initialPlayer = function() {
   };
 }
 
-createPlayer = function(gameID, gameName, playerName) {
+export function createPlayer(gameID, gameName, playerName) {
   if (!gameID || !playerName) return null;
   const player = Players.findOne({gameID: gameID, name: playerName});
   if (player) {
@@ -130,7 +138,7 @@ createPlayer = function(gameID, gameName, playerName) {
   return playerID;
 }
 
-removePlayer = function(game, playerName) {
+export function removePlayer(game, playerName) {
   if (!game) return;
   if (playerName) {
     var player = Players.findOne({gameID: game._id, name: playerName}, {fields: {name:1}});
@@ -154,7 +162,7 @@ removePlayer = function(game, playerName) {
   }
 }
 
-setCurrentPlayer = function (newID=null) {
+export function setCurrentPlayer (newID=null) {
   const playerID = Session.get('playerID');
   if (newID == playerID) return playerID;
   if (playerID && !newID) {
@@ -169,7 +177,7 @@ setCurrentPlayer = function (newID=null) {
   return newID;
 }
 
-toggleCurrentPlayer = function (event) {
+export function toggleCurrentPlayer (event) {
   const newID = event.target.id;
   if (!newID) return;
   if (Session.equals('playerID', newID)) {
@@ -179,7 +187,7 @@ toggleCurrentPlayer = function (event) {
   }
 }
 
-playerClass = function (id) {
+export function playerClass (id) {
   const player= Players.findOne(id, {fields: {session:1}});
   if (!player) {
     return null;
@@ -192,7 +200,7 @@ playerClass = function (id) {
   }
 }
 
-readyToStart = function() {
+export function readyToStart() {
   const game = getCurrentGame({roles:1});
   if (!game) return false;
   var types = { werewolf:0, cultist:0 };
@@ -215,7 +223,7 @@ readyToStart = function() {
   return ok;
 }
 
-availableRoles = function(game, unavailable=false) {
+export function availableRoles(game, unavailable=false) {
   const nplayersFind = allPlayersFind (game._id, 2);
   if (!nplayersFind) return [];
   const nplayers = nplayersFind.count();

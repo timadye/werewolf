@@ -1,10 +1,7 @@
-adminMode     = !!Number(process.env.WEREWOLF_ADMIN);
-debug         = Number(process.env.WEREWOLF_DEBUG || 1);
-adminPassword = process.env.WEREWOLF_PASSWORD || "admin";
-resetOnStart  = !!Number(process.env.WEREWOLF_RESET_ON_START);
+import { collections } from '/lib/collections.js'
+import { server_startup } from '/server/lib/startup.js'
+import { observe } from '/server/lib/observe.js'
 
-(function() {
-  collections();
-  server_startup();
-  observe();
-})();
+collections();
+server_startup();
+observe();

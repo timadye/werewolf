@@ -1,7 +1,12 @@
-newGames = new Map();
-incantations = new Map();
+import { adminMode, debug, adminPassword } from '/imports/server/globals.js'
+import { initialGame } from '/lib/collections.js'
+import { allRoles, roleInfo } from '/lib/roles.js'
+import { shuffleArray, initObject, keyArrayFromEntries, keyArrayMap, objectMap } from '/lib/utils.js'
 
-noGame = function(gameName) {
+var newGames = new Map();
+var incantations = new Map();
+
+export function noGame(gameName) {
   const createNames = [
     "found", "establish", "build", "construct", "erect", "create", "start", "begin", "initiate", "inaugurate",
     "manifest", "organise", "install", "dictate", "nominate", "enact", "originate", "plant", "congregate", "settle",
@@ -28,7 +33,7 @@ But beware! This incantation will only work for the name you have already chosen
 }
 
 
-tryCreateGame = function (incantation, pwd) {
+export function tryCreateGame (incantation, pwd) {
   const gameName = incantations.get(incantation);
   if (gameName) {
     if (debug>=2) console.log (`create game '${gameName}' from incantation '${incantation}'`);
@@ -40,7 +45,7 @@ tryCreateGame = function (incantation, pwd) {
 }
 
 
-createGame = function(gameName, roles=["werewolf_1", "werewolf_2", "wolfsbane_1", "trapper_1"]) {
+export function createGame(gameName, roles=["werewolf_1", "werewolf_2", "wolfsbane_1", "trapper_1"]) {
   const gameID = Games.insert({
     name: gameName,
     createdAt: new Date().valueOf(),
@@ -52,14 +57,14 @@ createGame = function(gameName, roles=["werewolf_1", "werewolf_2", "wolfsbane_1"
   return gameID;
 }
 
-resetAllGames = function() {
+export function resetAllGames() {
   if (debug>=1) console.log("reset all games");
   var n = Games.remove({});
   n += Players.remove({});
   return n;
 }
 
-removeGame = function (gameName) {
+export function removeGame (gameName) {
   const game = Games.findOne({name: gameName}, {});
   if (!game) {
     if (debug>=1) console.log(`game '${gameName}' does not exist for removal`);
@@ -71,7 +76,7 @@ removeGame = function (gameName) {
   return n;
 }
 
-assignRoles = function(gameID, players, roleNames) {
+export function assignRoles(gameID, players, roleNames) {
   if (debug>=3) console.log('roles =', roleNames);
 
   const allFellows = keyArrayFromEntries (Object.entries(allRoles) . map (([k,v]) => [v.fellows, k]));
@@ -130,7 +135,7 @@ assignRoles = function(gameID, players, roleNames) {
   return gameSettings;
 }
 
-dawn = function (game, playersFound) {
+export function dawn (game, playersFound) {
   if (debug >= 3) console.log ('Dawn: playerRoles =', game.playerRoles);
 
   const players = playersFound.map (p => ({ ... p, act: {}, attackers: [], casualty: 0, cause: null }));
@@ -214,7 +219,7 @@ dawn = function (game, playersFound) {
   Games.update(game._id, {$set: {voiceOfFate: voiceOfFate, state: 'dayTime'}});
 }
 
-guillotine = function (game, players) {
+export function guillotine (game, players) {
   const victimPlayer = guillotineCall (players);
   if (!victimPlayer) return;
 
@@ -239,7 +244,7 @@ guillotine = function (game, players) {
   TurnsHistory.insert({historyID: game.historyID, phase: 'guillotine', players: history});
 }
 
-guillotineCall = function (players) {
+export function guillotineCall (players) {
   if (debug >= 3) console.log('players =', players);
   let calls = {}, guillotine = [];
   for (const player of players) {
@@ -266,7 +271,7 @@ guillotineCall = function (players) {
   }
 }
 
-twang = function (game, players, vigilanteID, vigilante) {
+export function twang (game, players, vigilanteID, vigilante) {
   const victimPlayer = players.find (p => p._id == vigilante.twang);
   if (!victimPlayer) return;
   const victim = { _id: victimPlayer._id, name: victimPlayer.name, attackers: [vigilanteID], casualty: 2, cause: 'crossbow' };
@@ -278,7 +283,7 @@ twang = function (game, players, vigilanteID, vigilante) {
   TurnsHistory.insert({historyID: game.historyID, phase: 'vigilante', players: history});
 }
 
-killPlayer = function (cause, game, players, victim) {
+export function killPlayer (cause, game, players, victim) {
   if (victim.casualty < 2) return [[victim], [], []];
   let playerMap = objectMap (players, p => ({[p._id]: Object.assign({},p)}));
   const history = [victim].concat (loverSuicide (game.fellows.lover, playerMap, victim));
@@ -313,7 +318,7 @@ killPlayer = function (cause, game, players, victim) {
   return [history, voiceOfFate];
 }
 
-loverSuicide = function (allLovers, playerMap, player) {
+export function loverSuicide (allLovers, playerMap, player) {
   playerMap[player._id] = player;
   if (debug >= 3) console.log ('loverSuicide: lovers =', allLovers, ', playerMap =', playerMap, ', player =', player);
   var deaths = [], suicides = [];
@@ -341,7 +346,7 @@ loverSuicide = function (allLovers, playerMap, player) {
   return deaths;
 }
 
-downloadHistory = function (gameName) {
+export function downloadHistory (gameName) {
   h = GamesHistory.find({ name: gameName });
   gamesHistory = h ? h.fetch() : `error finding gamesHistory.gameID=${game._id}`;
   ids = h ? gamesHistory.map (g => g._id) : [];
@@ -359,7 +364,7 @@ downloadHistory = function (gameName) {
   return obj;
 }
 
-downloadAll = function() {
+export function downloadAll() {
   g = Games.find({});
   games = g ? g.fetch() : "error reading 'games'";
   p = Players.find({});

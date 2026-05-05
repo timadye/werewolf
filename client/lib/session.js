@@ -4,7 +4,15 @@
 
 import { FlowRouter } from 'meteor/ostrio:flow-router-extra';
 
-initSession = function() {
+import { debug, MeteorSubs, MeteorSubsHistory } from '/imports/client/globals.js'
+import { setDebugLevel, setTitle } from '/client/lib/client.js'
+import { historySubscribe } from '/client/lib/history.js'
+import { getCurrentGame, getGameName, allGames, allPlayers } from '/client/lib/info.js'
+import { hideRole, hideSecrets, endGame } from '/client/lib/ingame.js'
+import { initialPlayer, createPlayer, setCurrentPlayer } from '/client/lib/lobby.js'
+import { initialGame } from '/lib/collections.js'
+
+export function initSession() {
   setDebugLevel();
   setAdminMode();
   Tracker.autorun(trackGameState);
@@ -12,7 +20,7 @@ initSession = function() {
 }
 
 // sets the state of the game (which template to render)
-trackGameState = function() {
+export function trackGameState() {
   const currentView = Session.peek('currentView');
   const game = getCurrentGame({state:1, historyID:1});
   if (!game) {
@@ -35,7 +43,7 @@ trackGameState = function() {
   if (debug >= 2) console.log (`trackGameState ${Meteor.connection._lastSessionId}: game.state = ${game.state}, currentView: ${currentView} -> ${Session.peek('currentView')}`);
 }
 
-routed = function(view, gameName=null, playerName=null, onReady=null) {
+export function routed(view, gameName=null, playerName=null, onReady=null) {
   Session.set('turnMessage', null);
   hideRole();
   hideSecrets();
@@ -62,7 +70,7 @@ routed = function(view, gameName=null, playerName=null, onReady=null) {
   });
 }
 
-setAdminMode = function(pwd='') {
+export function setAdminMode(pwd='') {
   Session.set('adminMode',false);
   Session.set('adminPassword',pwd);
   MeteorSubs.subscribe('allGames', pwd, () => {
@@ -72,7 +80,7 @@ setAdminMode = function(pwd='') {
   });
 }
 
-setCurrentGame = function (gameName, onReadyPlayers=null) {
+export function setCurrentGame (gameName, onReadyPlayers=null) {
   if (debug >= 2) console.log('setCurrentGame', gameName);
   const gameID = Session.get('gameID');
   if (gameID) {
@@ -91,7 +99,7 @@ setCurrentGame = function (gameName, onReadyPlayers=null) {
   }
 }
 
-joinGame = function (gameName, onReadyPlayers=null) {
+export function joinGame (gameName, onReadyPlayers=null) {
   var sub = MeteorSubs.subscribe('game', gameName, {
     onReady: () => {
       if (debug >= 2) console.log('joinGame games onReady', gameName);
@@ -117,7 +125,7 @@ joinGame = function (gameName, onReadyPlayers=null) {
   });
 }
 
-leaveVillage = function () {
+export function leaveVillage () {
   MeteorSubsHistory.clear();
   setCurrentPlayer(null);
   Session.set('lateLobby', false);
@@ -127,7 +135,7 @@ leaveVillage = function () {
   FlowRouter.go('start', {}, {});
 };
 
-resetGame = function() {
+export function resetGame() {
   MeteorSubsHistory.clear();
   const gameID = Session.get('gameID');
   if (gameID) {

@@ -1,4 +1,9 @@
-main_templates = function() {
+import { debug } from '/imports/client/globals.js'
+import { getGameName, getPlayerName } from '/client/lib/info.js'
+import { alive } from '/client/lib/ingame.js'
+import { setAdminMode } from '/client/lib/session.js'
+
+export function main_templates() {
 
   //======================================================================
   // main template and global helpers
@@ -17,7 +22,7 @@ main_templates = function() {
     gameName: () => getGameName(),
     playerName: () => (getPlayerName() || "a lurker"),
     lurker: () => (!getPlayerName()),
-    alive: alive,
+    alive: () => alive(),
     adminMode: () => Session.get('adminMode'),
   });
 
@@ -31,7 +36,7 @@ main_templates = function() {
 // Blaze/Spacebars/Handlebars doesn't seem to allow multiple helpers to be defined at once as implied here:
 //   https://handlebarsjs.com/api-reference/runtime.html#handlebars-registerhelper-name-helper
 // registerHelper({helper: ()=>{}}) can be used instead.
-registerHelper = function(helpers, helper) {
+export function registerHelper(helpers, helper) {
   if (typeof helpers == "object" && helper === undefined) {
     for (const [k,v] of Object.entries(helpers)) {
       if (debug>=3) console.log(`Handlebars.registerHelper(${k},${v})`);
@@ -42,7 +47,7 @@ registerHelper = function(helpers, helper) {
   }
 }
 
-ask_confirm = function (button="OK", title="Confirm?", text="", doConfirm=true, ok) {
+export function ask_confirm (button="OK", title="Confirm?", text="", doConfirm=true, ok) {
   if (doConfirm) {
     sweetAlert({
       title: title,
@@ -59,7 +64,7 @@ ask_confirm = function (button="OK", title="Confirm?", text="", doConfirm=true, 
   }
 }
 
-setDebugLevel = function() {
+export function setDebugLevel() {
   Meteor.call ('debugLevel', (error, result) => {
     if (!error && result > debug) {
       debug = result;
@@ -68,7 +73,7 @@ setDebugLevel = function() {
   });
 }
 
-setTitle = function(title) {
+export function setTitle(title) {
   if (title == undefined) {
     title = getPlayerName();
     if (!title) {
@@ -82,12 +87,12 @@ setTitle = function(title) {
   document.title = title + " - Werewolf";
 }
 
-reportError = function(msg) {
+export function reportError(msg) {
   if (msg) console.error(msg);
   Session.set('errorMessage', msg);
 }
 
-setPassword = function(pwd) {
+export function setPassword(pwd) {
   if (pwd && pwd != Session.get('adminPassword')) {
     setAdminMode(pwd);
   }
