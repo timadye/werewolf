@@ -2,6 +2,10 @@
 // Session management functions
 //======================================================================
 
+import { Meteor } from 'meteor/meteor';
+import { Session } from 'meteor/session';
+import { Tracker } from 'meteor/tracker';
+import { BlazeLayout } from 'meteor/kadira:blaze-layout';
 import { FlowRouter } from 'meteor/ostrio:flow-router-extra';
 
 import { debug, MeteorSubs, MeteorSubsHistory } from '/imports/client/globals.js'

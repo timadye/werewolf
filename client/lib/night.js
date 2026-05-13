@@ -1,3 +1,5 @@
+import { Template } from 'meteor/templating';
+
 import { debug } from '/imports/client/globals.js'
 import { getCurrentPlayer, allPlayers } from '/client/lib/info.js'
 import { startClock, hideRole, alive } from '/client/lib/ingame.js'

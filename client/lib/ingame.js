@@ -1,3 +1,7 @@
+import { Meteor } from 'meteor/meteor';
+import { Session } from 'meteor/session';
+import { Template } from 'meteor/templating';
+
 import { debug } from '/imports/client/globals.js'
 import { ask_confirm } from '/client/lib/client.js'
 import { downloadAll } from '/client/lib/download.js'
