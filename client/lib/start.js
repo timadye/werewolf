@@ -2,6 +2,7 @@ import { FlowRouter } from 'meteor/ostrio:flow-router-extra';
 
 import { ask_confirm, reportError, setPassword } from '/client/lib/client.js'
 import { allGames } from '/client/lib/info.js'
+import { debug } from '/imports/client/globals.js'
 
 export function start_templates() {
 
