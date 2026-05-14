@@ -1,10 +1,11 @@
 import { Session } from 'meteor/session';
 import { Template } from 'meteor/templating';
 
-import { getCurrentGame, getPlayerName, getCurrentPlayer, allPlayers } from '/client/lib/info.js'
-import { startClock, hideRole, alive } from '/client/lib/ingame.js'
-import { playerClass } from '/client/lib/lobby.js'
-import { roleInfo } from '/lib/roles.js'
+import { getCurrentGame, getPlayerName, getCurrentPlayer, allPlayers } from '/client/lib/info.js';
+import { startClock, hideRole, alive } from '/client/lib/ingame.js';
+import { playerClass } from '/client/lib/lobby.js';
+import { roleInfo } from '/lib/roles.js';
+import { Games, Players } from '/lib/collections.js';
 
 export function day_templates() {
 

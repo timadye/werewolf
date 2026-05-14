@@ -1,7 +1,8 @@
 import { Session } from 'meteor/session';
 
-import { debug } from '/imports/client/globals.js'
-import { alive } from '/client/lib/ingame.js'
+import { debug } from '/imports/client/globals.js';
+import { alive } from '/client/lib/ingame.js';
+import { Games, Players } from '/lib/collections.js';
 
 export function getCurrentGame(fields=null) {
   const gameID = Session.get('gameID');

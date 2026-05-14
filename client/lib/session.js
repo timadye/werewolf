@@ -8,13 +8,13 @@ import { Tracker } from 'meteor/tracker';
 import { BlazeLayout } from 'meteor/kadira:blaze-layout';
 import { FlowRouter } from 'meteor/ostrio:flow-router-extra';
 
-import { debug, MeteorSubs, MeteorSubsHistory } from '/imports/client/globals.js'
-import { setDebugLevel, setTitle } from '/client/lib/client.js'
-import { historySubscribe } from '/client/lib/history.js'
-import { getCurrentGame, getGameName, allGames, allPlayers } from '/client/lib/info.js'
-import { hideRole, hideSecrets, endGame } from '/client/lib/ingame.js'
-import { initialPlayer, createPlayer, setCurrentPlayer } from '/client/lib/lobby.js'
-import { initialGame } from '/lib/collections.js'
+import { debug, MeteorSubs, MeteorSubsHistory } from '/imports/client/globals.js';
+import { setDebugLevel, setTitle } from '/client/lib/client.js';
+import { historySubscribe } from '/client/lib/history.js';
+import { getCurrentGame, getGameName, allGames, allPlayers } from '/client/lib/info.js';
+import { hideRole, hideSecrets, endGame } from '/client/lib/ingame.js';
+import { initialPlayer, createPlayer, setCurrentPlayer } from '/client/lib/lobby.js';
+import { Games, Players, initialGame } from '/lib/collections.js';
 
 export function initSession() {
   setDebugLevel();

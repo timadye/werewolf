@@ -3,9 +3,10 @@ import { Session } from 'meteor/session';
 import { Template } from 'meteor/templating';
 import { FlowRouter } from 'meteor/ostrio:flow-router-extra';
 
-import { ask_confirm, reportError, setPassword } from '/client/lib/client.js'
-import { allGames } from '/client/lib/info.js'
-import { debug } from '/imports/client/globals.js'
+import { ask_confirm, reportError, setPassword } from '/client/lib/client.js';
+import { allGames } from '/client/lib/info.js';
+import { debug } from '/imports/client/globals.js';
+import { Games } from '/lib/collections.js';
 
 export function start_templates() {
 

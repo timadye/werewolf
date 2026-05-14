@@ -1,13 +1,13 @@
-import { collections } from '/lib/collections.js'
-import { routes } from '/client/lib/routes.js'
-import { main_templates } from '/client/lib/client.js'
-import { start_templates } from '/client/lib/start.js'
-import { lobby_templates } from '/client/lib/lobby.js'
-import { history_templates } from '/client/lib/history.js'
-import { ingame_templates } from '/client/lib/ingame.js'
-import { night_templates } from '/client/lib/night.js'
-import { day_templates } from '/client/lib/day.js'
-import { initSession } from '/client/lib/session.js'
+import { collections } from '/lib/collections.js';
+import { routes } from '/client/lib/routes.js';
+import { main_templates } from '/client/lib/client.js';
+import { start_templates } from '/client/lib/start.js';
+import { lobby_templates } from '/client/lib/lobby.js';
+import { history_templates } from '/client/lib/history.js';
+import { ingame_templates } from '/client/lib/ingame.js';
+import { night_templates } from '/client/lib/night.js';
+import { day_templates } from '/client/lib/day.js';
+import { initSession } from '/client/lib/session.js';
 
 collections();
 routes();

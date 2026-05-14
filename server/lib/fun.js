@@ -1,7 +1,7 @@
-import { adminMode, debug, adminPassword } from '/imports/server/globals.js'
-import { initialGame } from '/lib/collections.js'
-import { allRoles, roleInfo } from '/lib/roles.js'
-import { shuffleArray, initObject, keyArrayFromEntries, keyArrayMap, objectMap } from '/lib/utils.js'
+import { adminMode, debug, adminPassword } from '/imports/server/globals.js';
+import { Games, Players, GamesHistory, TurnsHistory, initialGame } from '/lib/collections.js';
+import { allRoles, roleInfo } from '/lib/roles.js';
+import { shuffleArray, initObject, keyArrayFromEntries, keyArrayMap, objectMap } from '/lib/utils.js';
 
 var newGames = new Map();
 var incantations = new Map();
@@ -33,20 +33,20 @@ But beware! This incantation will only work for the name you have already chosen
 }
 
 
-export function tryCreateGame (incantation, pwd) {
+export async function tryCreateGame (incantation, pwd) {
   const gameName = incantations.get(incantation);
   if (gameName) {
     if (debug>=2) console.log (`create game '${gameName}' from incantation '${incantation}'`);
-    if (createGame (gameName)) return gameName;
+    if (await createGame (gameName)) return gameName;
   } else if (adminMode || pwd == adminPassword) {
-    if (createGame (incantation)) return incantation;
+    if (await createGame (incantation)) return incantation;
   }
   return null;
 }
 
 
-export function createGame(gameName, roles=["werewolf_1", "werewolf_2", "wolfsbane_1", "trapper_1"]) {
-  const gameID = Games.insert({
+export async function createGame(gameName, roles=["werewolf_1", "werewolf_2", "wolfsbane_1", "trapper_1"]) {
+  const gameID = await Games.insertAsync({
     name: gameName,
     createdAt: new Date().valueOf(),
     // default roles
@@ -57,26 +57,26 @@ export function createGame(gameName, roles=["werewolf_1", "werewolf_2", "wolfsba
   return gameID;
 }
 
-export function resetAllGames() {
+export async function resetAllGames() {
   if (debug>=1) console.log("reset all games");
-  var n = Games.remove({});
-  n += Players.remove({});
+  var n = await Games.removeAsync({});
+  n += await Players.removeAsync({});
   return n;
 }
 
-export function removeGame (gameName) {
-  const game = Games.findOne({name: gameName}, {});
+export async function removeGame (gameName) {
+  const game = await Games.findOneAsync({name: gameName}, {});
   if (!game) {
     if (debug>=1) console.log(`game '${gameName}' does not exist for removal`);
     return 0;
   }
   if (debug>=1) console.log("remove game", gameName);
-  var n = Games.remove(game._id);
-  n += Players.remove({gameID: game._id});
+  var n = await Games.removeAsync(game._id);
+  n += await Players.removeAsync({gameID: game._id});
   return n;
 }
 
-export function assignRoles(gameID, players, roleNames) {
+export async function assignRoles(gameID, players, roleNames) {
   if (debug>=3) console.log('roles =', roleNames);
 
   const allFellows = keyArrayFromEntries (Object.entries(allRoles) . map (([k,v]) => [v.fellows, k]));
@@ -111,7 +111,7 @@ export function assignRoles(gameID, players, roleNames) {
   }, roleFellows);
   if (debug>=3) Object.entries(fellows).forEach(([k,v])=>console.log(`fellows[${k}] =`,v));
 
-  Object.entries (rolePlayers) . forEach (([role, player]) => {
+  Object.entries (rolePlayers) . forEach (async ([role, player]) => {
     const playerID = player._id;
     const playerFellows = objectMap (fellows,
                                      ([fellowType, fellowPlayers]) => {
@@ -126,16 +126,16 @@ export function assignRoles(gameID, players, roleNames) {
       if (fellowsStr) fellowsStr = " (fellow "+fellowsStr+")";
       console.log (`Player ${player.name} (${player._id}) is ${role}${fellowsStr}`);
     }
-    Players.update (playerID, {$set: {role: role, fellows: playerFellows}});
+    await Players.updateAsync (playerID, {$set: {role: role, fellows: playerFellows}});
   });
 
   const playerRoles = objectMap (rolePlayers, ([r,p]) => ({[p._id]: r}));
   const gameSettings = {playerRoles: playerRoles, fellows: fellows};
-  Games.update(gameID, {$set: gameSettings});
+  await Games.updateAsync(gameID, {$set: gameSettings});
   return gameSettings;
 }
 
-export function dawn (game, playersFound) {
+export async function dawn (game, playersFound) {
   if (debug >= 3) console.log ('Dawn: playerRoles =', game.playerRoles);
 
   const players = playersFound.map (p => ({ ... p, act: {}, attackers: [], casualty: 0, cause: null }));
@@ -198,14 +198,14 @@ export function dawn (game, playersFound) {
       } else {
         deaths.push(player.name);
       }
-      Players.update (player._id, {$set: {alive: false}});
+      await Players.updateAsync (player._id, {$set: {alive: false}});
     } else if (player.casualty >= 1) {
       injuries.push(player.name);
     }
   }
   if (debug >= 1) console.log (`Dawn: deaths = ${deaths}, suicides = ${suicides}, injuries = ${injuries}`);
   if (debug >= 2) console.log ('details =', players);
-  TurnsHistory.insert({historyID: game.historyID, phase: 'night', players: players});
+  await TurnsHistory.insertAsync({historyID: game.historyID, phase: 'night', players: players});
 
   let voiceOfFate = [];
   if (deaths.length)
@@ -216,10 +216,10 @@ export function dawn (game, playersFound) {
     voiceOfFate.push (injuries.join(" and ") + (injuries.length >= 2 ? " were" : " was") + " injured in the night.");
   if (!voiceOfFate.length)
     voiceOfFate.push ("There were no injuries in the night.");
-  Games.update(game._id, {$set: {voiceOfFate: voiceOfFate, state: 'dayTime'}});
+  await Games.updateAsync(game._id, {$set: {voiceOfFate: voiceOfFate, state: 'dayTime'}});
 }
 
-export function guillotine (game, players) {
+export async function guillotine (game, players) {
   const victimPlayer = guillotineCall (players);
   if (!victimPlayer) return;
 
@@ -235,13 +235,13 @@ export function guillotine (game, players) {
   const victim = { _id: victimPlayer._id, name: victimPlayer.name, ... votes, attackers: calls, casualty: dead?2:0, cause: 'guillotine' };
   if (debug >= 1) console.log (`Player ${victim.name} (${victim._id}) was ${dead?"guillotined":"spared"} by ${votes.guillotine.length} to ${votes.spare.length}`);
 
-  const [history, voiceOfFate] = killPlayer ("Guillotine", game, players, victim);
+  const [history, voiceOfFate] = await killPlayer ("Guillotine", game, players, victim);
   if (!dead) {
     voiceOfFate.push (victim.name + " was spared.");
   }
 
-  Games.update(game._id, {$push: { voiceOfFate: { $each: voiceOfFate } }});
-  TurnsHistory.insert({historyID: game.historyID, phase: 'guillotine', players: history});
+  await Games.updateAsync(game._id, {$push: { voiceOfFate: { $each: voiceOfFate } }});
+  await TurnsHistory.insertAsync({historyID: game.historyID, phase: 'guillotine', players: history});
 }
 
 export function guillotineCall (players) {
@@ -271,19 +271,19 @@ export function guillotineCall (players) {
   }
 }
 
-export function twang (game, players, vigilanteID, vigilante) {
+export async function twang (game, players, vigilanteID, vigilante) {
   const victimPlayer = players.find (p => p._id == vigilante.twang);
   if (!victimPlayer) return;
   const victim = { _id: victimPlayer._id, name: victimPlayer.name, attackers: [vigilanteID], casualty: 2, cause: 'crossbow' };
   if (debug >= 1) console.log (`Player ${victim.name} (${victim._id}) was shot by ${vigilante.name} (${vigilanteID})`);
 
-  const [history, voiceOfFate] = killPlayer ("Vigilante", game, players, victim);
+  const [history, voiceOfFate] = await killPlayer ("Vigilante", game, players, victim);
 
-  Games.update(game._id, {$push: { voiceOfFate: { $each: voiceOfFate }}});
-  TurnsHistory.insert({historyID: game.historyID, phase: 'vigilante', players: history});
+  await Games.updateAsync(game._id, {$push: { voiceOfFate: { $each: voiceOfFate }}});
+  await TurnsHistory.insertAsync({historyID: game.historyID, phase: 'vigilante', players: history});
 }
 
-export function killPlayer (cause, game, players, victim) {
+export async function killPlayer (cause, game, players, victim) {
   if (victim.casualty < 2) return [[victim], [], []];
   let playerMap = objectMap (players, p => ({[p._id]: Object.assign({},p)}));
   const history = [victim].concat (loverSuicide (game.fellows.lover, playerMap, victim));
@@ -296,7 +296,7 @@ export function killPlayer (cause, game, players, victim) {
       } else {
         deaths.push(player.name);
       }
-      Players.update (player._id, {$set: {alive: false}});
+      await Players.updateAsync (player._id, {$set: {alive: false}});
     }
   }
   if      (debug == 1) console.log (`${cause}: deaths = ${deaths}, suicides = ${suicides}`);
@@ -346,12 +346,12 @@ export function loverSuicide (allLovers, playerMap, player) {
   return deaths;
 }
 
-export function downloadHistory (gameName) {
+export async function downloadHistory (gameName) {
   h = GamesHistory.find({ name: gameName });
-  gamesHistory = h ? h.fetch() : `error finding gamesHistory.gameID=${game._id}`;
+  gamesHistory = h ? await h.fetchAsync() : `error finding gamesHistory.gameID=${game._id}`;
   ids = h ? gamesHistory.map (g => g._id) : [];
   t = TurnsHistory.find({ historyID: { $in: ids }});
-  turnsHistory = t ? t.fetch() : `error finding turnsHistory->gameID=${game._id}`;
+  turnsHistory = t ? await t.fetchAsync() : `error finding turnsHistory->gameID=${game._id}`;
   obj = {
     gameName: gameName,
     gamesHistory: gamesHistory,
@@ -364,15 +364,15 @@ export function downloadHistory (gameName) {
   return obj;
 }
 
-export function downloadAll() {
+export async function downloadAll() {
   g = Games.find({});
-  games = g ? g.fetch() : "error reading 'games'";
+  games = g ? await g.fetchAsync() : "error reading 'games'";
   p = Players.find({});
-  players = p ? p.fetch() : "error reading 'players'";
+  players = p ? await p.fetchAsync() : "error reading 'players'";
   h = GamesHistory.find({});
-  gamesHistory = h ? h.fetch() : "error reading 'gamesHistory'";
+  gamesHistory = h ? await h.fetchAsync() : "error reading 'gamesHistory'";
   t = TurnsHistory.find({});
-  turnsHistory = t ? t.fetch() : "error reading 'turnsHistory'";
+  turnsHistory = t ? await t.fetchAsync() : "error reading 'turnsHistory'";
   obj = {
     gameName: null,  // all villages
     games: games,

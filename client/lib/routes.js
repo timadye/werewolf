@@ -1,10 +1,10 @@
 import { Session } from 'meteor/session';
 import { FlowRouter } from 'meteor/ostrio:flow-router-extra';
 
-import { debug } from '/imports/client/globals.js'
-import { setPassword } from '/client/lib/client.js'
-import { pastGamesSubscribe, historySubscribe } from '/client/lib/history.js'
-import { routed } from '/client/lib/session.js'
+import { debug } from '/imports/client/globals.js';
+import { setPassword } from '/client/lib/client.js';
+import { pastGamesSubscribe, historySubscribe } from '/client/lib/history.js';
+import { routed } from '/client/lib/session.js';
 
 export function routes() {
 

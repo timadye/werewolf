@@ -1,31 +1,32 @@
-import { debug } from '/imports/server/globals.js'
-import { assignRoles, dawn, guillotine, twang } from '/server/lib/fun.js'
+import { debug } from '/imports/server/globals.js';
+import { assignRoles, dawn, guillotine, twang } from '/server/lib/fun.js';
+import { Games, Players, GamesHistory } from '/lib/collections.js';
 
 export function observe() {
 
   Games.find({state: 'settingUp'}).observeChanges({
-    added: (id, game) => {
+    added: async (id, game) => {
       if (debug>=1) console.log (`Start game '${game.name}' (${id})`);
-      const players = Players.find({ gameID: id, session: {$ne: null} }, { fields: {_id:1, name:1} }).fetch();
+      const players = await Players.find({ gameID: id, session: {$ne: null} }, { fields: {_id:1, name:1} }).fetchAsync();
       const gameSettings = assignRoles(id, players, game.roles);
-      const historyID = GamesHistory.insert({
+      const historyID = await GamesHistory.insertAsync({
         gameID: id,
         name: game.name,
         createdAt: new Date().valueOf(),
         players: players,
         ... gameSettings
       });
-      Games.update(id, {$set: {state: 'nightTime', historyID: historyID}});
+      await Games.updateAsync(id, {$set: {state: 'nightTime', historyID: historyID}});
     }
   });
 
   Players.find({'vote': {$ne: null}}).observeChanges({
-    added: (newID, newPlayer) => {
+    added: async (newID, newPlayer) => {
       const gameID = newPlayer.gameID;
       if (debug>=3) console.log(`Player ${newPlayer.name} (${newID}) initially voted for ${newPlayer.vote}`);
-      const players = Players.find({ gameID: gameID, session: {$ne: null}, alive: true }, { fields: {name:1, vote:1} }).fetch();
+      const players = await Players.find({ gameID: gameID, session: {$ne: null}, alive: true }, { fields: {name:1, vote:1} }).fetchAsync();
       if (players.some (p => !p.vote)) return null;
-      const game = Games.findOne(gameID);
+      const game = await Games.findOneAsync(gameID);
       if (debug>=1) {
         console.log(`Game ${game.name} ${game.state}: all ${players.length} players voted`);
         for (const player of players) {
@@ -42,18 +43,18 @@ export function observe() {
       }
       if (game.state == "nightTime") {
         dawn (game, players);
-        Players.update({gameID: gameID, session: {$ne: null}}, {$rename: {vote: "lastvote"}}, {multi: true});
+        await Players.updateAsync({gameID: gameID, session: {$ne: null}}, {$rename: {vote: "lastvote"}}, {multi: true});
       }
     }
   });
 
   Players.find({'guillotine': {$ne: null}}).observeChanges({
-    added: (newID, newPlayer) => {
+    added: async (newID, newPlayer) => {
       const gameID = newPlayer.gameID;
       if (debug>=3) console.log(`Player ${newPlayer.name} (${newID}) initially voted to ${newPlayer.guillotine}`);
-      const players = Players.find({ gameID: gameID, session: {$ne: null}, alive: true }, { fields: {name:1, call:1, guillotine:1} }).fetch();
+      const players = await Players.find({ gameID: gameID, session: {$ne: null}, alive: true }, { fields: {name:1, call:1, guillotine:1} }).fetchAsync();
       if (players.some (p => !p.guillotine)) return null;
-      const game = Games.findOne(gameID);
+      const game = await Games.findOneAsync(gameID);
       if (debug>=1) {
         console.log(`Game ${game.name} ${game.state}: all ${players.length} players voted`);
         for (const player of players) {
@@ -62,18 +63,18 @@ export function observe() {
       }
       if (game.state == "dayTime") {
         guillotine (game, players);
-        Players.update({gameID: gameID, session: {$ne: null}}, {$set: {call: null, guillotine: null}}, {multi: true});
+        await Players.updateAsync({gameID: gameID, session: {$ne: null}}, {$set: {call: null, guillotine: null}}, {multi: true});
       }
     }
   });
 
   Players.find({'twang': {$ne: null}}).observeChanges({
-    added: (newID, newPlayer) => {
+    added: async (newID, newPlayer) => {
       const gameID = newPlayer.gameID;
       if (debug>=3) console.log(`Player ${newPlayer.name} (${newID}) shot ${newPlayer.twang}`);
       if (!newPlayer.twang) return;
-      const players = Players.find({ gameID: gameID, session: {$ne: null}, alive: true }, { fields: {name:1} }).fetch();
-      const game = Games.findOne(gameID);
+      const players = await Players.find({ gameID: gameID, session: {$ne: null}, alive: true }, { fields: {name:1} }).fetchAsync();
+      const game = await Games.findOneAsync(gameID);
       if (game.state == "dayTime") {
         twang (game, players, newID, newPlayer);
       }

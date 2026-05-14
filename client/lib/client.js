@@ -2,10 +2,10 @@ import { Meteor } from 'meteor/meteor';
 import { Session } from 'meteor/session';
 import { Template } from 'meteor/templating';
 
-import { debug } from '/imports/client/globals.js'
-import { getGameName, getPlayerName } from '/client/lib/info.js'
-import { alive } from '/client/lib/ingame.js'
-import { setAdminMode } from '/client/lib/session.js'
+import { debug } from '/imports/client/globals.js';
+import { getGameName, getPlayerName } from '/client/lib/info.js';
+import { alive } from '/client/lib/ingame.js';
+import { setAdminMode } from '/client/lib/session.js';
 
 export function main_templates() {
 

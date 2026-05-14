@@ -2,14 +2,15 @@ import { Meteor } from 'meteor/meteor';
 import { Session } from 'meteor/session';
 import { Template } from 'meteor/templating';
 
-import { debug } from '/imports/client/globals.js'
-import { ask_confirm } from '/client/lib/client.js'
-import { downloadAll } from '/client/lib/download.js'
-import { historySubscribe, showHistory } from '/client/lib/history.js'
-import { getCurrentGame, getPlayerName, getCurrentPlayer, allPlayers } from '/client/lib/info.js'
-import { leaveVillage, resetGame } from '/client/lib/session.js'
-import { allRoles, roleInfo } from '/lib/roles.js'
-import { objectMap } from '/lib/utils.js'
+import { debug } from '/imports/client/globals.js';
+import { ask_confirm } from '/client/lib/client.js';
+import { downloadAll } from '/client/lib/download.js';
+import { historySubscribe, showHistory } from '/client/lib/history.js';
+import { getCurrentGame, getPlayerName, getCurrentPlayer, allPlayers } from '/client/lib/info.js';
+import { leaveVillage, resetGame } from '/client/lib/session.js';
+import { allRoles, roleInfo } from '/lib/roles.js';
+import { objectMap } from '/lib/utils.js';
+import { Games, Players } from '/lib/collections.js';
 
 export function ingame_templates() {
 

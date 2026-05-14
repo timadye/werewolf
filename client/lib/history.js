@@ -4,13 +4,14 @@ import { Template } from 'meteor/templating';
 import { Tracker } from 'meteor/tracker';
 import { FlowRouter } from 'meteor/ostrio:flow-router-extra';
 
-import { debug, dash, nbsp, MeteorSubs, MeteorSubsHistory } from '/imports/client/globals.js'
-import { downloadVillage } from '/client/lib/download.js'
-import { getCurrentGame, getGameName } from '/client/lib/info.js'
-import { alive, endGame } from '/client/lib/ingame.js'
-import { trackGameState, leaveVillage } from '/client/lib/session.js'
-import { roleInfo } from '/lib/roles.js'
-import { objectMap } from '/lib/utils.js'
+import { debug, dash, nbsp, MeteorSubs, MeteorSubsHistory } from '/imports/client/globals.js';
+import { downloadVillage } from '/client/lib/download.js';
+import { getCurrentGame, getGameName } from '/client/lib/info.js';
+import { alive, endGame } from '/client/lib/ingame.js';
+import { trackGameState, leaveVillage } from '/client/lib/session.js';
+import { roleInfo } from '/lib/roles.js';
+import { objectMap } from '/lib/utils.js';
+import { GamesHistory, TurnsHistory } from '/lib/collections.js';
 
 export function history_templates() {
   //======================================================================

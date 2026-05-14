@@ -3,13 +3,14 @@ import { Session } from 'meteor/session';
 import { Template } from 'meteor/templating';
 import { FlowRouter } from 'meteor/ostrio:flow-router-extra';
 
-import { debug } from '/imports/client/globals.js'
-import { ask_confirm, setTitle } from '/client/lib/client.js'
-import { downloadAll } from '/client/lib/download.js'
-import { getCurrentGame, getGameName, getPlayerName, getCurrentPlayer, allPlayersFind, allPlayers } from '/client/lib/info.js'
-import { alive } from '/client/lib/ingame.js'
-import { leaveVillage, resetGame } from '/client/lib/session.js'
-import { allRoles } from '/lib/roles.js'
+import { debug } from '/imports/client/globals.js';
+import { ask_confirm, setTitle } from '/client/lib/client.js';
+import { downloadAll } from '/client/lib/download.js';
+import { getCurrentGame, getGameName, getPlayerName, getCurrentPlayer, allPlayersFind, allPlayers } from '/client/lib/info.js';
+import { alive } from '/client/lib/ingame.js';
+import { leaveVillage, resetGame } from '/client/lib/session.js';
+import { allRoles } from '/lib/roles.js';
+import { Games, Players } from '/lib/collections.js';
 
 export function lobby_templates() {
 
