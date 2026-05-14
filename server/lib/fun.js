@@ -1,4 +1,4 @@
-import { adminMode, debug, adminPassword } from '/imports/server/globals.js';
+import { adminMode, adminPassword, debug } from '/imports/server/globals.js';
 import { Games, Players, GamesHistory, TurnsHistory, initialGame } from '/lib/collections.js';
 import { allRoles, roleInfo } from '/lib/roles.js';
 import { shuffleArray, initObject, keyArrayFromEntries, keyArrayMap, objectMap } from '/lib/utils.js';

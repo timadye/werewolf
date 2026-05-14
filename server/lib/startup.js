@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 
-import { adminMode, debug, setDebug, adminPassword, resetOnStart } from '/imports/server/globals.js';
+import { adminMode, adminPassword, resetOnStart, debug, setDebug } from '/imports/server/globals.js';
 import { noGame, tryCreateGame, createGame, resetAllGames, removeGame, downloadHistory, downloadAll } from '/server/lib/fun.js';
 import { Games, Players, GamesHistory, TurnsHistory } from '/lib/collections.js';
 
