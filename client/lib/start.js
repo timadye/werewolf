@@ -5,7 +5,7 @@ import { FlowRouter } from 'meteor/ostrio:flow-router-extra';
 
 import { ask_confirm, reportError, setPassword } from '/client/lib/client.js';
 import { allGames } from '/client/lib/info.js';
-import { debug } from '/imports/client/globals.js';
+import { debug, setDebug } from '/imports/client/globals.js';
 import { Games } from '/lib/collections.js';
 
 export function start_templates() {
@@ -56,7 +56,7 @@ export function start_templates() {
           if (newDebug != debug) {
             console.log(`reset debug level to ${newDebug}`);
           }
-          debug = newDebug;
+          setDebug(newDebug);
         }
       });
       Session.set('adminMode', false);
@@ -142,7 +142,7 @@ export function increaseDebugLevel (delta=1) {
     if (error) {
       reportError('increaseDebugLevel failed');
     } else {
-      debug = newDebug;
+      setDebug(newDebug);
       console.log(`set new debug level ${debug}`);
     }
   });

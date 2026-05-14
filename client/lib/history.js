@@ -112,6 +112,8 @@ export function showHistory () {
 
 export function historyTable (game, history) {
   const col0 = {Class:"", name:""};
+  if (debug >= 3) console.log('game.players =', game.players);
+  if (debug >= 3) console.log('game.playerRoles =', game.playerRoles);
   const players = game.players.map (p => ({...p, role: roleInfo(game.playerRoles[p._id]), alive:true})) . filter (p=>!p.role.zombie);
   if (debug >= 2) console.log ('players = ', players);
   const playerMap = objectMap (players, p => ({[p._id]: p}));

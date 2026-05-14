@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor';
 import { Session } from 'meteor/session';
 import { Template } from 'meteor/templating';
 
-import { debug } from '/imports/client/globals.js';
+import { debug, setDebug } from '/imports/client/globals.js';
 import { getGameName, getPlayerName } from '/client/lib/info.js';
 import { alive } from '/client/lib/ingame.js';
 import { setAdminMode } from '/client/lib/session.js';
@@ -71,7 +71,7 @@ export function ask_confirm (button="OK", title="Confirm?", text="", doConfirm=t
 export function setDebugLevel() {
   Meteor.call ('debugLevel', (error, result) => {
     if (!error && result > debug) {
-      debug = result;
+      setDebug (result);
       if (debug >= 1) console.log (`debug = ${debug}`);
     }
   });

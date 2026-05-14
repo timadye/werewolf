@@ -8,7 +8,7 @@ export function observe() {
     added: async (id, game) => {
       if (debug>=1) console.log (`Start game '${game.name}' (${id})`);
       const players = await Players.find({ gameID: id, session: {$ne: null} }, { fields: {_id:1, name:1} }).fetchAsync();
-      const gameSettings = assignRoles(id, players, game.roles);
+      const gameSettings = await assignRoles(id, players, game.roles);
       const historyID = await GamesHistory.insertAsync({
         gameID: id,
         name: game.name,

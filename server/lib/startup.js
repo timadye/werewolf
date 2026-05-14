@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 
-import { adminMode, debug, adminPassword, resetOnStart } from '/imports/server/globals.js';
+import { adminMode, debug, setDebug, adminPassword, resetOnStart } from '/imports/server/globals.js';
 import { noGame, tryCreateGame, createGame, resetAllGames, removeGame, downloadHistory, downloadAll } from '/server/lib/fun.js';
 import { Games, Players, GamesHistory, TurnsHistory } from '/lib/collections.js';
 
@@ -31,7 +31,7 @@ export function server_startup() {
     }
   });
 
-  Meteor.publish('game', async (gameName) => {
+  Meteor.publish('game', async function (gameName) {
     if (debug >= 2) console.log("publish game", gameName);
     const game = await Games.findOneAsync({name: gameName}, {});
     if (!game) {
@@ -104,7 +104,7 @@ export function server_startup() {
 
     resetDebug: (pwd) => {
       if (adminMode || pwd == adminPassword) {
-        debug = Number(process.env.WEREWOLF_DEBUG || 1);
+        setDebug (Number(process.env.WEREWOLF_DEBUG || 1));
         console.log(`debug level reset to ${debug}`);
       }
       return debug;
@@ -116,7 +116,7 @@ export function server_startup() {
 
     increaseDebugLevel: (pwd, delta=1) => {
       if (adminMode || pwd == adminPassword) {
-        debug += delta;
+        setDebug (debug + delta);
         console.log(`set new debug level ${debug}`);
       }
       return debug;

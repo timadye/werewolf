@@ -131,6 +131,8 @@ export async function assignRoles(gameID, players, roleNames) {
 
   const playerRoles = objectMap (rolePlayers, ([r,p]) => ({[p._id]: r}));
   const gameSettings = {playerRoles: playerRoles, fellows: fellows};
+  if (debug>=3) console.log('playerRoles =', playerRoles);
+  if (debug>=3) console.log('fellows =', fellows);
   await Games.updateAsync(gameID, {$set: gameSettings});
   return gameSettings;
 }
